@@ -132,7 +132,9 @@ For production, set `ASTRO_DATABASE_FILE` (local) or `ASTRO_DB_REMOTE_URL` + `AS
 
 ## Step 4: Merge Content Collections
 
-If you already have `src/content.config.ts`, add the `roadmap` collection and optionally the status collections:
+If you already have `src/content.config.ts`, add the `roadmap` collection and optionally the status collections.
+
+**Don't use collections yet?** See [MIGRATION_TO_COLLECTIONS.md](./MIGRATION_TO_COLLECTIONS.md) for how to migrate existing site data (import.meta.glob, JSON, static files) to content collections.
 
 ```ts
 import { defineCollection } from 'astro:content';
