@@ -1,0 +1,25 @@
+<section class="panel-soft p-5 md:p-6"
+         aria-labelledby="uptime-section-heading">
+  <div class="flex items-center mb-3">
+    <span id="uptime-section-heading"
+          class="text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-slate-400">
+      90-day uptime
+    </span>
+    <span class="flex-1"></span>
+    <span class="font-mono text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+      {{ uptime.percentage }}%
+    </span>
+  </div>
+  <div class="flex gap-0.5 items-end h-7"
+       role="img"
+       [attr.aria-label]="uptime.percentage + '% uptime over the last 90 days'">
+    @for (day of uptime.days; track $index) {
+      <div [class]="getBarClasses(day)"
+           [attr.title]="day + ' - day ' + ($index + 1)"></div>
+    }
+  </div>
+  <div class="flex justify-between mt-1.5">
+    <span class="font-mono text-[10px] text-slate-400 dark:text-slate-500">90 days ago</span>
+    <span class="font-mono text-[10px] text-slate-400 dark:text-slate-500">Today</span>
+  </div>
+</section>

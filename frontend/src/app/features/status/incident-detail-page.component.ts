@@ -14,7 +14,7 @@ import type {
   Workspace,
   ExternalSystemStatus,
 } from 'shared/status-models';
-import { StatusLabelPipe } from '../../pipes/status-label.pipe';
+import { StatusBadgeComponent } from '../../shared/ui/status-badge.component';
 import { RelativeTimePipe } from '../../pipes/relative-time.pipe';
 
 @Component({
@@ -25,7 +25,7 @@ import { RelativeTimePipe } from '../../pipes/relative-time.pipe';
     NgFor,
     NgClass,
     RouterLink,
-    StatusLabelPipe,
+    StatusBadgeComponent,
     RelativeTimePipe,
   ],
   templateUrl: './incident-detail-page.component.html',

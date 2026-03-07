@@ -6,6 +6,7 @@ import {
   getExternalSystemStatuses,
   getIncidents,
   getIncidentById,
+  getRecentIncidents,
   getScheduledMaintenance,
 } from "../services/statusService";
 
@@ -61,6 +62,15 @@ router.get("/incidents", async (_req, res, next) => {
   try {
     const incidents = await getIncidents();
     res.json({ incidents });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/incidents/recent", async (_req, res, next) => {
+  try {
+    const incidents = await getRecentIncidents();
+    res.json(incidents);
   } catch (error) {
     next(error);
   }

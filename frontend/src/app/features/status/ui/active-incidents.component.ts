@@ -1,40 +1,35 @@
-import { NgIf, NgFor, NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, Input } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import type { IncidentSummary, StatusLevel } from 'shared/status-models';
-import { StatusLabelPipe } from '../../../pipes/status-label.pipe';
+import type { IncidentSummary } from 'shared/status-models';
+import { compareByStatus } from 'shared/status-utils';
+import { StatusBadgeComponent } from '../../../shared/ui/status-badge.component';
 import { RelativeTimePipe } from '../../../pipes/relative-time.pipe';
-
-const SEVERITY_ORDER: Record<StatusLevel, number> = {
-  OUTAGE: 0,
-  DEGRADED: 1,
-  MAINTENANCE: 2,
-  HEALTHY: 3,
-  UNKNOWN: 4,
-};
 
 @Component({
   selector: 'app-active-incidents',
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, RouterLink, StatusLabelPipe, RelativeTimePipe],
+  imports: [NgClass, RouterLink, StatusBadgeComponent, RelativeTimePipe],
   templateUrl: './active-incidents.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActiveIncidentsComponent {
-  @Input() incidents: IncidentSummary[] = [];
-  @Input() loading = false;
+  readonly incidents = input<IncidentSummary[]>([]);
+  readonly loading = input(false);
+
+  readonly expandedUpdatesId = signal<string | null>(null);
+
+  toggleUpdates(id: string) {
+    this.expandedUpdatesId.update((current) => (current === id ? null : id));
+  }
 
   readonly activeIncidents = computed(() =>
-    this.incidents.filter((i) => !i.resolvedAt)
+    this.incidents().filter((i) => !i.resolvedAt)
   );
 
   readonly sortedIncidents = computed(() => {
-    return [...this.activeIncidents()].sort(
-      (a, b) => SEVERITY_ORDER[a.level] - SEVERITY_ORDER[b.level]
+    return [...this.activeIncidents()].sort((a, b) =>
+      compareByStatus(a.level, b.level)
     );
   });
-
-  trackByIncidentId(_index: number, incident: IncidentSummary): string {
-    return incident.id;
-  }
 }

@@ -1,6 +1,7 @@
-<div *ngIf="loading" class="space-y-4" aria-live="polite">
+@if (loading()) {
+  <div class="space-y-4" aria-live="polite">
   @for (row of [1,2]; track row) {
-    <div class="card border-l-4 border-l-slate-200 p-5">
+    <div class="maintenance-card p-5">
       <div class="h-4 w-2/3 max-w-sm skeleton skeleton-shimmer rounded mb-3" aria-hidden="true"></div>
       <div class="h-3 w-full max-w-md skeleton skeleton-shimmer rounded mb-2" aria-hidden="true"></div>
       <div class="flex gap-3 mt-2">
@@ -9,49 +10,61 @@
       </div>
     </div>
   }
-</div>
+  </div>
+}
 
-<div *ngIf="!loading && maintenance.length === 0" class="card p-8 text-center">
-  <span class="inline-flex w-12 h-12 rounded-xl bg-slate-100 text-slate-400 items-center justify-center mb-3" aria-hidden="true">
+@if (!loading() && maintenance().length === 0) {
+<div class="rounded-2xl p-8 text-center bg-slate-50/50 dark:bg-zinc-800/30 border border-slate-200/60 dark:border-zinc-700/50">
+  <span class="inline-flex w-12 h-12 rounded-xl bg-sky-100 dark:bg-sky-900/30 text-sky-500 dark:text-sky-400 items-center justify-center mb-3" aria-hidden="true">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6">
       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd" />
     </svg>
   </span>
-  <p class="text-[15px] font-medium text-slate-700">No scheduled maintenance</p>
-  <p class="text-[14px] text-slate-500 mt-1">No planned maintenance windows at this time.</p>
+  <p class="text-[15px] font-medium text-slate-700 dark:text-slate-300">No scheduled maintenance</p>
+  <p class="text-[14px] text-slate-500 dark:text-slate-400 mt-1">No planned maintenance windows at this time.</p>
 </div>
+}
 
-<ul *ngIf="!loading && maintenance.length > 0"
+@if (!loading() && maintenance().length > 0) {
+<ul
     class="space-y-4"
     role="list"
     aria-label="Scheduled maintenance">
-  <li *ngFor="let m of maintenance; trackBy: trackByMaintenanceId"
-      class="card border-l-4 border-l-sky-500 p-5">
-    <div class="flex flex-col gap-2">
-      <h3 class="text-[15px] font-semibold text-slate-900">
-        {{ m.title }}
-      </h3>
-      <p *ngIf="m.description" class="text-[14px] text-slate-600">
-        {{ m.description }}
-      </p>
-      <div class="flex flex-wrap items-center gap-3 text-[13px] text-slate-600 mt-1">
-        <span>
+  <li *ngFor="let m of maintenance(); trackBy: trackById"
+      class="maintenance-card">
+    <div class="flex gap-5 p-5 md:p-6">
+      <div class="maintenance-card-datetime">
+        <div class="text-[10px] font-mono font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">Window</div>
+        <div class="text-[13px] font-medium text-slate-700 dark:text-slate-300 mt-1 leading-tight">
           {{ m.scheduledStart | relativeTime }}
-          <span class="text-slate-400">–</span>
+        </div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">to</div>
+        <div class="text-[13px] font-medium text-slate-700 dark:text-slate-300 leading-tight">
           {{ m.scheduledEnd | relativeTime }}
-        </span>
-        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[12px] font-medium bg-sky-50 text-sky-700"
-              *ngIf="m.status === 'SCHEDULED'">
-          Scheduled
-        </span>
-        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[12px] font-medium bg-amber-50 text-amber-700"
-              *ngIf="m.status === 'IN_PROGRESS'">
-          In progress
-        </span>
+        </div>
       </div>
-      <p *ngIf="getAffectedNames(m).length > 0" class="mt-2 text-[13px] text-slate-500">
-        Affected: {{ getAffectedNames(m).join(', ') }}
-      </p>
+      <div class="flex-1 min-w-0">
+        <h3 class="text-[16px] font-semibold text-slate-900 dark:text-slate-100">
+          {{ m.title }}
+        </h3>
+        <p *ngIf="m.description" class="text-[14px] text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+          {{ m.description }}
+        </p>
+        <div class="flex flex-wrap items-center gap-3 mt-3">
+          <span class="inline-flex items-center px-3 py-1 rounded-lg text-[12px] font-medium bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400"
+                *ngIf="m.status === 'SCHEDULED'">
+            Scheduled
+          </span>
+          <span class="inline-flex items-center px-3 py-1 rounded-lg text-[12px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                *ngIf="m.status === 'IN_PROGRESS'">
+            In progress
+          </span>
+        </div>
+        <p *ngIf="getAffectedNames(m).length > 0" class="mt-3 text-[13px] text-slate-500 dark:text-slate-400">
+          Affected: {{ getAffectedNames(m).join(', ') }}
+        </p>
+      </div>
     </div>
   </li>
 </ul>
+}

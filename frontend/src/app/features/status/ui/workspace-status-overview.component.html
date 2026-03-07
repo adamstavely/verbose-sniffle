@@ -1,6 +1,6 @@
-<div *ngIf="loading" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+<div *ngIf="loading()" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" aria-live="polite">
   @for (row of [1,2,3,4,5,6]; track row) {
-    <article class="card p-6">
+    <article class="panel p-6">
       <div class="space-y-2.5">
         <div class="flex items-start justify-between gap-3">
           <div class="h-5 w-32 skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
@@ -15,17 +15,15 @@
   }
 </div>
 
-<div *ngIf="!loading && workspaces.length === 0" class="card p-8 text-center">
-  <span class="inline-flex w-12 h-12 rounded-xl bg-slate-100 text-slate-400 items-center justify-center mb-3" aria-hidden="true">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6">
-      <path fill-rule="evenodd" d="M4.25 2A2.25 2.25 0 002 4.25v11.5A2.25 2.25 0 004.25 18h11.5A2.25 2.25 0 0018 15.75V4.25A2.25 2.25 0 0015.75 2H4.25zm4.03 6.28a.75.75 0 00-1.06-1.06L4.97 9.47a.75.75 0 000 1.06l2.25 2.25a.75.75 0 001.06-1.06L6.56 10l1.72-1.72zm4.5-1.06a.75.75 0 10-1.06 1.06L13.44 10l-1.72 1.72a.75.75 0 101.06 1.06L15.03 10.53a.75.75 0 000-1.06l-2.25-2.25z" clip-rule="evenodd" />
-    </svg>
-  </span>
-  <p class="text-[15px] font-medium text-slate-700">No workspaces yet</p>
-  <p class="text-[14px] text-slate-500 mt-1 max-w-sm mx-auto">Workspaces will appear here once they're configured. Check back later.</p>
-</div>
+@if (!loading() && workspaces().length === 0) {
+  <div class="panel-soft">
+    <app-empty-state
+      title="No workspaces yet"
+      description="Workspaces will appear here once they're configured. Check back later." />
+  </div>
+}
 
-@if (!loading && workspaces.length > 0) {
+@if (!loading() && workspaces().length > 0) {
   <div class="flex flex-col sm:flex-row gap-4 mb-6">
     <div class="relative flex-1">
       <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
@@ -37,12 +35,12 @@
              [ngModel]="searchQuery()"
              (ngModelChange)="searchQuery.set($event)"
              placeholder="Search by name or team..."
-             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-shadow"
              aria-label="Search workspaces">
     </div>
     <select [ngModel]="statusFilter()"
             (ngModelChange)="statusFilter.set($any($event))"
-            class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow sm:w-48"
+            class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-shadow sm:w-48"
             aria-label="Filter by status">
       <option value="ALL">All statuses</option>
       <option value="HEALTHY">Healthy</option>
@@ -58,7 +56,7 @@
   </div>
 
   <div *ngIf="filteredWorkspaces().length > 0" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-  <article *ngFor="let workspace of filteredWorkspaces(); trackBy: trackByWorkspaceId"
+  <article *ngFor="let workspace of filteredWorkspaces(); trackBy: trackById"
            class="card card-hover p-6 flex flex-col justify-between"
            aria-label="Workspace status card">
     <header class="space-y-2.5">
@@ -66,16 +64,9 @@
         <h3 class="text-[17px] font-semibold tracking-tight text-slate-900 leading-snug">
           {{ workspace.name }}
         </h3>
-        <span *ngIf="workspace.level" class="inline-flex items-center px-2.5 py-1 rounded-lg text-[12px] font-medium shrink-0"
-              [ngClass]="{
-                'bg-emerald-50 text-emerald-700': workspace.level === 'HEALTHY',
-                'bg-amber-50 text-amber-700': workspace.level === 'DEGRADED',
-                'bg-red-50 text-red-700': workspace.level === 'OUTAGE',
-                'bg-sky-50 text-sky-700': workspace.level === 'MAINTENANCE',
-                'bg-slate-100 text-slate-600': workspace.level === 'UNKNOWN'
-              }">
-          {{ workspace.level | statusLabel }}
-        </span>
+        @if (workspace.level) {
+          <app-status-badge [level]="workspace.level" variant="pillCompact" />
+        }
       </div>
       <p *ngIf="workspace.ownerTeam" class="text-[13px] text-slate-500">
         {{ workspace.ownerTeam }}

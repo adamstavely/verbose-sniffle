@@ -60,16 +60,7 @@
                 {{ feature.featureId | featureName }}
               </th>
               <td class="px-6 py-4">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[13px] font-medium"
-                      [ngClass]="{
-                        'bg-emerald-50 text-emerald-700': feature.level === 'HEALTHY',
-                        'bg-amber-50 text-amber-700': feature.level === 'DEGRADED',
-                        'bg-red-50 text-red-700': feature.level === 'OUTAGE',
-                        'bg-slate-100 text-slate-600': feature.level === 'UNKNOWN',
-                        'bg-sky-50 text-sky-700': feature.level === 'MAINTENANCE'
-                      }">
-                  {{ feature.level | statusLabel }}
-                </span>
+                <app-status-badge [level]="feature.level" variant="pillCompact" />
               </td>
               <td class="px-6 py-4 text-slate-600 text-[14px]">
                 {{ feature.lastSeen | relativeTime }}

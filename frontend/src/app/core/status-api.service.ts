@@ -10,9 +10,10 @@ import {
   type ExternalSystemStatus,
   type IncidentSummary,
   type ScheduledMaintenance,
+  type ResolvedIncidentEntry,
 } from 'shared/status-models';
+import { environment } from '../../environments/environment';
 import {
-  USE_MOCK_DATA,
   MOCK_SUMMARY,
   MOCK_WORKSPACES,
   getMockWorkspaceFeatures,
@@ -20,6 +21,7 @@ import {
   MOCK_INCIDENTS,
   getMockIncidentById,
   MOCK_SCHEDULED_MAINTENANCE,
+  MOCK_RECENT_INCIDENTS,
 } from './mock-status-data';
 
 export interface StatusSummaryDto {
@@ -56,21 +58,21 @@ export class StatusApiService {
   private readonly baseUrl = signal<string>('/api/status');
 
   getSummary(): Observable<StatusSummaryDto> {
-    if (USE_MOCK_DATA) {
+    if (environment.useMockData) {
       return of(MOCK_SUMMARY);
     }
     return this.http.get<StatusSummaryDto>(`${this.baseUrl()}/summary`);
   }
 
   getWorkspaces(): Observable<WorkspacesDto> {
-    if (USE_MOCK_DATA) {
+    if (environment.useMockData) {
       return of(MOCK_WORKSPACES);
     }
     return this.http.get<WorkspacesDto>(`${this.baseUrl()}/workspaces`);
   }
 
   getWorkspaceFeatures(workspaceId: string): Observable<WorkspaceFeaturesDto> {
-    if (USE_MOCK_DATA) {
+    if (environment.useMockData) {
       return of(getMockWorkspaceFeatures(workspaceId));
     }
     return this.http.get<WorkspaceFeaturesDto>(
@@ -79,7 +81,7 @@ export class StatusApiService {
   }
 
   getExternalSystems(): Observable<ExternalSystemsDto> {
-    if (USE_MOCK_DATA) {
+    if (environment.useMockData) {
       return of(MOCK_EXTERNAL_SYSTEMS);
     }
     return this.http.get<ExternalSystemsDto>(
@@ -88,14 +90,14 @@ export class StatusApiService {
   }
 
   getIncidents(): Observable<IncidentsDto> {
-    if (USE_MOCK_DATA) {
+    if (environment.useMockData) {
       return of(MOCK_INCIDENTS);
     }
     return this.http.get<IncidentsDto>(`${this.baseUrl()}/incidents`);
   }
 
   getScheduledMaintenance(): Observable<ScheduledMaintenanceDto> {
-    if (USE_MOCK_DATA) {
+    if (environment.useMockData) {
       return of(MOCK_SCHEDULED_MAINTENANCE);
     }
     return this.http.get<ScheduledMaintenanceDto>(
@@ -103,8 +105,17 @@ export class StatusApiService {
     );
   }
 
+  getRecentIncidents(): Observable<ResolvedIncidentEntry[]> {
+    if (environment.useMockData) {
+      return of(MOCK_RECENT_INCIDENTS);
+    }
+    return this.http.get<ResolvedIncidentEntry[]>(
+      `${this.baseUrl()}/incidents/recent`
+    );
+  }
+
   getIncidentById(incidentId: string): Observable<IncidentSummary | null> {
-    if (USE_MOCK_DATA) {
+    if (environment.useMockData) {
       return of(getMockIncidentById(incidentId));
     }
     return this.http

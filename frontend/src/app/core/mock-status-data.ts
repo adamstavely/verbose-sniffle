@@ -6,6 +6,7 @@ import type {
   ExternalSystemStatus,
   IncidentSummary,
   ScheduledMaintenance,
+  ResolvedIncidentEntry,
 } from 'shared/status-models';
 import type {
   StatusSummaryDto,
@@ -15,11 +16,6 @@ import type {
   IncidentsDto,
   ScheduledMaintenanceDto,
 } from './status-api.service';
-
-/**
- * Set to true to use mock data so you can see the UI layout without the backend/ElasticSearch.
- */
-export const USE_MOCK_DATA = true;
 
 const now = new Date().toISOString();
 const earlier = new Date(Date.now() - 300_000).toISOString();
@@ -222,6 +218,10 @@ const MOCK_INCIDENT_FULL: IncidentSummary = {
   resolvedAt: undefined,
   description:
     'File uploads and storage are currently unavailable due to connectivity issues with our S3 gateway. We are investigating and will provide updates as we learn more.',
+  workaround:
+    'Existing files remain accessible for download. For urgent uploads, use the legacy upload endpoint or contact support for manual processing.',
+  aiNote:
+    'Document analysis features that depend on new uploads will show reduced confidence until storage is restored. Historical analysis remains accurate.',
   updates: [
     {
       timestamp: new Date(Date.now() - 3500_000).toISOString(),
@@ -245,13 +245,21 @@ const MOCK_INCIDENT_FULL: IncidentSummary = {
 };
 
 export const MOCK_INCIDENTS: IncidentsDto = {
-  incidents: [{ ...MOCK_INCIDENT_FULL, description: undefined, updates: undefined }],
+  incidents: [MOCK_INCIDENT_FULL],
 };
 
 export function getMockIncidentById(id: string): IncidentSummary | null {
   if (id === 'inc-001') return MOCK_INCIDENT_FULL;
   return null;
 }
+
+export const MOCK_RECENT_INCIDENTS: ResolvedIncidentEntry[] = [
+  { date: 'Mar 4', id: 'INC-2831', title: 'Elevated search latency', duration: '38 min', severity: 'DEGRADED', cause: 'Elastic index rebalancing during peak hours. Latency normalized after off-peak rebalance.' },
+  { date: 'Feb 28', id: 'INC-2814', title: 'Entity resolution delays', duration: '1h 12m', severity: 'DEGRADED', cause: 'Neo4j memory pressure from large graph traversal query. Query killed; cache cleared.' },
+  { date: 'Feb 19', id: 'INC-2798', title: 'Authentication intermittent failures', duration: '22 min', severity: 'DEGRADED', cause: 'Keycloak session store timeout. Auto-remediation resolved without user action required.' },
+  { date: 'Feb 11', id: 'INC-2771', title: 'Data enrichment pipeline stalled', duration: '2h 04m', severity: 'DEGRADED', cause: 'Kafka consumer lag caused enrichment backlog. Records processed in order; no data loss.' },
+  { date: 'Jan 30', id: 'INC-2740', title: 'Document Analysis unavailable', duration: '47 min', severity: 'OUTAGE', cause: 'Media processing service OOM. Restart resolved. Autoscaling policy updated.' },
+];
 
 const tomorrowStart = new Date(Date.now() + 86400_000);
 tomorrowStart.setHours(2, 0, 0, 0);

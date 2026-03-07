@@ -1,4 +1,4 @@
-import { NgIf, NgFor, NgClass } from '@angular/common';
+import { NgIf, NgFor } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { StatusApiService } from '../../core/status-api.service';
@@ -6,6 +6,7 @@ import type {
   WorkspaceFeatureStatus,
   ExternalSystemStatus,
 } from 'shared/status-models';
+import { StatusBadgeComponent } from '../../shared/ui/status-badge.component';
 import { StatusLabelPipe } from '../../pipes/status-label.pipe';
 import { FeatureNamePipe } from '../../pipes/feature-name.pipe';
 import { RelativeTimePipe } from '../../pipes/relative-time.pipe';
@@ -17,8 +18,8 @@ import { ExternalSystemTypePipe } from '../../pipes/external-system-type.pipe';
   imports: [
     NgIf,
     NgFor,
-    NgClass,
     RouterLink,
+    StatusBadgeComponent,
     StatusLabelPipe,
     FeatureNamePipe,
     RelativeTimePipe,

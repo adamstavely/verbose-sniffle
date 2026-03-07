@@ -75,6 +75,15 @@ export interface IncidentSummary {
   affectedExternalSystemIds?: string[];
 }
 
+export interface ResolvedIncidentEntry {
+  id: string;
+  date: string;
+  title: string;
+  duration: string;
+  severity: StatusLevel;
+  cause: string;
+}
+
 interface ElasticCoreServiceDoc {
   "@timestamp"?: string;
   service_id?: string;
@@ -563,6 +572,68 @@ export async function getScheduledMaintenance(): Promise<ScheduledMaintenance[]>
       "Failed to query ElasticSearch for scheduled maintenance",
       error
     );
+    return [];
+  }
+}
+
+export async function getRecentIncidents(): Promise<ResolvedIncidentEntry[]> {
+  const client = getElasticClient();
+  const to = nowIso();
+  const from = new Date(
+    Date.now() - 90 * 24 * 60 * 60 * 1000
+  ).toISOString();
+
+  try {
+    const result = await client.search<ElasticIncidentDoc>({
+      index: statusConfig.indices.incidents,
+      size: 100,
+      sort: ["resolved_at:desc"],
+      query: {
+        bool: {
+          filter: [
+            { exists: { field: "resolved_at" } },
+            {
+              range: {
+                resolved_at: { gte: from, lte: to },
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    return result.hits.hits.map((hit) => {
+      const doc = hit._source ?? {};
+      const id = doc.incident_id ?? hit._id ?? "unknown";
+      const startedAt = new Date(
+        doc.started_at ?? doc["@timestamp"] ?? nowIso()
+      );
+      const resolvedAt = doc.resolved_at
+        ? new Date(doc.resolved_at)
+        : startedAt;
+      const durationMs = resolvedAt.getTime() - startedAt.getTime();
+      const duration =
+        durationMs < 60_000
+          ? `${Math.round(durationMs / 1000)} sec`
+          : durationMs < 3600_000
+            ? `${Math.round(durationMs / 60_000)} min`
+            : `${Math.floor(durationMs / 3600_000)}h ${Math.round((durationMs % 3600_000) / 60_000)}m`;
+
+      return {
+        id,
+        date: resolvedAt.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        title: doc.title ?? "Unknown incident",
+        duration,
+        severity: (doc.status_level ?? "UNKNOWN") as StatusLevel,
+        cause: doc.description ?? "No details available.",
+      };
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to query ElasticSearch for recent incidents", error);
     return [];
   }
 }

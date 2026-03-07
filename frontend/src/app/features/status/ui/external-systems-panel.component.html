@@ -1,6 +1,6 @@
-<div *ngIf="loading" class="space-y-4" aria-live="polite">
+<div *ngIf="loading()" class="space-y-4" aria-live="polite">
   @for (row of [1,2,3,4]; track row) {
-    <div class="card p-5">
+    <div class="panel p-5">
       <div class="flex items-center justify-between gap-3">
         <div class="min-w-0 space-y-1">
           <div class="h-4 w-36 skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
@@ -12,21 +12,19 @@
   }
 </div>
 
-<div *ngIf="!loading && systems.length === 0" class="card p-8 text-center">
-  <span class="inline-flex w-12 h-12 rounded-xl bg-slate-100 text-slate-400 items-center justify-center mb-3" aria-hidden="true">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6">
-      <path fill-rule="evenodd" d="M4.25 2A2.25 2.25 0 002 4.25v11.5A2.25 2.25 0 004.25 18h11.5A2.25 2.25 0 0018 15.75V4.25A2.25 2.25 0 0015.75 2H4.25zM8 10a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5A.75.75 0 018 10zm.75 2.5a.75.75 0 000 1.5h2.5a.75.75 0 000-1.5h-2.5z" clip-rule="evenodd" />
-    </svg>
-  </span>
-  <p class="text-[15px] font-medium text-slate-700">No connected services</p>
-  <p class="text-[14px] text-slate-500 mt-1 max-w-sm mx-auto">External system status will appear here once integrations are configured.</p>
-</div>
+@if (!loading() && systems().length === 0) {
+  <div class="panel-soft">
+    <app-empty-state
+      title="No connected services"
+      description="External system status will appear here once integrations are configured." />
+  </div>
+}
 
-<ul *ngIf="!loading && systems.length > 0"
+<ul *ngIf="!loading() && systems().length > 0"
     class="space-y-4"
     role="list">
-  <li *ngFor="let system of systems; trackBy: trackBySystemId"
-      class="card p-5">
+  <li *ngFor="let system of systems(); trackBy: trackById"
+      class="panel p-5">
     <div class="flex items-center justify-between gap-3">
       <div class="min-w-0">
         <p class="text-[15px] font-medium text-slate-900 truncate">
@@ -36,19 +34,10 @@
           {{ system.type | externalSystemType }}
         </p>
       </div>
-      <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[13px] font-medium shrink-0"
-            [ngClass]="{
-              'bg-emerald-50 text-emerald-700': system.level === 'HEALTHY',
-              'bg-amber-50 text-amber-700': system.level === 'DEGRADED',
-              'bg-red-50 text-red-700': system.level === 'OUTAGE',
-              'bg-slate-100 text-slate-600': system.level === 'UNKNOWN',
-              'bg-sky-50 text-sky-700': system.level === 'MAINTENANCE'
-            }">
-        {{ system.level | statusLabel }}
-      </span>
+      <app-status-badge [level]="system.level" variant="pillCompact" />
     </div>
 
-    <div *ngIf="!compact" class="mt-4 pt-3 border-t border-slate-100 text-[13px] text-slate-600 space-y-1">
+    <div *ngIf="!compact()" class="mt-4 pt-3 border-t border-slate-100 text-[13px] text-slate-600 space-y-1">
       <p *ngIf="system.latencyP95Ms != null" class="tabular-nums">
         Response time: {{ system.latencyP95Ms }} ms
       </p>

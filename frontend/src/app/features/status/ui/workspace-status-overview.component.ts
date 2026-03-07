@@ -1,23 +1,25 @@
-import { NgIf, NgFor, NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, Input, signal } from '@angular/core';
+import { NgIf, NgFor } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import type { Workspace, ExternalSystemStatus } from 'shared/status-models';
-import { StatusLabelPipe } from '../../../pipes/status-label.pipe';
+import { trackById } from '../utils/track-by';
+import { StatusBadgeComponent } from '../../../shared/ui/status-badge.component';
+import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 
 type StatusFilter = 'ALL' | 'HEALTHY' | 'DEGRADED' | 'OUTAGE' | 'MAINTENANCE' | 'UNKNOWN';
 
 @Component({
   selector: 'app-workspace-status-overview',
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, RouterLink, StatusLabelPipe, FormsModule],
+  imports: [NgIf, NgFor, RouterLink, StatusBadgeComponent, EmptyStateComponent, FormsModule],
   templateUrl: './workspace-status-overview.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkspaceStatusOverviewComponent {
-  @Input() workspaces: Workspace[] = [];
-  @Input() externalSystems: ExternalSystemStatus[] = [];
-  @Input() loading = false;
+  readonly workspaces = input<Workspace[]>([]);
+  readonly externalSystems = input<ExternalSystemStatus[]>([]);
+  readonly loading = input(false);
 
   readonly searchQuery = signal('');
   readonly statusFilter = signal<StatusFilter>('ALL');
@@ -25,7 +27,7 @@ export class WorkspaceStatusOverviewComponent {
   readonly filteredWorkspaces = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     const filter = this.statusFilter();
-    return this.workspaces.filter((w) => {
+    return this.workspaces().filter((w) => {
       const matchesSearch =
         !query ||
         w.name.toLowerCase().includes(query) ||
@@ -35,8 +37,6 @@ export class WorkspaceStatusOverviewComponent {
     });
   });
 
-  trackByWorkspaceId(_index: number, workspace: Workspace): string {
-    return workspace.id;
-  }
+  readonly trackById = trackById;
 }
 

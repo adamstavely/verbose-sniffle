@@ -1,6 +1,7 @@
 import { NgIf, NgFor } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import type { ScheduledMaintenance, CoreServiceStatus, ExternalSystemStatus } from 'shared/status-models';
+import { trackById } from '../utils/track-by';
 import { RelativeTimePipe } from '../../../pipes/relative-time.pipe';
 
 @Component({
@@ -11,22 +12,19 @@ import { RelativeTimePipe } from '../../../pipes/relative-time.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScheduledMaintenanceComponent {
-  @Input() maintenance: ScheduledMaintenance[] = [];
-  @Input() coreServices: CoreServiceStatus[] = [];
-  @Input() externalSystems: ExternalSystemStatus[] = [];
-  @Input() loading = false;
+  readonly maintenance = input<ScheduledMaintenance[]>([]);
+  readonly coreServices = input<CoreServiceStatus[]>([]);
+  readonly externalSystems = input<ExternalSystemStatus[]>([]);
+  readonly loading = input(false);
+  readonly trackById = trackById;
 
   getAffectedNames(m: ScheduledMaintenance): string[] {
     const services = (m.affectedCoreServiceIds ?? []).map((id) =>
-      this.coreServices.find((s) => s.id === id)?.name ?? id
+      this.coreServices().find((s) => s.id === id)?.name ?? id
     );
     const systems = (m.affectedExternalSystemIds ?? []).map((id) =>
-      this.externalSystems.find((s) => s.id === id)?.name ?? id
+      this.externalSystems().find((s) => s.id === id)?.name ?? id
     );
     return [...services, ...systems];
-  }
-
-  trackByMaintenanceId(_index: number, m: ScheduledMaintenance): string {
-    return m.id;
   }
 }

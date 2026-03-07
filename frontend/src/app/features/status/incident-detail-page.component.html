@@ -40,14 +40,7 @@
              'border-l-sky-500': incident()?.level === 'MAINTENANCE'
            }">
         <div class="flex flex-wrap items-center gap-3 mb-4">
-          <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[13px] font-medium"
-                [ngClass]="{
-                  'bg-red-50 text-red-700': incident()?.level === 'OUTAGE',
-                  'bg-amber-50 text-amber-700': incident()?.level === 'DEGRADED',
-                  'bg-sky-50 text-sky-700': incident()?.level === 'MAINTENANCE'
-                }">
-            {{ incident()?.level | statusLabel }}
-          </span>
+          <app-status-badge [level]="incident()?.level ?? null" variant="pillCompact" />
           <span class="text-[14px] text-slate-600">
             Started {{ incident()?.startedAt | relativeTime }}
           </span>

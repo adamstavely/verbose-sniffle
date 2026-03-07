@@ -1,171 +1,76 @@
-<a class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg z-50"
+<a class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-teal-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg z-50"
    href="#main">
   Skip to main content
 </a>
 
 <main id="main"
-      class="min-h-screen text-slate-900 flex flex-col"
+      class="min-h-screen text-slate-900 flex flex-col dark:text-slate-100"
       role="main"
       aria-labelledby="page-title">
-  <header class="sticky top-0 z-40 border-b border-slate-200/90 backdrop-blur-xl px-6 py-3.5 md:px-10 md:py-4 flex items-center justify-between gap-6 dark:border-slate-700/90"
-         style="box-shadow: var(--shadow-header); background: var(--bg-header);">
-    <div class="flex items-center gap-3">
-      <div class="shrink-0 w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-6 h-6">
-          <path fill-rule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.198 11.198 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.75.75 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08zM8.603 12.95a.75.75 0 011.06 0l2.156 2.156 4.095-4.095a.75.75 0 111.06 1.06l-4.661 4.66a.75.75 0 01-1.06 0l-2.656-2.655a.75.75 0 010-1.06z" clip-rule="evenodd" />
-        </svg>
-      </div>
-      <div>
-        <h1 id="page-title" class="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-3">
-          Super App Status
-          @if (incidents().filter(i => !i.resolvedAt).length > 0) {
-            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">
-              {{ incidents().filter(i => !i.resolvedAt).length }} active {{ incidents().filter(i => !i.resolvedAt).length === 1 ? 'issue' : 'issues' }}
-            </span>
-          }
-        </h1>
-        <p class="section-desc max-w-xl mt-1">
-          See what's working and what we're fixing. Updated in real time.
-        </p>
-      </div>
-    </div>
-    <div class="flex items-center gap-4">
-      <div class="flex flex-col items-end gap-0.5 rounded-lg bg-slate-50/80 px-3 py-2 border border-slate-200/60 dark:bg-slate-800/80 dark:border-slate-600/60"
-           [class.ring-2]="refreshing()"
-           [class.ring-blue-200]="refreshing()"
-           [class.ring-offset-2]="refreshing()">
-        <span class="text-[12px] font-medium text-slate-400 uppercase tracking-wider">Last updated</span>
-        <span class="text-[15px] font-medium text-slate-700 dark:text-slate-300">{{ summary()?.lastUpdated | relativeTime }}</span>
-        <span class="text-[11px] text-slate-400 mt-1">
-          @if (refreshing()) {
-            <span class="inline-flex items-center gap-1.5 text-blue-600">
-              <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Refreshing…
-            </span>
-          } @else {
-            Auto-refreshing every 60 seconds
-          }
-        </span>
-      </div>
-      <button type="button"
-              (click)="theme.toggle()"
-              class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
-              [attr.aria-label]="theme.dark() ? 'Switch to light mode' : 'Switch to dark mode'">
-        @if (theme.dark()) {
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-            <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6zM15.657 5.404a.75.75 0 10-1.111-1.014l-1.06 1.06a.75.75 0 001.06 1.06l1.06-1.06zM4.343 14.596a.75.75 0 101.111 1.014l1.06-1.06a.75.75 0 10-1.06-1.06l-1.06 1.06zM16 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 10zM5 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 015 10z" />
-          </svg>
-        } @else {
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-            <path fill-rule="evenodd" d="M7.455 2.004a.75.75 0 01.26.77 7 7 0 009.958 7.978.75.75 0 01.616.074 7 7 0 004.875-8.195.75.75 0 00-.944-.277 5.5 5.5 0 01-7.157 7.157.75.75 0 00-.277-.944 7 7 0 01-.978-9.958.75.75 0 01.77-.26z" clip-rule="evenodd" />
-          </svg>
-        }
-      </button>
-      <button type="button"
-              (click)="load(true)"
-              [disabled]="refreshing()"
-              class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
-              aria-label="Refresh status">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-          <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.312.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 001.448.389 5.5 5.5 0 018.656-2.297l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clip-rule="evenodd" />
-        </svg>
-      </button>
-    </div>
-  </header>
+  <app-global-status-header [summary]="summary()" />
 
-  <section class="px-6 py-10 md:px-10 md:py-14 max-w-7xl mx-auto w-full"
-           aria-label="Overall platform status">
-    <div class="space-y-14">
-      <div class="mb-20">
-        <app-global-status-header
-          [summary]="summary()"
-          [hasError]="!!error()"
-          [loading]="loading()">
-        </app-global-status-header>
-      </div>
-
+  <section class="px-4 py-8 md:px-6 md:py-12 max-w-5xl mx-auto w-full"
+           aria-label="Status details">
+    <div class="space-y-12">
       <section aria-labelledby="incidents-heading">
         <div class="section-header">
-          <h2 id="incidents-heading" class="section-title">
+          <h2 id="incidents-heading" class="section-title dark:text-slate-100">
             Active issues
           </h2>
-          <p class="section-desc max-w-md">
-            Issues we're currently investigating or fixing.
+          <p class="section-desc max-w-md dark:text-slate-400">
+            Active incidents we're investigating. Workarounds and updates appear below.
           </p>
         </div>
         <app-active-incidents
           [incidents]="incidents()"
-          [loading]="loading()">
-        </app-active-incidents>
+          [loading]="loading()" />
       </section>
 
-      <section aria-labelledby="scheduled-maintenance-heading">
+      <section aria-labelledby="capabilities-heading">
         <div class="section-header">
-          <h2 id="scheduled-maintenance-heading" class="section-title">
-            Scheduled maintenance
+          <h2 id="capabilities-heading" class="section-title dark:text-slate-100">
+            Capabilities
           </h2>
-          <p class="section-desc max-w-md">
-            Planned maintenance windows. Services may be briefly unavailable.
+          <p class="section-desc max-w-md dark:text-slate-400">
+            Status by workspace type. Click a row to expand impact details when available.
           </p>
         </div>
-        <app-scheduled-maintenance
-          [maintenance]="scheduledMaintenance()"
-          [coreServices]="coreServices()"
-          [externalSystems]="externalSystems()"
-          [loading]="loading()">
-        </app-scheduled-maintenance>
+        <app-capabilities
+          [groups]="capabilityGroups()"
+          [loading]="loading()"
+          [error]="error()">
+        </app-capabilities>
       </section>
 
-      <div class="grid gap-10 lg:grid-cols-3" aria-label="Detailed status sections">
-        <section class="lg:col-span-2"
-                 aria-labelledby="core-services-heading">
-          <div class="section-header">
-            <h2 id="core-services-heading" class="section-title">
+      <section aria-labelledby="core-services-heading">
+        <div class="section-header flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h2 id="core-services-heading" class="section-title dark:text-slate-100">
               Core services
             </h2>
-            <p class="section-desc max-w-md">
-              Authentication, billing, messaging, and other core capabilities.
+            <p class="section-desc max-w-md dark:text-slate-400">
+              Underlying platform services. Sort by name, status, or last updated.
             </p>
           </div>
-          <app-core-services-status
-            [services]="coreServices()"
-            [loading]="loading()"
-            [error]="error()"
-            (retry)="load()">
-          </app-core-services-status>
-        </section>
-
-        <section aria-labelledby="external-systems-heading">
-          <div class="section-header flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-            <div>
-              <h2 id="external-systems-heading" class="section-title">
-                Connected services
-              </h2>
-            </div>
-            <a routerLink="/external-systems"
-               class="text-[14px] text-blue-600 hover:text-blue-700 font-medium no-underline hover:underline w-fit">
-              View all
-            </a>
-          </div>
-          <app-external-systems-panel
-            [systems]="externalSystems()"
-            [compact]="true"
-            [loading]="loading()">
-          </app-external-systems-panel>
-        </section>
-      </div>
+        </div>
+        <app-core-services-status
+          [services]="coreServices()"
+          [loading]="loading()"
+          [error]="error()"
+          (retry)="load(false)">
+        </app-core-services-status>
+      </section>
 
       <section aria-labelledby="workspaces-heading">
-        <div class="section-header">
-          <h2 id="workspaces-heading" class="section-title">
-            Workspaces
-          </h2>
-          <p class="section-desc max-w-lg">
-            Status for each workspace. Click through to see which features are affected.
-          </p>
+        <div class="section-header flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h2 id="workspaces-heading" class="section-title dark:text-slate-100">
+              Workspaces
+            </h2>
+            <p class="section-desc max-w-md dark:text-slate-400">
+              Status by workspace. Search and filter to find specific teams.
+            </p>
+          </div>
         </div>
         <app-workspace-status-overview
           [workspaces]="workspaces()"
@@ -173,6 +78,80 @@
           [loading]="loading()">
         </app-workspace-status-overview>
       </section>
+
+      <section aria-labelledby="external-systems-heading">
+        <div class="section-header flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h2 id="external-systems-heading" class="section-title dark:text-slate-100">
+              Connected services
+            </h2>
+          </div>
+          <a routerLink="/external-systems"
+             class="text-[14px] text-blue-600 hover:text-blue-700 font-medium no-underline hover:underline w-fit">
+            View all
+          </a>
+        </div>
+        <app-external-systems-panel
+          [systems]="externalSystems()"
+          [compact]="true"
+          [loading]="loading()">
+        </app-external-systems-panel>
+      </section>
+
+      <section aria-labelledby="uptime-heading">
+        <div class="section-header">
+          <h2 id="uptime-heading" class="section-title dark:text-slate-100">
+            90-day uptime
+          </h2>
+          <p class="section-desc max-w-md dark:text-slate-400">
+            Daily status over the last 90 days. Green = operational, amber = degraded, red = unavailable.
+          </p>
+        </div>
+        <app-uptime-bar />
+      </section>
+
+      @if (loading() || scheduledMaintenance().length > 0) {
+        <section aria-labelledby="scheduled-maintenance-heading">
+          <div class="section-header">
+            <h2 id="scheduled-maintenance-heading" class="section-title dark:text-slate-100">
+              Scheduled maintenance
+            </h2>
+            <p class="section-desc max-w-md dark:text-slate-400">
+              Planned maintenance. Services may be briefly unavailable during these windows.
+            </p>
+          </div>
+          <app-scheduled-maintenance
+            [maintenance]="scheduledMaintenance()"
+            [coreServices]="coreServices()"
+            [externalSystems]="externalSystems()"
+            [loading]="loading()">
+          </app-scheduled-maintenance>
+        </section>
+      }
+
+      <section aria-labelledby="recent-incidents-heading">
+        <div class="section-header">
+          <h2 id="recent-incidents-heading" class="section-title dark:text-slate-100">
+            Recent incidents
+          </h2>
+          <p class="section-desc max-w-md dark:text-slate-400">
+            Resolved incidents from the last 90 days.
+          </p>
+        </div>
+        <app-recent-incidents
+          [incidents]="recentIncidents()"
+          [loading]="loading()">
+        </app-recent-incidents>
+      </section>
+
+      <section aria-labelledby="subscribe-heading">
+        <app-subscribe-notifications />
+      </section>
+
+      <footer class="mt-16 pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-[13px] text-zinc-500 dark:text-zinc-400">
+        <p>Questions? Contact the Platform team via the #platform-support channel.</p>
+        <p>Incident history retained 90 days.</p>
+      </footer>
     </div>
   </section>
 </main>

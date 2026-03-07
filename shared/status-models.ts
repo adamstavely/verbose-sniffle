@@ -24,6 +24,26 @@ export interface CoreServiceStatus {
   impactingExternalSystemIds?: string[];
 }
 
+/** Capability item within a group (Analyst Workspace, Operations, Shared Platform) */
+export interface CapabilityItem {
+  id: string;
+  label: string;
+  level: StatusLevel;
+  /** Impact/degradation description, shown when expanded */
+  impact?: string;
+  /** Show AI NOTE badge when degraded */
+  aiNote?: boolean;
+}
+
+/** Capability group with colored bar and items */
+export interface CapabilityGroup {
+  id: string;
+  group: string;
+  /** Tailwind color for bar (e.g. violet-500, amber-500, sky-500) */
+  barColor: string;
+  items: CapabilityItem[];
+}
+
 export interface Workspace {
   id: string;
   name: string;
@@ -68,6 +88,16 @@ export interface IncidentUpdate {
   status?: string;
 }
 
+/** Resolved incident for history list (date, id, title, duration, severity, cause) */
+export interface ResolvedIncidentEntry {
+  id: string;
+  date: string;
+  title: string;
+  duration: string;
+  severity: StatusLevel;
+  cause: string;
+}
+
 export interface IncidentSummary {
   id: string;
   title: string;
@@ -75,6 +105,10 @@ export interface IncidentSummary {
   startedAt: string;
   resolvedAt?: string;
   description?: string;
+  /** What users can do while the incident is ongoing */
+  workaround?: string;
+  /** AI-specific note (e.g. confidence scores during degradation) */
+  aiNote?: string;
   updates?: IncidentUpdate[];
   affectedWorkspaceIds?: string[];
   affectedCoreServiceIds?: string[];
