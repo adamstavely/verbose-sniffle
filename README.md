@@ -1,4 +1,4 @@
-# Super App Status Page & Product Roadmap
+# Status Page & Product Roadmap
 
 A status dashboard and product roadmap for the Super App platform. Built with Astro and Tailwind, backed by an Elasticsearch-powered Node API.
 
