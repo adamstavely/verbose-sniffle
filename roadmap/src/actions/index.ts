@@ -1,6 +1,5 @@
 import { defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
-import { db, Vote, eq, and } from 'astro:db';
 import { randomUUID } from 'node:crypto';
 
 const VOTER_COOKIE = 'roadmap_voter_id';
@@ -16,6 +15,8 @@ export const server = {
       if (!voterId) {
         return { success: false, error: 'Identity required. Please refresh the page and try again.' };
       }
+
+      const { db, Vote, eq, and } = await import('astro:db');
 
       const existing = await db
         .select()

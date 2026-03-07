@@ -12,7 +12,7 @@
     "jsxImportSource": "react",
     "baseUrl": ".",
     "paths": {
-      "shared/*": ["../shared/*"]
+      "shared/*": ["src/lib/status/*"]
     }
   }
 }

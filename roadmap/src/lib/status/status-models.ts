@@ -135,4 +135,3 @@ export interface ScheduledMaintenance {
   affectedCoreServiceIds?: string[];
   affectedExternalSystemIds?: string[];
 }
-

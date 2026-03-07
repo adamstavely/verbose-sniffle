@@ -19,7 +19,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
     resolve: {
       alias: {
-        shared: path.resolve(__dirname, '../shared'),
+        shared: path.resolve(__dirname, 'src/lib/status'),
       },
     },
     server: {

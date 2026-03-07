@@ -64,7 +64,7 @@ export default defineConfig({
     plugins: [tailwindcss()],  // if using Tailwind
     resolve: {
       alias: {
-        shared: path.resolve(__dirname, '../shared'),  // for status page types/utils
+        shared: path.resolve(__dirname, 'src/lib/status'),  // status types/utils
       },
     },
     server: {
@@ -81,7 +81,7 @@ export default defineConfig({
 
 Ensure you have an adapter — without it, Actions and Astro DB will not work.
 
-**Status page:** The `shared` alias points to the monorepo's `shared/` folder (status-models, status-utils, capability-groups, status-labels). Add to `tsconfig.json` if needed: `"paths": { "shared/*": ["../shared/*"] }`. The proxy forwards `/api/status` to your Node/Express status API in development.
+**Status page:** The `shared` alias points to `src/lib/status/` (status-models, status-utils, capability-groups, status-labels). Add to `tsconfig.json` if needed: `"paths": { "shared/*": ["src/lib/status/*"] }`. The proxy forwards `/api/status` to your Node/Express status API in development.
 
 ---
 
@@ -292,12 +292,12 @@ Set `export const prerender = false` on any page that uses the database, Actions
 
 ## Step 6b: Status Page Setup
 
-The status page fetches from a Node/Express API. Ensure the `shared/` folder exists at the monorepo root (or adjust the Vite alias path) with:
+The status page fetches from a Node/Express API. Status types and utilities live in `src/lib/status/`:
 
-- `shared/status-models.ts` — TypeScript types (StatusLevel, IncidentSummary, etc.)
-- `shared/status-utils.ts` — status ordering, Tailwind classes
-- `shared/capability-groups.ts` — capability grouping logic
-- `shared/status-labels.ts` — user-facing labels
+- `status-models.ts` — TypeScript types (StatusLevel, IncidentSummary, etc.)
+- `status-utils.ts` — status ordering, Tailwind classes
+- `capability-groups.ts` — capability grouping logic
+- `status-labels.ts` — user-facing labels
 
 Copy from `roadmap/src/lib/status/` into your site:
 
@@ -448,8 +448,7 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 - [ ] `prerender: false` on requests pages
 
 **Status page:**
-- [ ] `shared/` folder with status-models, status-utils, capability-groups, status-labels
-- [ ] `src/lib/status/` with api.ts, fetch-status.ts, mock-data.ts
+- [ ] `src/lib/status/` with status-models, status-utils, capability-groups, status-labels, api.ts, fetch-status.ts, mock-data.ts
 - [ ] Vite alias for `shared` and proxy for `/api/status` in astro.config
 - [ ] `statusIncidents` and `statusAnnouncements` content collections (optional)
 - [ ] Pages: `/roadmap/status`, `/roadmap/status/workspaces/[id]`, `/roadmap/status/incidents/[id]`, `/roadmap/status/external-systems`
@@ -496,4 +495,4 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 | `src/lib/status/api.ts` | `src/lib/status/api.ts` |
 | `src/lib/status/fetch-status.ts` | `src/lib/status/fetch-status.ts` |
 | `src/lib/status/mock-data.ts` | `src/lib/status/mock-data.ts` |
-| `shared/*` (monorepo root) | Ensure `shared/` exists; Vite alias points to it |
+| `src/lib/status/*` | Status types/utils; Vite alias `shared` points to this folder |
