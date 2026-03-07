@@ -2,6 +2,8 @@
 
 A public product roadmap built with [Astro](https://astro.build/). The product team publishes "coming soon" items via content collections, and users can vote on features and submit new requests.
 
+**Integrating into an existing Astro docs site?** See [INTEGRATION.md](./INTEGRATION.md) for a step-by-step guide.
+
 ## Features
 
 - **Roadmap** — Browse planned, in-progress, and shipped features (content collections)
