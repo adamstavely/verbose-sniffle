@@ -1,0 +1,123 @@
+<main class="min-h-screen text-slate-900 flex flex-col"
+      role="main"
+      aria-labelledby="workspace-title">
+  <header class="sticky top-0 z-40 border-b border-slate-200/90 bg-white/90 backdrop-blur-xl px-6 py-3.5 md:px-10 md:py-4 flex items-center justify-between gap-6"
+         style="box-shadow: var(--shadow-header)">
+    <div>
+      <nav aria-label="Breadcrumb" class="text-[13px] text-slate-500 mb-2 space-x-1">
+        <a routerLink="/" class="text-blue-600 hover:text-blue-700 no-underline hover:underline">Status</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ workspaceName() || workspaceId() }}</span>
+      </nav>
+      <h1 id="workspace-title" class="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
+        {{ workspaceName() || 'Workspace' }}
+      </h1>
+      <p class="text-[15px] text-slate-500 mt-1">
+        Status of features and connected services.
+      </p>
+    </div>
+    <a routerLink="/"
+       class="text-[14px] text-blue-600 hover:text-blue-700 font-medium no-underline hover:underline">
+      Back to overview
+    </a>
+  </header>
+
+  <section class="px-6 py-10 md:px-10 md:py-14 max-w-7xl mx-auto w-full space-y-14"
+           aria-label="Workspace feature status">
+    <div *ngIf="loading()" class="text-[15px] text-slate-500" aria-live="polite">
+      Loading feature status…
+    </div>
+
+    <div *ngIf="error()" class="text-[15px] text-red-600" role="alert">
+      {{ error() }}
+    </div>
+
+    <div *ngIf="!loading() && !error()">
+      <div class="section-header">
+        <h2 class="section-title">
+          Features
+        </h2>
+      </div>
+
+      <div class="card overflow-x-auto rounded-2xl max-h-[32rem] overflow-y-auto">
+        <table class="min-w-full text-[15px] border-collapse"
+               aria-describedby="feature-table-caption">
+          <caption id="feature-table-caption" class="sr-only">
+            Feature status
+          </caption>
+          <thead class="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
+            <tr class="bg-slate-50/80">
+              <th scope="col" class="text-left px-6 py-4 text-[12px] font-semibold text-slate-500 uppercase tracking-wider">Feature</th>
+              <th scope="col" class="text-left px-6 py-4 text-[12px] font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+              <th scope="col" class="text-left px-6 py-4 text-[12px] font-semibold text-slate-500 uppercase tracking-wider">Last updated</th>
+              <th scope="col" class="text-left px-6 py-4 text-[12px] font-semibold text-slate-500 uppercase tracking-wider">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let feature of features(); trackBy: trackByFeatureId"
+                class="border-t border-slate-100 hover:bg-slate-50/60 transition-colors duration-150">
+              <th scope="row" class="px-6 py-4 font-medium text-slate-900">
+                {{ feature.featureId | featureName }}
+              </th>
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[13px] font-medium"
+                      [ngClass]="{
+                        'bg-emerald-50 text-emerald-700': feature.level === 'HEALTHY',
+                        'bg-amber-50 text-amber-700': feature.level === 'DEGRADED',
+                        'bg-red-50 text-red-700': feature.level === 'OUTAGE',
+                        'bg-slate-100 text-slate-600': feature.level === 'UNKNOWN',
+                        'bg-sky-50 text-sky-700': feature.level === 'MAINTENANCE'
+                      }">
+                  {{ feature.level | statusLabel }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-slate-600 text-[14px]">
+                {{ feature.lastSeen | relativeTime }}
+              </td>
+              <td class="px-6 py-4 text-slate-600">
+                <span *ngIf="feature.degradationSummary; else noDetails">
+                  {{ feature.degradationSummary }}
+                </span>
+                <ng-template #noDetails>
+                  <span class="text-slate-400">—</span>
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <section aria-label="Impacted external systems">
+      <div class="section-header">
+        <h2 class="section-title">
+          Related services
+        </h2>
+        <p class="section-desc max-w-xl">
+          Services that may be affecting features in this workspace.
+        </p>
+      </div>
+
+      <div *ngIf="impactedSystems().length === 0" class="text-[15px] text-slate-500 py-2">
+        No related services with issues for this workspace.
+      </div>
+
+      <ul *ngIf="impactedSystems().length > 0"
+          class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          role="list">
+        <li *ngFor="let system of impactedSystems(); trackBy: trackBySystemId"
+            class="card p-6">
+          <h3 class="text-[15px] font-medium text-slate-900">
+            {{ system.name }}
+          </h3>
+          <p class="text-[13px] text-slate-500 mt-1">
+            {{ system.type | externalSystemType }}
+          </p>
+          <p class="mt-2 text-[13px] text-slate-600">
+            Status: <span class="font-semibold">{{ system.level | statusLabel }}</span>
+          </p>
+        </li>
+      </ul>
+    </section>
+  </section>
+</main>

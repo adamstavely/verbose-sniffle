@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 12px 28px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.06), 0 24px 48px rgba(0, 0, 0, 0.1);
+  --shadow-header: 0 1px 0 rgba(0, 0, 0, 0.06);
+  --bg-body: linear-gradient(165deg, #dbeafe 0%, #e0f2fe 25%, #f0f9ff 50%, #e0f2fe 75%, #dbeafe 100%);
+  --bg-pattern-dot: rgba(148, 163, 184, 0.15);
+  --bg-card: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.9);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --border-color: rgba(0, 0, 0, 0.06);
+}
+
+.dark {
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.2), 0 12px 28px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.25), 0 24px 48px rgba(0, 0, 0, 0.35);
+  --shadow-header: 0 1px 0 rgba(255, 255, 255, 0.08);
+  --bg-body: linear-gradient(165deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%);
+  --bg-pattern-dot: rgba(71, 85, 105, 0.25);
+  --bg-card: #1e293b;
+  --bg-header: rgba(30, 41, 59, 0.95);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Route transition animations (View Transitions API) */
+::view-transition-old(root) {
+  animation: 200ms ease-out both fade-slide-out;
+}
+
+::view-transition-new(root) {
+  animation: 250ms ease-out both fade-slide-in;
+}
+
+@keyframes fade-slide-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    @apply min-h-screen antialiased;
+    color: var(--text-primary);
+    background:
+      radial-gradient(circle at 1px 1px, var(--bg-pattern-dot) 1px, transparent 0),
+      var(--bg-body);
+    background-size: 24px 24px, 100% 100%;
+    background-position: 0 0, 0 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    @apply text-blue-600 underline-offset-[3px] transition-colors duration-150;
+    text-decoration-thickness: 1px;
+  }
+
+  a:hover {
+    @apply text-blue-700;
+  }
+
+  /* Animated underline on hover for links without underline */
+  a.no-underline:hover {
+    text-decoration: underline;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-offset-2 ring-offset-white ring-blue-500;
+  }
+
+  .status-critical {
+    @apply font-semibold text-red-600;
+  }
+
+  /* Subtle pulse for critical/outage status badges */
+  .status-outage-pulse {
+    animation: status-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes status-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl;
+    background-color: var(--bg-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .card-hover:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .card-hover:active {
+    transform: translateY(0);
+  }
+
+  /* Section header: title + optional description, consistent bottom gap */
+  .section-header {
+    @apply mb-6;
+  }
+
+  .section-title {
+    @apply text-xl font-semibold tracking-tight text-slate-900;
+  }
+
+  .section-desc {
+    @apply text-[15px] text-slate-500 mt-1;
+  }
+
+  /* Skeleton loading */
+  .skeleton {
+    @apply bg-slate-200 rounded animate-pulse;
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(226 232 240) 0%,
+      rgb(241 245 249) 50%,
+      rgb(226 232 240) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+}
+
+/* Dark mode overrides for common Tailwind classes */
+.dark .skeleton,
+.dark .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(51 65 85) 0%,
+    rgb(71 85 105) 50%,
+    rgb(51 65 85) 100%
+  );
+}

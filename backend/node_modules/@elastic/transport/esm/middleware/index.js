@@ -1,0 +1,8 @@
+/*
+ * Copyright Elasticsearch B.V. and contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+export { MiddlewareEngine, MiddlewareException } from './MiddlewareEngine.js';
+export { ProductCheck } from './ProductCheck.js';
+export { MiddlewareName, MiddlewarePriority } from './types.js';
+//# sourceMappingURL=index.js.map

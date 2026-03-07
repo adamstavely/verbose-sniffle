@@ -1,0 +1,79 @@
+<section class="card border-l-4 border-l-slate-300 p-7 md:p-8 pl-6 md:pl-[1.75rem]"
+         [ngClass]="loading ? '' : statusBorderClass"
+         aria-labelledby="global-status-heading"
+         aria-live="polite">
+  <div class="flex gap-6">
+    @if (loading) {
+      <div class="shrink-0 w-14 h-14 rounded-xl skeleton skeleton-shimmer" aria-hidden="true"></div>
+      <div class="flex-1 min-w-0 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div class="space-y-2">
+            <div class="h-5 w-48 skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
+            <div class="h-4 w-full max-w-xl skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
+          </div>
+          <div class="h-10 w-28 skeleton skeleton-shimmer rounded-full shrink-0" aria-hidden="true"></div>
+        </div>
+        <div class="mt-6 space-y-2">
+          <div class="h-4 w-full skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
+          <div class="h-4 w-[75%] skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
+        </div>
+      </div>
+    } @else {
+      <div class="shrink-0 w-14 h-14 rounded-xl flex items-center justify-center"
+           [ngClass]="{
+             'bg-emerald-100 text-emerald-600': summary?.level === 'HEALTHY',
+             'bg-amber-100 text-amber-600': summary?.level === 'DEGRADED',
+             'bg-red-100 text-red-600': summary?.level === 'OUTAGE',
+             'bg-sky-100 text-sky-600': summary?.level === 'MAINTENANCE',
+             'bg-slate-100 text-slate-500': !summary || summary.level === 'UNKNOWN' || hasError
+           }"
+           aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+          <path fill-rule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.198 11.198 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.75.75 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08zM8.603 12.95a.75.75 0 011.06 0l2.156 2.156 4.095-4.095a.75.75 0 111.06 1.06l-4.661 4.66a.75.75 0 01-1.06 0l-2.656-2.655a.75.75 0 010-1.06z" clip-rule="evenodd" />
+        </svg>
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div class="space-y-2">
+            <h2 id="global-status-heading" class="text-lg font-semibold tracking-tight text-slate-900">
+              Overall platform status
+            </h2>
+            <p class="text-[15px] text-slate-500 max-w-2xl leading-relaxed">
+              Real-time status of the platform. We'll update this page when something changes.
+            </p>
+          </div>
+
+          <div class="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-slate-100 shrink-0"
+             [ngClass]="{ 'status-outage-pulse': summary?.level === 'OUTAGE' }">
+            <span class="inline-flex h-3.5 w-3.5 rounded-full shrink-0"
+                  [ngClass]="{
+                    'bg-emerald-500': summary?.level === 'HEALTHY',
+                    'bg-amber-500': summary?.level === 'DEGRADED',
+                    'bg-red-500': summary?.level === 'OUTAGE',
+                    'bg-sky-500': summary?.level === 'MAINTENANCE',
+                    'bg-slate-400': !summary || summary.level === 'UNKNOWN'
+                  }"
+                  aria-hidden="true"></span>
+            <span class="text-[15px] font-semibold text-slate-800">
+              {{ statusLabel }}
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-6 text-[15px] text-slate-600 leading-relaxed" *ngIf="summary">
+          <p>
+            {{ summary.overallMessage }}
+          </p>
+        </div>
+
+        <div class="mt-5 text-[13px] text-slate-500 flex flex-wrap gap-6" *ngIf="summary && summary.incidentCount != null && summary.incidentCount > 0">
+          <span>
+            Active issues we're working on:
+            <span class="font-semibold text-slate-700">{{ summary!.incidentCount }}</span>
+          </span>
+        </div>
+      </div>
+    }
+  </div>
+</section>

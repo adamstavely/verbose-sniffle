@@ -1,0 +1,128 @@
+<main class="min-h-screen text-slate-900 flex flex-col"
+      role="main"
+      aria-labelledby="incident-title">
+  <header class="sticky top-0 z-40 border-b border-slate-200/90 bg-white/90 backdrop-blur-xl px-6 py-3.5 md:px-10 md:py-4 flex items-center justify-between gap-6"
+         style="box-shadow: var(--shadow-header)">
+    <div>
+      <nav aria-label="Breadcrumb" class="text-[13px] text-slate-500 mb-2 space-x-1">
+        <a routerLink="/" class="text-blue-600 hover:text-blue-700 no-underline hover:underline">Status</a>
+        <span aria-hidden="true">/</span>
+        <span>Incident</span>
+      </nav>
+      <h1 id="incident-title" class="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
+        {{ incident()?.title ?? 'Incident' }}
+      </h1>
+      <p class="text-[15px] text-slate-500 mt-1">
+        Details and updates for this issue.
+      </p>
+    </div>
+    <a routerLink="/"
+       class="text-[14px] text-blue-600 hover:text-blue-700 font-medium no-underline hover:underline">
+      Back to overview
+    </a>
+  </header>
+
+  <section class="px-6 py-10 md:px-10 md:py-14 max-w-7xl mx-auto w-full space-y-14"
+           aria-label="Incident details">
+    <div *ngIf="loading()" class="text-[15px] text-slate-500" aria-live="polite">
+      Loading incident…
+    </div>
+
+    <div *ngIf="error()" class="text-[15px] text-red-600" role="alert">
+      {{ error() }}
+    </div>
+
+    <div *ngIf="!loading() && !error() && incident()">
+      <div class="card border-l-4 p-6 md:p-8"
+           [ngClass]="{
+             'border-l-red-500': incident()?.level === 'OUTAGE',
+             'border-l-amber-500': incident()?.level === 'DEGRADED',
+             'border-l-sky-500': incident()?.level === 'MAINTENANCE'
+           }">
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+          <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[13px] font-medium"
+                [ngClass]="{
+                  'bg-red-50 text-red-700': incident()?.level === 'OUTAGE',
+                  'bg-amber-50 text-amber-700': incident()?.level === 'DEGRADED',
+                  'bg-sky-50 text-sky-700': incident()?.level === 'MAINTENANCE'
+                }">
+            {{ incident()?.level | statusLabel }}
+          </span>
+          <span class="text-[14px] text-slate-600">
+            Started {{ incident()?.startedAt | relativeTime }}
+          </span>
+          <span *ngIf="incident()?.resolvedAt" class="text-[14px] text-slate-600">
+            Resolved {{ incident()?.resolvedAt | relativeTime }}
+          </span>
+        </div>
+        <p *ngIf="incident()?.description" class="text-[15px] text-slate-600 leading-relaxed">
+          {{ incident()?.description }}
+        </p>
+      </div>
+
+      <section *ngIf="sortedUpdates().length > 0" aria-labelledby="updates-heading">
+        <div class="section-header">
+          <h2 id="updates-heading" class="section-title">
+            Updates
+          </h2>
+          <p class="section-desc max-w-md">
+            Timeline of updates for this incident.
+          </p>
+        </div>
+        <div class="relative pl-6 border-l-2 border-slate-200 space-y-6">
+          <div *ngFor="let update of sortedUpdates(); trackBy: trackByUpdateIndex"
+               class="relative -left-6">
+            <div class="absolute left-0 w-3 h-3 rounded-full bg-slate-300 -translate-x-[7px] translate-y-1.5"></div>
+            <div class="card p-4 ml-2">
+              <p class="text-[15px] text-slate-900">{{ update.message }}</p>
+              <div class="flex flex-wrap items-center gap-2 mt-2">
+                <span class="text-[13px] text-slate-500">
+                  {{ update.timestamp | relativeTime }}
+                </span>
+                <span *ngIf="update.status"
+                      class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-slate-100 text-slate-600">
+                  {{ update.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="affected-heading">
+        <div class="section-header">
+          <h2 id="affected-heading" class="section-title">
+            Affected services
+          </h2>
+          <p class="section-desc max-w-xl">
+            Services and workspaces impacted by this incident.
+          </p>
+        </div>
+
+        <div *ngIf="affectedServices().length === 0 && affectedWorkspaces().length === 0 && affectedExternalSystems().length === 0"
+             class="text-[15px] text-slate-500 py-2">
+          No affected services identified.
+        </div>
+
+        <div *ngIf="affectedServices().length > 0 || affectedWorkspaces().length > 0 || affectedExternalSystems().length > 0"
+             class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div *ngFor="let service of affectedServices(); trackBy: trackByServiceId"
+               class="card p-5">
+            <h3 class="text-[15px] font-medium text-slate-900">{{ service.name }}</h3>
+            <p class="text-[13px] text-slate-500 mt-1">Core service</p>
+          </div>
+          <div *ngFor="let workspace of affectedWorkspaces(); trackBy: trackByWorkspaceId"
+               class="card p-5">
+            <h3 class="text-[15px] font-medium text-slate-900">{{ workspace.name }}</h3>
+            <p class="text-[13px] text-slate-500 mt-1">Workspace</p>
+          </div>
+          <div *ngFor="let system of affectedExternalSystems(); trackBy: trackBySystemId"
+               class="card p-5">
+            <h3 class="text-[15px] font-medium text-slate-900">{{ system.name }}</h3>
+            <p class="text-[13px] text-slate-500 mt-1">Connected service</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>

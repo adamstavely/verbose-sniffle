@@ -1,0 +1,125 @@
+<div *ngIf="loading" class="card overflow-hidden rounded-2xl" aria-live="polite">
+  <div class="px-6 py-4 border-b border-slate-100 flex gap-4">
+    <div class="h-4 w-24 skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
+    <div class="h-4 w-20 skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
+    <div class="h-4 w-28 skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
+  </div>
+  @for (row of [1,2,3,4,5,6]; track row) {
+    <div class="px-6 py-4 border-t border-slate-100 flex gap-4 items-center">
+      <div class="h-4 w-40 skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
+      <div class="h-6 w-16 skeleton skeleton-shimmer rounded-lg" aria-hidden="true"></div>
+      <div class="h-4 w-24 skeleton skeleton-shimmer rounded" aria-hidden="true"></div>
+    </div>
+  }
+</div>
+
+<div *ngIf="error && !loading" class="card p-6 border-l-4 border-l-red-500" role="alert">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="flex items-start gap-3">
+      <span class="shrink-0 w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-red-600">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+        </svg>
+      </span>
+      <div>
+        <p class="text-[15px] font-medium text-red-800">{{ error }}</p>
+        <p class="text-[14px] text-slate-600 mt-1">Check your connection and try again.</p>
+      </div>
+    </div>
+    <button type="button"
+            (click)="retry.emit()"
+            class="shrink-0 px-4 py-2 rounded-xl bg-red-600 text-white text-[14px] font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+      Try again
+    </button>
+  </div>
+</div>
+
+<div *ngIf="!loading && !error">
+  <div *ngIf="services.length === 0" class="card p-8 text-center">
+    <span class="inline-flex w-12 h-12 rounded-xl bg-slate-100 text-slate-400 items-center justify-center mb-3" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6">
+        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
+      </svg>
+    </span>
+    <p class="text-[15px] font-medium text-slate-700">No services yet</p>
+    <p class="text-[14px] text-slate-500 mt-1 max-w-sm mx-auto">Service status will appear here once the platform is configured.</p>
+  </div>
+
+  <div *ngIf="services.length > 0" class="card overflow-x-auto rounded-2xl max-h-[32rem] overflow-y-auto">
+    <table class="min-w-full text-[15px] border-collapse"
+           aria-describedby="core-services-caption">
+      <caption id="core-services-caption" class="sr-only">
+        Status of platform services.
+      </caption>
+      <thead class="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
+        <tr class="bg-slate-50/80">
+          <th scope="col"
+              class="text-left px-6 py-4 text-[12px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100/80 transition-colors select-none"
+              (click)="setSort('service')">
+            <span class="inline-flex items-center gap-1">
+              Service
+              @if (sortColumn() === 'service') {
+                <span [ngClass]="sortDirection() === 'desc' ? 'rotate-180' : ''" class="inline-block transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400">
+                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                  </svg>
+                </span>
+              }
+            </span>
+          </th>
+          <th scope="col"
+              class="text-left px-6 py-4 text-[12px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100/80 transition-colors select-none"
+              (click)="setSort('status')">
+            <span class="inline-flex items-center gap-1">
+              Status
+              @if (sortColumn() === 'status') {
+                <span [ngClass]="sortDirection() === 'desc' ? 'rotate-180' : ''" class="inline-block transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400">
+                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                  </svg>
+                </span>
+              }
+            </span>
+          </th>
+          <th scope="col"
+              class="text-left px-6 py-4 text-[12px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100/80 transition-colors select-none"
+              (click)="setSort('lastUpdated')">
+            <span class="inline-flex items-center gap-1">
+              Last updated
+              @if (sortColumn() === 'lastUpdated') {
+                <span [ngClass]="sortDirection() === 'desc' ? 'rotate-180' : ''" class="inline-block transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400">
+                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                  </svg>
+                </span>
+              }
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let service of sortedServices(); trackBy: trackByServiceId"
+            class="border-t border-slate-100 hover:bg-slate-50/60 transition-colors duration-150">
+          <th scope="row" class="px-6 py-4 font-medium text-slate-900">
+            {{ service.name }}
+          </th>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[13px] font-medium"
+                  [ngClass]="{
+                    'bg-emerald-50 text-emerald-700': service.level === 'HEALTHY',
+                    'bg-amber-50 text-amber-700': service.level === 'DEGRADED',
+                    'bg-red-50 text-red-700': service.level === 'OUTAGE',
+                    'bg-slate-100 text-slate-600': service.level === 'UNKNOWN',
+                    'bg-sky-50 text-sky-700': service.level === 'MAINTENANCE'
+                  }">
+              {{ service.level | statusLabel }}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-slate-500 text-[14px]">
+            {{ service.lastUpdated | relativeTime }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

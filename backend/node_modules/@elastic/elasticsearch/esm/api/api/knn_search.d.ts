@@ -1,0 +1,14 @@
+import { Transport, TransportRequestOptions, TransportRequestOptionsWithMeta, TransportRequestOptionsWithOutMeta, TransportResult } from '@elastic/transport';
+import * as T from '../types.js';
+interface That {
+    transport: Transport;
+}
+/**
+  * Run a knn search. NOTE: The kNN search API has been replaced by the `knn` option in the search API.
+  * @see {@link https://www.elastic.co/docs/api/doc/elasticsearch/v9/operation/operation-knn-search | Elasticsearch API documentation}
+  */
+export default function KnnSearchApi<TDocument = unknown>(this: That, params: T.KnnSearchRequest, options?: TransportRequestOptionsWithOutMeta): Promise<T.KnnSearchResponse<TDocument>>;
+export default function KnnSearchApi<TDocument = unknown>(this: That, params: T.KnnSearchRequest, options?: TransportRequestOptionsWithMeta): Promise<TransportResult<T.KnnSearchResponse<TDocument>, unknown>>;
+export default function KnnSearchApi<TDocument = unknown>(this: That, params: T.KnnSearchRequest, options?: TransportRequestOptions): Promise<T.KnnSearchResponse<TDocument>>;
+export {};
+//# sourceMappingURL=knn_search.d.ts.map

@@ -1,0 +1,55 @@
+<main class="min-h-screen text-slate-900 flex flex-col"
+      role="main"
+      aria-labelledby="external-systems-title">
+  <header class="sticky top-0 z-40 border-b border-slate-200/90 bg-white/90 backdrop-blur-xl px-6 py-3.5 md:px-10 md:py-4 flex items-center justify-between gap-6"
+         style="box-shadow: var(--shadow-header)">
+    <div>
+      <nav aria-label="Breadcrumb" class="text-[13px] text-slate-500 mb-2 space-x-1">
+        <a routerLink="/" class="text-blue-600 hover:text-blue-700 no-underline hover:underline">Status</a>
+        <span aria-hidden="true">/</span>
+        <span>Connected services</span>
+      </nav>
+      <h1 id="external-systems-title" class="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
+        Connected services
+      </h1>
+      <p class="text-[15px] text-slate-500 mt-1">
+        Status of payment providers, email, storage, and other services we rely on.
+      </p>
+    </div>
+    <a routerLink="/"
+       class="text-[14px] text-blue-600 hover:text-blue-700 font-medium no-underline hover:underline">
+      Back to overview
+    </a>
+  </header>
+
+  <section class="px-6 py-10 md:px-10 md:py-14 max-w-7xl mx-auto w-full"
+           aria-label="External system health">
+    <div *ngIf="loading()" class="text-[15px] text-slate-500" aria-live="polite">
+      Loading connected services…
+    </div>
+
+    <div *ngIf="error()" class="text-[15px] text-red-600" role="alert">
+      {{ error() }}
+    </div>
+
+    <div *ngIf="!loading() && !error()">
+      <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+        <li *ngFor="let system of systems(); trackBy: trackBySystemId"
+            class="card card-hover p-6">
+          <h2 class="text-[17px] font-semibold tracking-tight text-slate-900">
+            {{ system.name }}
+          </h2>
+          <p class="text-[13px] text-slate-500 mt-1">
+            {{ system.type | externalSystemType }}
+          </p>
+          <p class="mt-4 text-[13px] text-slate-600">
+            Status: <span class="font-semibold">{{ system.level | statusLabel }}</span>
+          </p>
+          <p class="mt-1.5 text-[13px] text-slate-600 tabular-nums" *ngIf="system.latencyP95Ms">
+            Response time: {{ system.latencyP95Ms }} ms
+          </p>
+        </li>
+      </ul>
+    </div>
+  </section>
+</main>
