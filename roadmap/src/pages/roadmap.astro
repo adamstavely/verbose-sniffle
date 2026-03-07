@@ -6,12 +6,25 @@ import RoadmapList from '../components/RoadmapList.astro';
 import FeatureRequestCard from '../components/FeatureRequestCard.astro';
 import { getCollection } from 'astro:content';
 import { db, FeatureRequest, Vote } from 'astro:db';
+import { ensureFeatureRequestSeeds, SEED_REQUESTS } from '../lib/seed-feature-requests';
 
 const VOTER_COOKIE = 'roadmap_voter_id';
 const voterId = Astro.cookies.get(VOTER_COOKIE)?.value;
 
+await ensureFeatureRequestSeeds();
 const roadmapItems = await getCollection('roadmap');
-const requests = await db.select().from(FeatureRequest);
+let requests = await db.select().from(FeatureRequest);
+
+// Fallback: show seed data when db is empty (e.g. read-only db, fresh install)
+if (requests.length === 0) {
+	requests = SEED_REQUESTS.map((r) => ({
+		id: r.id,
+		title: r.title,
+		description: r.description ?? '',
+		createdAt: new Date(),
+		status: r.status,
+	}));
+}
 const votes = await db.select().from(Vote);
 
 const voteCounts = votes.reduce(
