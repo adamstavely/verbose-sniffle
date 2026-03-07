@@ -1,8 +1,5 @@
 import { Routes } from '@angular/router';
 import { StatusDashboardPageComponent } from './features/status/status-dashboard-page.component';
-import { WorkspaceDetailPageComponent } from './features/status/workspace-detail-page.component';
-import { ExternalSystemsPageComponent } from './features/status/external-systems-page.component';
-import { IncidentDetailPageComponent } from './features/status/incident-detail-page.component';
 
 export const routes: Routes = [
   {
@@ -11,15 +8,24 @@ export const routes: Routes = [
   },
   {
     path: 'workspaces/:workspaceId',
-    component: WorkspaceDetailPageComponent,
+    loadComponent: () =>
+      import('./features/status/workspace-detail-page.component').then(
+        (m) => m.WorkspaceDetailPageComponent
+      ),
   },
   {
     path: 'incidents/:incidentId',
-    component: IncidentDetailPageComponent,
+    loadComponent: () =>
+      import('./features/status/incident-detail-page.component').then(
+        (m) => m.IncidentDetailPageComponent
+      ),
   },
   {
     path: 'external-systems',
-    component: ExternalSystemsPageComponent,
+    loadComponent: () =>
+      import('./features/status/external-systems-page.component').then(
+        (m) => m.ExternalSystemsPageComponent
+      ),
   },
   {
     path: '**',
