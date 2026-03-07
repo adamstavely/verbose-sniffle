@@ -13,6 +13,28 @@ const roadmap = defineCollection({
   }),
 });
 
+const statusIncidents = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/status/incidents' }),
+  schema: z.object({
+    incidentId: z.string().optional(),
+    title: z.string(),
+    severity: z.enum(['HEALTHY', 'DEGRADED', 'OUTAGE', 'MAINTENANCE', 'UNKNOWN']).optional(),
+    workaround: z.string().optional(),
+  }),
+});
+
+const statusAnnouncements = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/status/announcements' }),
+  schema: z.object({
+    title: z.string(),
+    scheduledStart: z.string().optional(),
+    scheduledEnd: z.string().optional(),
+    status: z.enum(['scheduled', 'in_progress', 'completed']).optional(),
+  }),
+});
+
 export const collections = {
   roadmap,
+  statusIncidents,
+  statusAnnouncements,
 };

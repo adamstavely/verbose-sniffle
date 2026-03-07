@@ -1,0 +1,61 @@
+---
+import type { UptimeData } from 'shared/status-models';
+import { getMockUptime } from '../../lib/status/mock-data';
+
+interface Props {
+  data?: UptimeData | null;
+}
+
+const { data } = Astro.props;
+const uptime = data ?? getMockUptime();
+
+function getBarClasses(day: UptimeData['days'][number]): string {
+  const base = 'flex-1 rounded-sm min-w-[2px] transition-[height] duration-100';
+  const height =
+    day === 'unavailable' ? 'h-7' : day === 'degraded' ? 'h-5' : 'h-3.5';
+  const color =
+    day === 'unavailable'
+      ? 'bg-red-500'
+      : day === 'degraded'
+        ? 'bg-amber-500'
+        : 'bg-emerald-500/80';
+  return `${base} ${height} ${color}`;
+}
+---
+
+<section
+  class="rounded-lg border border-slate-200 bg-white p-5 md:p-6"
+  aria-labelledby="uptime-section-heading"
+>
+  <h2 id="uptime-section-heading" class="text-lg font-semibold text-slate-900 mb-3">
+    90-day uptime
+  </h2>
+  <p class="text-sm text-slate-600 mb-4">
+    Daily status over the last 90 days. Green = operational, amber = degraded, red = unavailable.
+  </p>
+  <div class="flex items-center mb-3">
+    <span class="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+      90 days
+    </span>
+    <span class="flex-1"></span>
+    <span class="font-mono text-sm font-semibold text-emerald-600">
+      {uptime.percentage}%
+    </span>
+  </div>
+  <div
+    class="flex gap-0.5 items-end h-7"
+    role="img"
+    aria-label={`${uptime.percentage}% uptime over the last 90 days`}
+  >
+    {uptime.days.map((day, i) => (
+      <div
+        class={getBarClasses(day)}
+        title={`${day} - day ${i + 1}`}
+      />
+    ))}
+  </div>
+  <div class="flex justify-between mt-1.5">
+    <span class="font-mono text-[10px] text-slate-400">90 days ago</span>
+    <span class="font-mono text-[10px] text-slate-400">Today</span>
+  </div>
+</section>

@@ -115,6 +115,14 @@ export interface IncidentSummary {
   affectedExternalSystemIds?: string[];
 }
 
+/** Daily status for 90-day uptime bar */
+export type DailyStatus = "operational" | "degraded" | "unavailable";
+
+export interface UptimeData {
+  days: DailyStatus[];
+  percentage: number;
+}
+
 export type MaintenanceStatus = "SCHEDULED" | "IN_PROGRESS" | "COMPLETED";
 
 export interface ScheduledMaintenance {

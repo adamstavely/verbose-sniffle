@@ -112,6 +112,7 @@ See `.env.example` for the full list.
 | `GET /api/status/incidents/recent` | Resolved incidents (90 days) |
 | `GET /api/status/incidents/:id` | Single incident detail |
 | `GET /api/status/scheduled-maintenance` | Scheduled maintenance windows |
+| `GET /api/status/uptime` | 90-day daily uptime (days array + percentage) |
 
 ## Accessibility
 

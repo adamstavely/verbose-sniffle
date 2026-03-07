@@ -1,0 +1,59 @@
+---
+import type { StatusLevel } from 'shared/status-models';
+import { getStatusPillCompactClass } from 'shared/status-utils';
+
+interface Props {
+  level: StatusLevel | null | undefined;
+  variant?: 'pill' | 'pillCompact' | 'dot' | 'text';
+}
+
+const { level, variant = 'pillCompact' } = Astro.props;
+
+function getLabel(l: StatusLevel | null | undefined): string {
+  if (!l) return 'Unknown';
+  const labels: Record<string, string> = {
+    HEALTHY: 'Operational',
+    DEGRADED: 'Degraded',
+    OUTAGE: 'Outage',
+    MAINTENANCE: 'Maintenance',
+    UNKNOWN: 'Unknown',
+  };
+  return labels[l] ?? l;
+}
+
+function getDotClass(l: StatusLevel | null | undefined): string {
+  switch (l) {
+    case 'HEALTHY': return 'bg-emerald-500';
+    case 'DEGRADED': return 'bg-amber-500';
+    case 'OUTAGE': return 'bg-red-500';
+    case 'MAINTENANCE': return 'bg-sky-500';
+    default: return 'bg-slate-400';
+  }
+}
+
+function getTextClass(l: StatusLevel | null | undefined): string {
+  switch (l) {
+    case 'HEALTHY': return 'text-emerald-500';
+    case 'DEGRADED': return 'text-amber-500';
+    case 'OUTAGE': return 'text-red-500';
+    case 'MAINTENANCE': return 'text-sky-500';
+    default: return 'text-slate-500';
+  }
+}
+
+const label = getLabel(level);
+---
+
+{variant === 'dot' ? (
+  <span class={`inline-block w-2 h-2 rounded-full shrink-0 ${getDotClass(level)}`} aria-hidden />
+) : variant === 'text' ? (
+  <span class={getTextClass(level)}>{label}</span>
+) : (
+  <span
+    class={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium ${variant === 'pillCompact' ? getStatusPillCompactClass(level) : 'bg-slate-100 text-slate-700 border border-slate-200'}`}
+    aria-label={label}
+  >
+    <span class={`w-1.5 h-1.5 rounded-full shrink-0 ${getDotClass(level)}`} />
+    {label}
+  </span>
+)}

@@ -7,6 +7,7 @@ A public product roadmap built with [Astro](https://astro.build/). The product t
 ## Features
 
 - **Roadmap** — Browse planned, in-progress, and shipped features (content collections)
+- **Status** — Real-time platform status, incidents, workspaces, and maintenance (at `/roadmap/status`)
 - **Feature Requests** — Vote on user-submitted features
 - **Submit Request** — Propose new features for others to vote on
 
@@ -79,6 +80,16 @@ priority: "high"       # high | medium | low
 | `ASTRO_DATABASE_FILE` | Local DB path (e.g. `file:.astro/content.db`) for dev/build |
 | `ASTRO_DB_REMOTE_URL` | Remote libSQL URL (production) |
 | `ASTRO_DB_APP_TOKEN` | Auth token for remote DB |
+| `PUBLIC_STATUS_API_URL` | Status API base URL (default: `/api/status`; proxied to `localhost:4000` in dev) |
+| `PUBLIC_USE_MOCK_STATUS` | Set to `true` to always use mock status data (no backend required) |
+
+### Status Page
+
+The status page at `/roadmap/status` fetches from the Node/Express status API. In dev, requests to `/api/status` are proxied to `http://localhost:4000`. If the backend is unavailable, mock data is used automatically.
+
+To add quick incident or maintenance updates via Markdown, add files to:
+- `src/content/status/incidents/` — incident workarounds and updates
+- `src/content/status/announcements/` — maintenance announcements
 
 ## Scripts
 

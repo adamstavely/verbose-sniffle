@@ -6,6 +6,8 @@ exports.getWorkspaceFeatureStatuses = getWorkspaceFeatureStatuses;
 exports.getExternalSystemStatuses = getExternalSystemStatuses;
 exports.getIncidents = getIncidents;
 exports.getScheduledMaintenance = getScheduledMaintenance;
+exports.getRecentIncidents = getRecentIncidents;
+exports.getUptime90Days = getUptime90Days;
 exports.getIncidentById = getIncidentById;
 const elasticClient_1 = require("./elasticClient");
 const statusConfig_1 = require("../config/statusConfig");
@@ -324,6 +326,164 @@ async function getScheduledMaintenance() {
         // eslint-disable-next-line no-console
         console.error("Failed to query ElasticSearch for scheduled maintenance", error);
         return [];
+    }
+}
+async function getRecentIncidents() {
+    const client = (0, elasticClient_1.getElasticClient)();
+    const to = nowIso();
+    const from = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    try {
+        const result = await client.search({
+            index: statusConfig_1.statusConfig.indices.incidents,
+            size: 100,
+            sort: ["resolved_at:desc"],
+            query: {
+                bool: {
+                    filter: [
+                        { exists: { field: "resolved_at" } },
+                        {
+                            range: {
+                                resolved_at: { gte: from, lte: to },
+                            },
+                        },
+                    ],
+                },
+            },
+        });
+        return result.hits.hits.map((hit) => {
+            const doc = hit._source ?? {};
+            const id = doc.incident_id ?? hit._id ?? "unknown";
+            const startedAt = new Date(doc.started_at ?? doc["@timestamp"] ?? nowIso());
+            const resolvedAt = doc.resolved_at
+                ? new Date(doc.resolved_at)
+                : startedAt;
+            const durationMs = resolvedAt.getTime() - startedAt.getTime();
+            const duration = durationMs < 60000
+                ? `${Math.round(durationMs / 1000)} sec`
+                : durationMs < 3600000
+                    ? `${Math.round(durationMs / 60000)} min`
+                    : `${Math.floor(durationMs / 3600000)}h ${Math.round((durationMs % 3600000) / 60000)}m`;
+            return {
+                id,
+                date: resolvedAt.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                }),
+                title: doc.title ?? "Unknown incident",
+                duration,
+                severity: (doc.status_level ?? "UNKNOWN"),
+                cause: doc.description ?? "No details available.",
+            };
+        });
+    }
+    catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to query ElasticSearch for recent incidents", error);
+        return [];
+    }
+}
+/** Map StatusLevel to DailyStatus for uptime bar */
+function toDailyStatus(level) {
+    switch (level) {
+        case "OUTAGE":
+            return "unavailable";
+        case "DEGRADED":
+        case "MAINTENANCE":
+            return "degraded";
+        default:
+            return "operational";
+    }
+}
+/** Get worst daily status from core services and incidents for the last 90 days */
+async function getUptime90Days() {
+    const client = (0, elasticClient_1.getElasticClient)();
+    const to = new Date();
+    const from = new Date(to.getTime() - 90 * 24 * 60 * 60 * 1000);
+    const days = new Array(90).fill("operational");
+    const dayIndex = (date) => {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        const fromStart = new Date(from);
+        fromStart.setHours(0, 0, 0, 0);
+        const diff = Math.floor((d.getTime() - fromStart.getTime()) / (24 * 60 * 60 * 1000));
+        return Math.max(0, Math.min(89, diff));
+    };
+    try {
+        const [coreResult, incidentResult] = await Promise.all([
+            client.search({
+                index: statusConfig_1.statusConfig.indices.coreServices,
+                size: 10000,
+                query: {
+                    range: {
+                        "@timestamp": {
+                            gte: from.toISOString(),
+                            lte: to.toISOString(),
+                        },
+                    },
+                },
+            }),
+            client.search({
+                index: statusConfig_1.statusConfig.indices.incidents,
+                size: 500,
+                query: {
+                    range: {
+                        started_at: {
+                            gte: from.toISOString(),
+                            lte: to.toISOString(),
+                        },
+                    },
+                },
+            }),
+        ]);
+        for (const hit of coreResult.hits.hits) {
+            const doc = hit._source ?? {};
+            const ts = doc["@timestamp"];
+            if (!ts)
+                continue;
+            const date = new Date(ts);
+            const idx = dayIndex(date);
+            const level = doc.status_level ?? "UNKNOWN";
+            const current = days[idx];
+            const candidate = toDailyStatus(level);
+            if (candidate === "unavailable" ||
+                (candidate === "degraded" && current === "operational")) {
+                days[idx] = candidate;
+            }
+        }
+        for (const hit of incidentResult.hits.hits) {
+            const doc = hit._source ?? {};
+            const level = (doc.status_level ?? "UNKNOWN");
+            const startedAt = doc.started_at
+                ? new Date(doc.started_at)
+                : new Date(doc["@timestamp"] ?? nowIso());
+            const resolvedAt = doc.resolved_at
+                ? new Date(doc.resolved_at)
+                : to;
+            const startDay = new Date(startedAt);
+            startDay.setHours(0, 0, 0, 0);
+            const endDay = new Date(resolvedAt);
+            endDay.setHours(0, 0, 0, 0);
+            for (let d = new Date(startDay); d <= endDay; d.setDate(d.getDate() + 1)) {
+                const idx = dayIndex(new Date(d));
+                const candidate = toDailyStatus(level);
+                if (candidate === "unavailable" ||
+                    (candidate === "degraded" && days[idx] === "operational")) {
+                    days[idx] = candidate;
+                }
+            }
+        }
+        const operational = days.filter((d) => d === "operational").length;
+        const percentage = Math.round((operational / 90) * 1000) / 10;
+        return { days, percentage };
+    }
+    catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to query ElasticSearch for uptime", error);
+        const fallback = new Array(90).fill("operational");
+        return {
+            days: fallback,
+            percentage: 100,
+        };
     }
 }
 async function getIncidentById(incidentId) {

@@ -8,6 +8,7 @@ import {
   getIncidentById,
   getRecentIncidents,
   getScheduledMaintenance,
+  getUptime90Days,
 } from "../services/statusService";
 
 const router = Router();
@@ -71,6 +72,15 @@ router.get("/incidents/recent", async (_req, res, next) => {
   try {
     const incidents = await getRecentIncidents();
     res.json(incidents);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/uptime", async (_req, res, next) => {
+  try {
+    const data = await getUptime90Days();
+    res.json(data);
   } catch (error) {
     next(error);
   }

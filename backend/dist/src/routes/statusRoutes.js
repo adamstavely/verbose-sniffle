@@ -58,6 +58,24 @@ router.get("/incidents", async (_req, res, next) => {
         next(error);
     }
 });
+router.get("/incidents/recent", async (_req, res, next) => {
+    try {
+        const incidents = await (0, statusService_1.getRecentIncidents)();
+        res.json(incidents);
+    }
+    catch (error) {
+        next(error);
+    }
+});
+router.get("/uptime", async (_req, res, next) => {
+    try {
+        const data = await (0, statusService_1.getUptime90Days)();
+        res.json(data);
+    }
+    catch (error) {
+        next(error);
+    }
+});
 router.get("/incidents/:incidentId", async (req, res, next) => {
     try {
         const { incidentId } = req.params;
