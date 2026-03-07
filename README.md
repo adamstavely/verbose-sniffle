@@ -93,6 +93,7 @@ Set `PUBLIC_USE_MOCK_STATUS=true` in the roadmap environment. The status page wi
 | `ASTRO_DB_APP_TOKEN` | Auth token for remote DB |
 | `PUBLIC_STATUS_API_URL` | Status API base URL (default: `/api/status`) |
 | `PUBLIC_USE_MOCK_STATUS` | Set to `true` to always use mock status data |
+| `STATUS_FETCH_TIMEOUT_MS` | Timeout for status API fetches in ms (default: 15000). Set to `0` to disable |
 
 ## Content Collections (Roadmap Items)
 
