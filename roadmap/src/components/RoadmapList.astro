@@ -1,0 +1,63 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  items: CollectionEntry<'roadmap'>[];
+}
+
+const { items } = Astro.props;
+
+const statusOrder = ['in-progress', 'planned', 'shipped'] as const;
+const priorityOrder = ['high', 'medium', 'low'] as const;
+
+const sorted = [...items].sort((a, b) => {
+  const statusA = statusOrder.indexOf((a.data.status as (typeof statusOrder)[number]) ?? 'planned');
+  const statusB = statusOrder.indexOf((b.data.status as (typeof statusOrder)[number]) ?? 'planned');
+  if (statusA !== statusB) return statusA - statusB;
+  const prioA = priorityOrder.indexOf((a.data.priority as (typeof priorityOrder)[number]) ?? 'medium');
+  const prioB = priorityOrder.indexOf((b.data.priority as (typeof priorityOrder)[number]) ?? 'medium');
+  return prioA - prioB;
+});
+
+const grouped = sorted.reduce(
+  (acc, item) => {
+    const status = item.data.status;
+    if (!acc[status]) acc[status] = [];
+    acc[status].push(item);
+    return acc;
+  },
+  {} as Record<string, CollectionEntry<'roadmap'>[]>
+);
+---
+
+<section class="space-y-8">
+  {Object.entries(grouped).map(([status, statusItems]) => (
+    <div>
+      <h2 class="mb-4 text-lg font-semibold capitalize text-slate-700">
+        {status.replace('-', ' ')}
+      </h2>
+      <ul class="space-y-4" role="list">
+        {statusItems.map((item) => (
+          <li>
+            <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 class="font-medium text-slate-900">{item.data.title}</h3>
+              <p class="mt-1 text-sm text-slate-600">{item.data.description}</p>
+              <div class="mt-2 flex flex-wrap gap-2">
+                {item.data.targetQuarter && (
+                  <span class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                    {item.data.targetQuarter}
+                  </span>
+                )}
+                {item.data.priority && (
+                  <span class="rounded bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700 capitalize">
+                    {item.data.priority}
+                  </span>
+                )}
+              </div>
+            </article>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</section>

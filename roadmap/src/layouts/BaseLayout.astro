@@ -1,0 +1,47 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Product roadmap - vote on features and request new ones' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900">
+    <header class="border-b border-slate-200 bg-white">
+      <nav class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6" aria-label="Main navigation">
+        <a href="/" class="text-lg font-semibold text-slate-800 hover:text-slate-600">
+          Product Roadmap
+        </a>
+        <ul class="flex flex-wrap gap-4 sm:gap-6">
+          <li>
+            <a href="/roadmap" class="text-slate-600 hover:text-slate-900">Roadmap</a>
+          </li>
+          <li>
+            <a href="/requests" class="text-slate-600 hover:text-slate-900">Feature Requests</a>
+          </li>
+          <li>
+            <a href="/requests/new" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+              Submit Request
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      <slot />
+    </main>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SubmitRequestForm from '../../components/SubmitRequestForm.astro';
+import { actions } from 'astro:actions';
+
+const result = Astro.getActionResult(actions.submitFeatureRequest);
+if (result && !result.error) {
+  return Astro.redirect('/requests');
+}
+---
+
+<BaseLayout title="Submit Feature Request - Product Roadmap" description="Request a new feature for the product">
+  <h1 class="mb-6 text-2xl font-bold text-slate-900">Submit a Feature Request</h1>
+  <p class="mb-8 text-slate-600">
+    Have an idea? Submit it below. Other users can vote on it to help us prioritize.
+  </p>
+  <SubmitRequestForm />
+</BaseLayout>

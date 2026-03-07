@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RoadmapList from '../components/RoadmapList.astro';
+import { getCollection } from 'astro:content';
+
+const roadmapItems = await getCollection('roadmap');
+---
+
+<BaseLayout title="Roadmap - Product Roadmap" description="What's coming soon - features we're planning and building">
+  <h1 class="mb-6 text-2xl font-bold text-slate-900">What's Coming Soon</h1>
+  <p class="mb-8 text-slate-600">
+    Here's what the product team is planning and building. Stay tuned for updates.
+  </p>
+  <RoadmapList items={roadmapItems} />
+</BaseLayout>

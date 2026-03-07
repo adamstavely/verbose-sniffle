@@ -18,8 +18,9 @@ The status page provides real-time visibility into platform health, including co
 ## Project Structure
 
 ```
-├── frontend/          # Angular SPA
+├── frontend/          # Angular SPA (status page)
 ├── backend/           # Node/Express API
+├── roadmap/           # Astro product roadmap (see roadmap/README.md)
 ├── shared/            # Shared TypeScript models (status-models.ts)
 └── .env.example       # Environment template
 ```
@@ -76,6 +77,16 @@ export const USE_MOCK_DATA = true;
 ```
 
 With this enabled, the UI uses in-memory mock data and does not require Elasticsearch or the backend.
+
+### 4. Product Roadmap (Optional)
+
+A separate Astro app for the public product roadmap. See [roadmap/README.md](roadmap/README.md) for setup and usage.
+
+```bash
+cd roadmap
+npm install
+npm run dev
+```
 
 ## Environment Variables
 
