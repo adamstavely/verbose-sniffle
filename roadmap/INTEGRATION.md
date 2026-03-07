@@ -15,7 +15,7 @@ This guide focuses on the **merge** approach for a unified experience.
 
 **What's included:**
 
-- **Roadmap** — Planned features, feature requests, voting
+- **Roadmap** — Planned features, feature requests, and voting (combined in one section)
 - **Status Page** — Platform status, incidents, capabilities, 90-day uptime, subscribe for notifications
 
 ---
@@ -106,8 +106,10 @@ const Vote = defineTable({
   columns: {
     id: column.text({ primaryKey: true }),
     featureRequestId: column.text({ references: () => FeatureRequest.columns.id }),
+    voterId: column.text(),
     createdAt: column.date(),
   },
+  indexes: [{ on: ['featureRequestId', 'voterId'], unique: true }],
 });
 
 export default defineDb({
@@ -192,41 +194,67 @@ For status, create `src/content/status/incidents/` and `src/content/status/annou
 
 Create `src/actions/index.ts` (or merge into an existing actions file):
 
+Voting is identity-aware: each visitor gets a `roadmap_voter_id` cookie (set by middleware) so they can vote only once per feature. The vote action checks for existing votes and rejects duplicates.
+
+Create `src/middleware.ts` to assign the voter cookie:
+
+```ts
+import { defineMiddleware } from 'astro:middleware';
+import { randomUUID } from 'node:crypto';
+
+const VOTER_COOKIE = 'roadmap_voter_id';
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+
+export const onRequest = defineMiddleware((context, next) => {
+  if (!context.cookies.has(VOTER_COOKIE)) {
+    context.cookies.set(VOTER_COOKIE, randomUUID(), {
+      path: '/',
+      maxAge: COOKIE_MAX_AGE,
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: 'lax',
+    });
+  }
+  return next();
+});
+```
+
+Create `src/actions/index.ts`:
+
 ```ts
 import { defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
-import { db, FeatureRequest, Vote } from 'astro:db';
+import { db, Vote, eq, and } from 'astro:db';
 import { randomUUID } from 'node:crypto';
 
-export const server = {
-  submitFeatureRequest: defineAction({
-    accept: 'form',
-    input: z.object({
-      title: z.string().min(1).max(200),
-      description: z.string().min(1).max(2000),
-    }),
-    handler: async ({ title, description }) => {
-      const id = randomUUID();
-      await db.insert(FeatureRequest).values({
-        id,
-        title,
-        description,
-        createdAt: new Date(),
-        status: 'pending',
-      });
-      return { success: true, id };
-    },
-  }),
+const VOTER_COOKIE = 'roadmap_voter_id';
 
+export const server = {
   vote: defineAction({
     accept: 'form',
     input: z.object({
       featureRequestId: z.string().min(1),
     }),
-    handler: async ({ featureRequestId }) => {
+    handler: async ({ featureRequestId }, { cookies }) => {
+      const voterId = cookies.get(VOTER_COOKIE)?.value;
+      if (!voterId) {
+        return { success: false, error: 'Identity required. Please refresh the page and try again.' };
+      }
+
+      const existing = await db
+        .select()
+        .from(Vote)
+        .where(and(eq(Vote.featureRequestId, featureRequestId), eq(Vote.voterId, voterId)))
+        .limit(1);
+
+      if (existing.length > 0) {
+        return { success: false, error: 'already_voted' };
+      }
+
       await db.insert(Vote).values({
         id: randomUUID(),
         featureRequestId,
+        voterId,
         createdAt: new Date(),
       });
       return { success: true };
@@ -243,15 +271,14 @@ Choose a route prefix for the roadmap to avoid clashes with existing docs:
 
 | Existing routes | Suggested roadmap routes |
 |-----------------|--------------------------|
-| `/docs/`, `/guides/` | `/roadmap`, `/roadmap/requests`, `/roadmap/requests/new`, `/roadmap/status` |
-| `/user-guides/`, `/developer-guides/` | `/roadmap`, `/roadmap/requests`, `/roadmap/requests/new`, `/roadmap/status` |
+| `/docs/`, `/guides/` | `/roadmap`, `/roadmap/status` |
+| `/user-guides/`, `/developer-guides/` | `/roadmap`, `/roadmap/status` |
 
 Copy these pages from `roadmap/src/pages/` into your site:
 
-**Roadmap:**
-- `roadmap.astro` → e.g. `src/pages/roadmap/index.astro`
-- `requests/index.astro` → `src/pages/roadmap/requests/index.astro`
-- `requests/new.astro` → `src/pages/roadmap/requests/new.astro`
+**Roadmap** (roadmap and voting combined in one section):
+- `roadmap.astro` → e.g. `src/pages/roadmap/index.astro` (includes planned features + feature requests with voting)
+- `requests/index.astro` → redirects to `/roadmap` (optional to copy)
 
 **Status page:**
 - `roadmap/status/index.astro` → `src/pages/roadmap/status/index.astro`
@@ -259,7 +286,7 @@ Copy these pages from `roadmap/src/pages/` into your site:
 - `roadmap/status/incidents/[id].astro` → `src/pages/roadmap/status/incidents/[id].astro`
 - `roadmap/status/external-systems.astro` → `src/pages/roadmap/status/external-systems.astro`
 
-Set `export const prerender = false` on any page that uses the database, Actions, or fetches status data (requests index, requests new, and all status pages).
+Set `export const prerender = false` on any page that uses the database, Actions, or fetches status data (roadmap and all status pages).
 
 ---
 
@@ -300,6 +327,8 @@ Copy from `roadmap/src/lib/status/` into your site:
 If the API is unavailable, the status page automatically falls back to mock data.
 
 **90-day uptime:** The backend derives daily status from core service telemetry and incidents in Elasticsearch. Each day is classified as `operational`, `degraded`, or `unavailable` based on the worst status observed that day.
+
+**Data sources:** See [docs/STATUS_PAGE_DATA.md](../docs/STATUS_PAGE_DATA.md) for a full breakdown of what is automatically pulled from Elasticsearch vs. what can be manually updated via Markdown.
 
 **Status page features:**
 - Global status header with overall platform health
@@ -346,8 +375,6 @@ In your shared header/nav component, add links:
   <a href="/developer-guides">Developer Guides</a>
   <a href="/roadmap">Roadmap</a>
   <a href="/roadmap/status">Status</a>
-  <a href="/roadmap/requests">Feature Requests</a>
-  <a href="/roadmap/requests/new">Submit Request</a>
 </nav>
 ```
 
@@ -362,8 +389,6 @@ If you use a sidebar (e.g. Starlight-style), add a "Product" or "Roadmap" sectio
   items: [
     { label: 'Roadmap', link: '/roadmap' },
     { label: 'Status', link: '/roadmap/status' },
-    { label: 'Feature Requests', link: '/roadmap/requests' },
-    { label: 'Submit Request', link: '/roadmap/requests/new' },
   ],
 }
 ```
@@ -377,7 +402,6 @@ Copy these components from `roadmap/src/components/` into your site:
 **Roadmap:**
 - `RoadmapList.astro` — renders roadmap items from content collection
 - `FeatureRequestCard.astro` — single feature request with vote button
-- `SubmitRequestForm.astro` — form for new feature requests
 
 **Status page** (from `roadmap/src/components/status/`):
 - `StatusBadge.astro` — status indicator (operational, degraded, outage, etc.)
@@ -414,12 +438,13 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 
 **Roadmap:**
 - [ ] `@astrojs/db` and `@astrojs/node` installed
-- [ ] `db/config.ts` with `FeatureRequest` and `Vote` tables
+- [ ] `db/config.ts` with `FeatureRequest` and `Vote` tables (Vote includes `voterId` and unique index)
 - [ ] `astro db push` run (and `--remote` for production)
+- [ ] `src/middleware.ts` to assign `roadmap_voter_id` cookie (identity-aware voting)
 - [ ] `roadmap` content collection in `content.config.ts`
 - [ ] `src/content/roadmap/*.md` files for coming-soon items
-- [ ] `src/actions/index.ts` with `submitFeatureRequest` and `vote`
-- [ ] Pages: `/roadmap`, `/roadmap/requests`, `/roadmap/requests/new`
+- [ ] `src/actions/index.ts` with `vote` (checks voterId, rejects duplicate votes)
+- [ ] Pages: `/roadmap` (includes voting)
 - [ ] `prerender: false` on requests pages
 
 **Status page:**
@@ -450,14 +475,13 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 | Source (roadmap app) | Destination (your site) |
 |----------------------|--------------------------|
 | `db/config.ts` | `db/config.ts` (merge tables) |
+| `src/middleware.ts` | `src/middleware.ts` (voter cookie for identity-aware voting) |
 | `src/content.config.ts` | Merge `roadmap` and optionally `statusIncidents`, `statusAnnouncements` |
 | `src/content/roadmap/*.md` | `src/content/roadmap/*.md` |
 | `src/content/status/incidents/*.md` | `src/content/status/incidents/*.md` (optional) |
 | `src/content/status/announcements/*.md` | `src/content/status/announcements/*.md` (optional) |
 | `src/actions/index.ts` | `src/actions/index.ts` (merge or create) |
-| `src/pages/roadmap.astro` | `src/pages/roadmap/index.astro` |
-| `src/pages/requests/index.astro` | `src/pages/roadmap/requests/index.astro` |
-| `src/pages/requests/new.astro` | `src/pages/roadmap/requests/new.astro` |
+| `src/pages/roadmap.astro` | `src/pages/roadmap/index.astro` (roadmap + voting combined) |
 | `src/pages/roadmap/status/index.astro` | `src/pages/roadmap/status/index.astro` |
 | `src/pages/roadmap/status/workspaces/[id].astro` | `src/pages/roadmap/status/workspaces/[id].astro` |
 | `src/pages/roadmap/status/incidents/[id].astro` | `src/pages/roadmap/status/incidents/[id].astro` |

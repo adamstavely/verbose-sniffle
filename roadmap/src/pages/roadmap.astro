@@ -1,15 +1,71 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RoadmapList from '../components/RoadmapList.astro';
+import FeatureRequestCard from '../components/FeatureRequestCard.astro';
 import { getCollection } from 'astro:content';
+import { db, FeatureRequest, Vote } from 'astro:db';
+
+const VOTER_COOKIE = 'roadmap_voter_id';
+const voterId = Astro.cookies.get(VOTER_COOKIE)?.value;
 
 const roadmapItems = await getCollection('roadmap');
+const requests = await db.select().from(FeatureRequest);
+const votes = await db.select().from(Vote);
+
+const voteCounts = votes.reduce(
+  (acc, v) => {
+    acc[v.featureRequestId] = (acc[v.featureRequestId] ?? 0) + 1;
+    return acc;
+  },
+  {} as Record<string, number>
+);
+
+const votedByMe = voterId
+  ? new Set(votes.filter((v) => v.voterId === voterId).map((v) => v.featureRequestId))
+  : new Set<string>();
+
+const sortedRequests = [...requests].sort(
+  (a, b) => (voteCounts[b.id] ?? 0) - (voteCounts[a.id] ?? 0)
+);
 ---
 
-<BaseLayout title="Roadmap - Product Roadmap" description="What's coming soon - features we're planning and building">
-  <h1 class="mb-6 text-2xl font-bold text-slate-900">What's Coming Soon</h1>
+<BaseLayout title="Roadmap - Product Roadmap" description="What's coming soon - planned features and community votes">
+  <h1 class="mb-6 text-2xl font-bold text-slate-900">Roadmap</h1>
   <p class="mb-8 text-slate-600">
-    Here's what the product team is planning and building. Stay tuned for updates.
+    See what we're planning, vote on features you want, and request new ones.
   </p>
-  <RoadmapList items={roadmapItems} />
+
+  <section class="mb-12">
+    <h2 class="mb-4 text-lg font-semibold text-slate-700">Planned & In Progress</h2>
+    <RoadmapList items={roadmapItems} />
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-lg font-semibold text-slate-700">Feature Requests</h2>
+    <p class="mb-4 text-sm text-slate-600">
+      Vote for features you'd like to see. The most requested items rise to the top.
+    </p>
+    {sortedRequests.length === 0 ? (
+      <p class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-600">
+        No feature requests yet.
+      </p>
+    ) : (
+      <ul class="space-y-4" role="list">
+        {sortedRequests.map((req) => (
+          <li>
+            <FeatureRequestCard
+              id={req.id}
+              title={req.title}
+              description={req.description}
+              voteCount={voteCounts[req.id] ?? 0}
+              status={req.status}
+              hasVoted={votedByMe.has(req.id)}
+            />
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
 </BaseLayout>

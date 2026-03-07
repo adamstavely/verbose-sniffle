@@ -1,6 +1,6 @@
 # Super App Status Page
 
-A status dashboard for the Super App platform, built with Angular and Tailwind, backed by an Elasticsearch-powered Node API.
+A status dashboard for the Super App platform, built with Astro and Tailwind, backed by an Elasticsearch-powered Node API.
 
 ## Overview
 
@@ -10,7 +10,7 @@ The status page provides real-time visibility into platform health, including co
 
 | Layer | Stack |
 |-------|--------|
-| **Frontend** | Angular 21, Tailwind CSS v4, RxJS |
+| **Status page** | Astro, Tailwind CSS (in `roadmap/`) |
 | **Backend** | Node.js, Express 5, TypeScript |
 | **Data** | Elasticsearch (production) / mock data (development) |
 | **Shared** | TypeScript models in `shared/` |
@@ -18,9 +18,8 @@ The status page provides real-time visibility into platform health, including co
 ## Project Structure
 
 ```
-├── frontend/          # Angular SPA (status page)
-├── backend/           # Node/Express API
-├── roadmap/           # Astro product roadmap (see roadmap/README.md)
+├── backend/           # Node/Express status API
+├── roadmap/           # Astro app (product roadmap + status page)
 ├── shared/            # Shared TypeScript models (status-models.ts)
 └── .env.example       # Environment template
 ```
@@ -35,9 +34,9 @@ The status page provides real-time visibility into platform health, including co
 - **Scheduled maintenance** — Upcoming maintenance windows
 - **Recent incidents** — Resolved incidents from the last 90 days
 - **Subscribe** — Notification signup
-- **Workspace detail** — Per-workspace feature status (`/workspaces/:id`)
-- **External systems** — Full list of connected services (`/external-systems`)
-- **Incident detail** — Individual incident pages (`/incidents/:id`)
+- **Workspace detail** — Per-workspace feature status (`/roadmap/status/workspaces/:id`)
+- **External systems** — Full list of connected services (`/roadmap/status/external-systems`)
+- **Incident detail** — Individual incident pages (`/roadmap/status/incidents/:id`)
 
 ## Getting Started
 
@@ -58,35 +57,21 @@ npm start
 
 The API runs on **port 4000** by default. Use `npm run dev` for development with hot reload.
 
-### 2. Frontend
+### 2. Roadmap (Status Page + Product Roadmap)
 
-```bash
-cd frontend
-npm install
-npm start
-```
-
-The Angular app runs on its default dev port (typically 4200). API requests to `/api/*` are proxied to `http://localhost:4000` via `proxy.conf.json`.
-
-### 3. Mock Data (No Backend Required)
-
-The frontend can run without the backend by using mock data. In `frontend/src/app/core/mock-status-data.ts`, set:
-
-```ts
-export const USE_MOCK_DATA = true;
-```
-
-With this enabled, the UI uses in-memory mock data and does not require Elasticsearch or the backend.
-
-### 4. Product Roadmap (Optional)
-
-A separate Astro app for the public product roadmap. See [roadmap/README.md](roadmap/README.md) for setup and usage.
+The Astro app serves both the product roadmap and the status page. See [roadmap/README.md](roadmap/README.md) for setup and usage.
 
 ```bash
 cd roadmap
 npm install
 npm run dev
 ```
+
+The status page is at `/roadmap/status`. API requests to `/api/status` are proxied to `http://localhost:4000` in development.
+
+### 3. Mock Data (No Backend Required)
+
+The status page can run without the backend by using mock data. Set `PUBLIC_USE_MOCK_STATUS=true` in the roadmap environment (e.g. in `.env` or when running `npm run dev`). With this enabled, the UI uses in-memory mock data and does not require Elasticsearch or the backend.
 
 ## Environment Variables
 
@@ -98,7 +83,7 @@ npm run dev
 | `STATUS_TIME_WINDOW_MINUTES` | Time window for status aggregation |
 | `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, etc. |
 
-See `.env.example` for the full list.
+See `.env.example` for the full list. For the roadmap app, see `roadmap/README.md` for status-specific variables (`PUBLIC_STATUS_API_URL`, `PUBLIC_USE_MOCK_STATUS`).
 
 ## API Endpoints
 
@@ -114,6 +99,10 @@ See `.env.example` for the full list.
 | `GET /api/status/scheduled-maintenance` | Scheduled maintenance windows |
 | `GET /api/status/uptime` | 90-day daily uptime (days array + percentage) |
 
+## Status Page Data Sources
+
+See [docs/STATUS_PAGE_DATA.md](docs/STATUS_PAGE_DATA.md) for what is automatically pulled from Elasticsearch vs. what can be manually updated (Markdown, subscribe form), and how to update each.
+
 ## Accessibility
 
 The UI is built for accessibility:
@@ -128,13 +117,13 @@ Aimed at Section 508 / WCAG 2.1 AA compliance.
 
 ## Scripts
 
-**Frontend**
+**Roadmap (Astro)**
 
 | Script | Description |
 |--------|-------------|
-| `npm start` | Start dev server |
+| `npm run dev` | Start dev server |
 | `npm run build` | Production build |
-| `npm run test:unit` | Run Vitest unit tests |
+| `npm start` | Run production server |
 
 **Backend**
 

@@ -160,7 +160,13 @@ const bannerClass = (() => {
       </ul>
     </section>
 
-    <UptimeBar data={uptime} />
+    <section aria-labelledby="uptime-heading">
+      <h2 id="uptime-heading" class="text-lg font-semibold text-slate-900 mb-3">90-day uptime</h2>
+      <p class="text-sm text-slate-600 mb-4">
+        Daily status over the last 90 days. Green = operational, amber = degraded, red = unavailable.
+      </p>
+      <UptimeBar data={uptime} />
+    </section>
 
     {maintenance.maintenance.filter((m) => m.status !== 'COMPLETED').length > 0 && (
       <section aria-labelledby="maintenance-heading">
@@ -195,7 +201,11 @@ const bannerClass = (() => {
       </ul>
     </section>
 
-    <SubscribeNotifications />
+    <section aria-labelledby="subscribe-heading">
+      <h2 id="subscribe-heading" class="text-lg font-semibold text-slate-900 mb-3">Get incident notifications</h2>
+      <p class="text-sm text-slate-600 mb-4">Email or Microsoft Teams webhook</p>
+      <SubscribeNotifications />
+    </section>
 
     <footer class="pt-8 border-t border-slate-200 text-sm text-slate-500">
       <p>Questions? Contact the Platform team via the #platform-support channel.</p>

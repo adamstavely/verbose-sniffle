@@ -23,20 +23,11 @@ function getBarClasses(day: UptimeData['days'][number]): string {
 }
 ---
 
-<section
+<div
   class="rounded-lg border border-slate-200 bg-white p-5 md:p-6"
-  aria-labelledby="uptime-section-heading"
+  aria-labelledby="uptime-heading"
 >
-  <h2 id="uptime-section-heading" class="text-lg font-semibold text-slate-900 mb-3">
-    90-day uptime
-  </h2>
-  <p class="text-sm text-slate-600 mb-4">
-    Daily status over the last 90 days. Green = operational, amber = degraded, red = unavailable.
-  </p>
   <div class="flex items-center mb-3">
-    <span class="text-[11px] font-medium uppercase tracking-widest text-slate-500">
-      90 days
-    </span>
     <span class="flex-1"></span>
     <span class="font-mono text-sm font-semibold text-emerald-600">
       {uptime.percentage}%
@@ -58,4 +49,4 @@ function getBarClasses(day: UptimeData['days'][number]): string {
     <span class="font-mono text-[10px] text-slate-400">90 days ago</span>
     <span class="font-mono text-[10px] text-slate-400">Today</span>
   </div>
-</section>
+</div>

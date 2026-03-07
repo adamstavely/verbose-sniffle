@@ -1,15 +1,13 @@
 # Product Roadmap
 
-A public product roadmap built with [Astro](https://astro.build/). The product team publishes "coming soon" items via content collections, and users can vote on features and submit new requests.
+A public product roadmap built with [Astro](https://astro.build/). The product team publishes "coming soon" items via content collections, and users can vote on features.
 
 **Integrating into an existing Astro docs site?** See [INTEGRATION.md](./INTEGRATION.md) for a step-by-step guide.
 
 ## Features
 
-- **Roadmap** — Browse planned, in-progress, and shipped features (content collections)
+- **Roadmap** — Browse planned features, vote on user-submitted requests, and see what's coming (all in one section)
 - **Status** — Real-time platform status, incidents, workspaces, and maintenance (at `/roadmap/status`)
-- **Feature Requests** — Vote on user-submitted features
-- **Submit Request** — Propose new features for others to vote on
 
 ## Tech Stack
 
@@ -86,6 +84,8 @@ priority: "high"       # high | medium | low
 ### Status Page
 
 The status page at `/roadmap/status` fetches from the Node/Express status API. In dev, requests to `/api/status` are proxied to `http://localhost:4000`. If the backend is unavailable, mock data is used automatically.
+
+**Data sources:** See [docs/STATUS_PAGE_DATA.md](../docs/STATUS_PAGE_DATA.md) for what is automatically pulled from Elasticsearch vs. what can be manually updated via Markdown, and how to update each.
 
 To add quick incident or maintenance updates via Markdown, add files to:
 - `src/content/status/incidents/` — incident workarounds and updates
