@@ -84,9 +84,9 @@ Search may be briefly unavailable during this window.
 
 ### 3. Subscribe form
 
-**Purpose:** Users can enter an email or webhook to receive incident notifications.
+**Purpose:** Users enter an email to receive incident notifications.
 
-**Current state:** The form is displayed and shows a "Thanks!" message on submit. Integration (persisting subscribers, sending notifications) is **not yet implemented** and must be wired to your notification system.
+**Implementation:** Subscribers are stored in Elasticsearch (`status-subscribers` index). When incidents occur, the notification delivery job sends emails via your internal email service. Configure `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY` in `.env`. Trigger delivery via cron (`GET /api/notify/run`) or webhook (`POST /api/notify/run` with optional `Authorization: Bearer NOTIFY_WEBHOOK_SECRET`). See `.env.example` for all notification-related variables.
 
 ---
 
@@ -100,4 +100,4 @@ Search may be briefly unavailable during this window.
 | 90-day uptime | Elasticsearch | Derived from core services and incidents; no direct edit |
 | Incident workarounds/updates (override) | Markdown | Edit `.md` in `roadmap/src/content/status/incidents/` |
 | Maintenance announcements (override) | Markdown | Edit `.md` in `roadmap/src/content/status/announcements/` |
-| Subscribers | (Not yet wired) | Implement subscribe API and notification delivery |
+| Subscribers | Elasticsearch | Form on status page; stored in `status-subscribers` index |

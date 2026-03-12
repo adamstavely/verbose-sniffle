@@ -16,10 +16,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     });
   }
 
-  // When vote form is submitted, run the action and redirect so the page reloads with updated tally
+  // When vote or subscribe form is submitted, run the action and redirect
   const { action, setActionResult, serializeActionResult } = getActionContext(context);
   const isVoteForm = action?.calledFrom === 'form' && action.name?.endsWith('vote');
-  if (isVoteForm) {
+  const isSubscribeForm = action?.calledFrom === 'form' && action.name?.endsWith('subscribe');
+  if (isVoteForm || isSubscribeForm) {
     try {
       const result = await action.handler();
       setActionResult(action.name, serializeActionResult(result));

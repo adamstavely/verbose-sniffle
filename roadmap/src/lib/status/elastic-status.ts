@@ -452,6 +452,40 @@ export async function getIncidents(): Promise<IncidentSummary[]> {
   }
 }
 
+/** Incidents for notification delivery (broader time window: started or resolved in last N minutes). */
+export async function getIncidentsForNotifications(): Promise<IncidentSummary[]> {
+  const client = getElasticClient();
+  const to = nowIso();
+  const windowMs =
+    statusConfig.notificationIncidentWindowMinutes * 60_000;
+  const from = new Date(Date.now() - windowMs).toISOString();
+
+  try {
+    const result = await client.search<ElasticIncidentDoc>({
+      index: statusConfig.indices.incidents,
+      size: 200,
+      sort: ['started_at:desc'],
+      query: {
+        bool: {
+          should: [
+            { range: { started_at: { gte: from, lte: to } } },
+            { range: { resolved_at: { gte: from, lte: to } } },
+          ],
+          minimum_should_match: 1,
+        },
+      },
+    });
+
+    return result.hits.hits.map(
+      (hit: { _source?: ElasticIncidentDoc; _id?: string }) =>
+        toIncidentSummary(hit._source ?? {}, hit._id ?? nowIso())
+    );
+  } catch (error) {
+    console.error('Failed to query ElasticSearch for notification incidents', error);
+    return [];
+  }
+}
+
 export async function getScheduledMaintenance(): Promise<ScheduledMaintenance[]> {
   const client = getElasticClient();
   const now = nowIso();

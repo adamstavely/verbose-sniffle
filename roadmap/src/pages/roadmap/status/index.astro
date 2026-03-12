@@ -1,9 +1,12 @@
 ---
 export const prerender = false;
 
+import { actions } from 'astro:actions';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import StatusSkeleton from '../../../components/status/StatusSkeleton.astro';
 import SubscribeNotifications from '../../../components/status/SubscribeNotifications.astro';
+
+const subscribeResult = Astro.getActionResult(actions.subscribe);
 ---
 <BaseLayout
   title="Status - Product Roadmap"
@@ -15,8 +18,8 @@ import SubscribeNotifications from '../../../components/status/SubscribeNotifica
 
   <section id="status-subscribe" aria-labelledby="subscribe-heading" class="max-w-4xl mx-auto mt-12">
     <h2 id="subscribe-heading" class="text-lg font-semibold text-slate-900 mb-3">Get incident notifications</h2>
-    <p class="text-sm text-slate-600 mb-4">Email or Microsoft Teams webhook</p>
-    <SubscribeNotifications />
+    <p class="text-sm text-slate-600 mb-4">Enter your email to receive incident notifications.</p>
+    <SubscribeNotifications result={subscribeResult?.data} />
   </section>
 
   <footer class="max-w-4xl mx-auto pt-8 mt-12 border-t border-slate-200 text-sm text-slate-500">

@@ -1,6 +1,7 @@
 import { defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
 import { recordVote } from '../lib/votes/elastic-votes';
+import { addSubscriber } from '../lib/notifications/elastic-subscribers';
 
 const VOTER_COOKIE = 'roadmap_voter_id';
 
@@ -17,6 +18,16 @@ export const server = {
       }
 
       return recordVote(featureRequestId, voterId);
+    },
+  }),
+
+  subscribe: defineAction({
+    accept: 'form',
+    input: z.object({
+      email: z.string().email('Please enter a valid email address'),
+    }),
+    handler: async ({ email }) => {
+      return addSubscriber(email);
     },
   }),
 };

@@ -69,7 +69,11 @@ Set `PUBLIC_USE_MOCK_STATUS=true` in the roadmap environment. The status page wi
 | `ELASTICSEARCH_API_KEY` | API key for authentication |
 | `STATUS_ENVIRONMENT` | Environment label (e.g. `production`, `staging`) |
 | `STATUS_TIME_WINDOW_MINUTES` | Time window for status aggregation |
-| `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, roadmap votes, etc. |
+| `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, roadmap votes, subscribers, etc. |
+| `EMAIL_SERVICE_URL` | Internal email service URL for incident notifications |
+| `EMAIL_SERVICE_API_KEY` | API key for email service (optional) |
+| `SITE_URL` | Base URL for incident links in emails |
+| `NOTIFY_WEBHOOK_SECRET` | Optional secret for webhook auth when triggering notifications |
 | `PUBLIC_USE_MOCK_STATUS` | Set to `true` to always use mock status data |
 | `STATUS_FETCH_TIMEOUT_MS` | Timeout for status fetches in ms (default: 15000). Set to `0` to disable |
 

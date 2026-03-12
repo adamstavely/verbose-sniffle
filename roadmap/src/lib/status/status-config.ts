@@ -5,6 +5,8 @@ export interface StatusIndicesConfig {
   incidents: string;
   scheduledMaintenance: string;
   roadmapVotes: string;
+  statusSubscribers: string;
+  statusNotificationSent: string;
 }
 
 export interface StatusThresholds {
@@ -20,6 +22,8 @@ export interface StatusThresholds {
 
 export interface StatusServiceConfig {
   timeWindowMinutes: number;
+  /** Minutes to look back for incidents when running notification delivery (default 1440 = 24h) */
+  notificationIncidentWindowMinutes: number;
   indices: StatusIndicesConfig;
   thresholds: StatusThresholds;
 }
@@ -35,6 +39,10 @@ function envNum(name: string, fallback: number): number {
 
 export const statusConfig: StatusServiceConfig = {
   timeWindowMinutes: envNum('STATUS_TIME_WINDOW_MINUTES', 5),
+  notificationIncidentWindowMinutes: envNum(
+    'NOTIFICATION_INCIDENT_WINDOW_MINUTES',
+    1440
+  ),
   indices: {
     coreServices: env('ELASTICSEARCH_INDEX_CORE_SERVICES', 'status-core-services'),
     workspaces: env('ELASTICSEARCH_INDEX_WORKSPACES', 'status-workspaces'),
@@ -44,6 +52,11 @@ export const statusConfig: StatusServiceConfig = {
     scheduledMaintenance:
       env('ELASTICSEARCH_INDEX_SCHEDULED_MAINTENANCE', 'status-scheduled-maintenance'),
     roadmapVotes: env('ELASTICSEARCH_INDEX_ROADMAP_VOTES', 'roadmap-votes'),
+    statusSubscribers: env('ELASTICSEARCH_INDEX_STATUS_SUBSCRIBERS', 'status-subscribers'),
+    statusNotificationSent: env(
+      'ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT',
+      'status-notification-sent'
+    ),
   },
   thresholds: {
     errorRate: {

@@ -394,6 +394,13 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 - [ ] Pages: `/roadmap/status`, `/roadmap/status/workspaces/[id]`, `/roadmap/status/incidents/[id]`, `/roadmap/status/external-systems`
 - [ ] Status components: StatusBadge, Capabilities, UptimeBar, SubscribeNotifications
 
+**Incident notifications (optional):**
+- [ ] `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY` for internal email service
+- [ ] `SITE_URL` for incident links in emails
+- [ ] `ELASTICSEARCH_INDEX_STATUS_SUBSCRIBERS` and `ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT`
+- [ ] Cron or webhook calling `GET` or `POST /api/notify/run` (e.g. every 5 min)
+- [ ] `NOTIFY_WEBHOOK_SECRET` if securing webhook trigger
+
 **General:**
 - [ ] Nav/sidebar updated with roadmap and status links
 - [ ] `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY` set for build (roadmap votes + status page)
@@ -406,6 +413,7 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 - **Node adapter**: Your host must support Node.js serverless or standalone (Vercel, Netlify, etc.).
 - **Elasticsearch**: Set `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY` for both roadmap votes and the status page. The `roadmap-votes` index is auto-created on first vote.
 - **Status page**: Same Elasticsearch cluster; if unavailable, the status page falls back to mock data.
+- **Notifications**: Set `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY`; schedule `curl https://your-site/api/notify/run` every 5 minutes (or have your pipeline POST when incidents change).
 
 ---
 
@@ -439,3 +447,5 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 | `src/lib/status/fetch-status.ts` | `src/lib/status/fetch-status.ts` |
 | `src/lib/status/mock-data.ts` | `src/lib/status/mock-data.ts` |
 | `src/lib/status/*` | Status types/utils; Vite alias `shared` points to this folder |
+| `src/lib/notifications/*` | Subscribers, email client, templates, notification delivery |
+| `src/pages/api/notify/run.ts` | `src/pages/api/notify/run.ts` (cron/webhook trigger) |
