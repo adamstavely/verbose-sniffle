@@ -1,4 +1,8 @@
-import type { IncidentSummary, IncidentUpdate } from '../status/status-models';
+import type {
+  IncidentSummary,
+  IncidentUpdate,
+  ScheduledMaintenance,
+} from '../status/status-models';
 import { getStatusLabel } from '../status/status-labels';
 
 function env(name: string, fallback: string): string {
@@ -89,5 +93,26 @@ ${incident.description ?? 'No additional details.'}
 `;
 
   body += `\nView details: ${incidentUrl(incident.id)}`;
+  return { subject, body };
+}
+
+function maintenanceUrl(): string {
+  const base = baseUrl();
+  const path = '/roadmap/status';
+  return base ? `${base}${path}` : path;
+}
+
+export function buildMaintenanceEmail(maintenance: ScheduledMaintenance): {
+  subject: string;
+  body: string;
+} {
+  const subject = `[Status] Scheduled maintenance: ${maintenance.title}`;
+  let body = `${maintenance.title}
+Scheduled: ${maintenance.scheduledStart} – ${maintenance.scheduledEnd}
+
+${maintenance.description ?? 'No additional details.'}
+`;
+
+  body += `\nView status: ${maintenanceUrl()}`;
   return { subject, body };
 }

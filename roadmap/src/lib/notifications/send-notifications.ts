@@ -1,12 +1,20 @@
 import type { IncidentSummary, IncidentUpdate } from '../status/status-models';
-import { getIncidentsForNotifications } from '../status/elastic-status';
+import {
+  getIncidentsForNotifications,
+  getMaintenanceForNotifications,
+} from '../status/elastic-status';
 import { getSubscribers } from './elastic-subscribers';
 import { getLastSentState, recordSent, type NotificationType } from './notification-state';
+import {
+  getMaintenanceSentState,
+  recordMaintenanceSent,
+} from './maintenance-notification-state';
 import { sendEmail, isEmailServiceConfigured } from './email-client';
 import {
   buildNewIncidentEmail,
   buildIncidentUpdateEmail,
   buildIncidentResolvedEmail,
+  buildMaintenanceEmail,
 } from './email-templates';
 
 function getLatestUpdate(incident: IncidentSummary): IncidentUpdate | null {
@@ -110,6 +118,23 @@ export async function runNotificationDelivery(): Promise<{
     }
 
     await recordSent(incident.id, type, lastUpdatedAt, updatesSig);
+  }
+
+  const maintenanceItems = await getMaintenanceForNotifications();
+  for (const maintenance of maintenanceItems) {
+    const alreadySent = await getMaintenanceSentState(maintenance.id);
+    if (alreadySent) continue;
+
+    const { subject, body } = buildMaintenanceEmail(maintenance);
+    for (const to of subscribers) {
+      const ok = await sendEmail(to, subject, body);
+      if (ok) {
+        sent++;
+      } else {
+        errors.push(`Failed to send maintenance notification to ${to} for ${maintenance.id}`);
+      }
+    }
+    await recordMaintenanceSent(maintenance.id);
   }
 
   return { sent, errors };

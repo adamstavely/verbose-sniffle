@@ -1,14 +1,25 @@
 ---
 export const prerender = false;
 
+import { actions } from 'astro:actions';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RoadmapList from '../components/RoadmapList.astro';
 import FeatureRequestCard from '../components/FeatureRequestCard.astro';
+import Toast from '../components/Toast.astro';
 import { getCollection } from 'astro:content';
 import { getVoteCounts, getVotedByMe } from '../lib/votes/elastic-votes';
 
 const VOTER_COOKIE = 'roadmap_voter_id';
 const voterId = Astro.cookies.get(VOTER_COOKIE)?.value;
+
+const voteResult = Astro.getActionResult(actions.vote);
+const voteMessage = voteResult?.data?.success
+  ? 'Thanks for voting!'
+  : voteResult?.data?.error === 'already_voted'
+    ? "You've already voted."
+    : voteResult?.data?.error
+      ? voteResult.data.error
+      : null;
 
 const roadmapItems = await getCollection('roadmap');
 const requests = await getCollection('featureRequests');
@@ -23,6 +34,16 @@ const sortedRequests = [...requests].sort(
 ---
 
 <BaseLayout title="Roadmap - Product Roadmap" description="What's coming soon - planned features and community votes">
+  {voteMessage && (
+    <Toast
+      message={voteMessage}
+      variant={
+        voteResult?.data?.success || voteResult?.data?.error === 'already_voted'
+          ? 'success'
+          : 'error'
+      }
+    />
+  )}
   <h1 class="mb-6 text-2xl font-bold text-slate-900">Roadmap</h1>
   <p class="mb-8 text-slate-600">
     See what we're planning, vote on features you want, and request new ones.

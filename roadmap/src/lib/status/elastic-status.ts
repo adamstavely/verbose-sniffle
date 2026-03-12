@@ -486,6 +486,63 @@ export async function getIncidentsForNotifications(): Promise<IncidentSummary[]>
   }
 }
 
+/** Maintenance with scheduled_start in the notification window (for email delivery). */
+export async function getMaintenanceForNotifications(): Promise<ScheduledMaintenance[]> {
+  const client = getElasticClient();
+  const to = nowIso();
+  const windowMs =
+    statusConfig.notificationIncidentWindowMinutes * 60_000;
+  const from = new Date(Date.now() - windowMs).toISOString();
+
+  try {
+    const result = await client.search<ElasticScheduledMaintenanceDoc>({
+      index: statusConfig.indices.scheduledMaintenance,
+      size: 50,
+      sort: ['scheduled_start:asc'],
+      query: {
+        bool: {
+          filter: [
+            {
+              range: {
+                scheduled_start: { gte: from, lte: to },
+              },
+            },
+            {
+              range: {
+                scheduled_end: { gte: to },
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    return result.hits.hits
+      .map((hit) => {
+        const doc = hit._source ?? {};
+        const id = doc.maintenance_id ?? hit._id ?? 'unknown';
+        const status = (doc.status ?? 'SCHEDULED') as MaintenanceStatus;
+        return {
+          id,
+          title: doc.title ?? 'Scheduled maintenance',
+          description: doc.description,
+          scheduledStart: doc.scheduled_start ?? to,
+          scheduledEnd: doc.scheduled_end ?? to,
+          status,
+          affectedCoreServiceIds: doc.affected_core_service_ids,
+          affectedExternalSystemIds: doc.affected_external_system_ids,
+        };
+      })
+      .filter((m) => m.status !== 'COMPLETED');
+  } catch (error) {
+    console.error(
+      'Failed to query ElasticSearch for maintenance notifications',
+      error
+    );
+    return [];
+  }
+}
+
 export async function getScheduledMaintenance(): Promise<ScheduledMaintenance[]> {
   const client = getElasticClient();
   const now = nowIso();

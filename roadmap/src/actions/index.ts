@@ -3,6 +3,11 @@ import { z } from 'astro/zod';
 import { recordVote } from '../lib/votes/elastic-votes';
 import { addSubscriber } from '../lib/notifications/elastic-subscribers';
 import { recordFeedback } from '../lib/feedback/elastic-feedback';
+import { sendEmail, isEmailServiceConfigured } from '../lib/notifications/email-client';
+import {
+  buildSubscribeConfirmation,
+  buildSubscribeConfirmationSubject,
+} from '../lib/notifications/email-templates';
 
 const VOTER_COOKIE = 'roadmap_voter_id';
 
@@ -28,7 +33,16 @@ export const server = {
       email: z.string().email('Please enter a valid email address'),
     }),
     handler: async ({ email }) => {
-      return addSubscriber(email);
+      const normalized = email.trim().toLowerCase();
+      const result = await addSubscriber(normalized);
+      if (result.success && isEmailServiceConfigured()) {
+        await sendEmail(
+          normalized,
+          buildSubscribeConfirmationSubject(),
+          buildSubscribeConfirmation(normalized)
+        );
+      }
+      return result;
     },
   }),
 

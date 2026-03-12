@@ -1,0 +1,50 @@
+---
+interface Props {
+  message: string;
+  variant?: 'success' | 'error';
+}
+
+const { message, variant = 'success' } = Astro.props;
+---
+
+<div
+  id="toast"
+  role="status"
+  aria-live="polite"
+  class="fixed bottom-6 right-6 z-50 max-w-sm animate-toast-in rounded-lg border px-4 py-3 shadow-lg {variant === 'success'
+    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+    : 'border-red-200 bg-red-50 text-red-800'}"
+>
+  {message}
+</div>
+
+<style>
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-toast-in {
+    animation: toast-in 0.3s ease-out forwards;
+  }
+</style>
+
+<script>
+  (function () {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+
+    const hide = () => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(0.5rem)';
+      setTimeout(() => toast.remove(), 300);
+    };
+
+    setTimeout(hide, 3500);
+  })();
+</script>

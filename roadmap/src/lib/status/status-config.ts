@@ -7,6 +7,7 @@ export interface StatusIndicesConfig {
   roadmapVotes: string;
   statusSubscribers: string;
   statusNotificationSent: string;
+  statusMaintenanceNotificationSent: string;
   pageFeedback: string;
 }
 
@@ -57,6 +58,10 @@ export const statusConfig: StatusServiceConfig = {
     statusNotificationSent: env(
       'ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT',
       'status-notification-sent'
+    ),
+    statusMaintenanceNotificationSent: env(
+      'ELASTICSEARCH_INDEX_STATUS_MAINTENANCE_NOTIFICATION_SENT',
+      'status-maintenance-notification-sent'
     ),
     pageFeedback: env('ELASTICSEARCH_INDEX_PAGE_FEEDBACK', 'page-feedback'),
   },
