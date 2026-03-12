@@ -4,6 +4,7 @@ export interface StatusIndicesConfig {
   externalSystems: string;
   incidents: string;
   scheduledMaintenance: string;
+  roadmapVotes: string;
 }
 
 export interface StatusThresholds {
@@ -42,6 +43,7 @@ export const statusConfig: StatusServiceConfig = {
     incidents: env('ELASTICSEARCH_INDEX_INCIDENTS', 'status-incidents'),
     scheduledMaintenance:
       env('ELASTICSEARCH_INDEX_SCHEDULED_MAINTENANCE', 'status-scheduled-maintenance'),
+    roadmapVotes: env('ELASTICSEARCH_INDEX_ROADMAP_VOTES', 'roadmap-votes'),
   },
   thresholds: {
     errorRate: {

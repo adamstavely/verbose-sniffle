@@ -15,7 +15,7 @@ A status dashboard and product roadmap for the Super App platform. Built with As
 |-------|--------|
 | **Frontend** | Astro 5, Tailwind CSS (in `roadmap/`) |
 | **Status data** | Elasticsearch (production) / mock data (development) |
-| **Roadmap DB** | Astro DB (libSQL/SQLite) |
+| **Roadmap data** | Content collections (feature requests) + Elasticsearch (votes) |
 
 ## Project Structure
 
@@ -53,7 +53,7 @@ cp .env.example .env   # Edit with your Elasticsearch URL and API key (or use mo
 npm run dev
 ```
 
-The app runs at **http://localhost:4321**. The status page is at `/roadmap/status`. A local database is created at `roadmap/.astro/content.db` automatically.
+The app runs at **http://localhost:4321**. The status page is at `/roadmap/status`. Feature requests are stored as Markdown in `src/content/feature-requests/`; votes are stored in Elasticsearch.
 
 ### 2. Mock Data (No Elasticsearch Required)
 
@@ -65,14 +65,11 @@ Set `PUBLIC_USE_MOCK_STATUS=true` in the roadmap environment. The status page wi
 
 | Variable | Description |
 |----------|-------------|
-| `ASTRO_DATABASE_FILE` | Local DB path (e.g. `file:.astro/content.db`) |
-| `ASTRO_DB_REMOTE_URL` | Remote libSQL URL (production) |
-| `ASTRO_DB_APP_TOKEN` | Auth token for remote DB |
 | `ELASTICSEARCH_URL` | Elasticsearch endpoint (remote cluster) |
 | `ELASTICSEARCH_API_KEY` | API key for authentication |
 | `STATUS_ENVIRONMENT` | Environment label (e.g. `production`, `staging`) |
 | `STATUS_TIME_WINDOW_MINUTES` | Time window for status aggregation |
-| `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, etc. |
+| `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, roadmap votes, etc. |
 | `PUBLIC_USE_MOCK_STATUS` | Set to `true` to always use mock status data |
 | `STATUS_FETCH_TIMEOUT_MS` | Timeout for status fetches in ms (default: 15000). Set to `0` to disable |
 

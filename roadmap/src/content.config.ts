@@ -33,8 +33,19 @@ const statusAnnouncements = defineCollection({
   }),
 });
 
+const featureRequests = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/feature-requests' }),
+  schema: z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    status: z.enum(['pending', 'approved', 'rejected']),
+  }),
+});
+
 export const collections = {
   roadmap,
   statusIncidents,
   statusAnnouncements,
+  featureRequests,
 };

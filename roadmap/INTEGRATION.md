@@ -28,7 +28,7 @@ Your existing Astro site should have:
 
 - Astro 4.15+ (for Actions) or Astro 5.x
 - Node.js 18+
-- An adapter for server output (e.g. `@astrojs/node`, `@astrojs/vercel`) — required for Actions and Astro DB
+- An adapter for server output (e.g. `@astrojs/node`, `@astrojs/vercel`) — required for Actions
 
 If your site is currently **static-only**, you must add an adapter and enable server rendering for the roadmap routes.
 
@@ -39,7 +39,7 @@ If your site is currently **static-only**, you must add an adapter and enable se
 From your existing Astro project root:
 
 ```bash
-npm install @astrojs/db @astrojs/node
+npm install @astrojs/node @elastic/elasticsearch
 npx astro add tailwind   # if not already using Tailwind
 ```
 
@@ -53,14 +53,12 @@ In `astro.config.mjs` (or `astro.config.ts`):
 import { defineConfig } from 'astro/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import db from '@astrojs/db';
 import node from '@astrojs/node';
 import tailwindcss from '@tailwindcss/vite';  // if using Tailwind
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  integrations: [db()],
   adapter: node({ mode: 'standalone' }),
   vite: {
     plugins: [tailwindcss()],  // if using Tailwind
@@ -79,52 +77,7 @@ Ensure you have an adapter — without it, Actions and Astro DB will not work.
 
 ---
 
-## Step 3: Add Database Schema
-
-Create or merge into `db/config.ts`:
-
-```ts
-import { defineDb, defineTable, column } from 'astro:db';
-
-const FeatureRequest = defineTable({
-  columns: {
-    id: column.text({ primaryKey: true }),
-    title: column.text(),
-    description: column.text(),
-    createdAt: column.date(),
-    status: column.text({ enum: ['pending', 'approved', 'rejected'] }),
-  },
-});
-
-const Vote = defineTable({
-  columns: {
-    id: column.text({ primaryKey: true }),
-    featureRequestId: column.text({ references: () => FeatureRequest.columns.id }),
-    voterId: column.text(),
-    createdAt: column.date(),
-  },
-  indexes: [{ on: ['featureRequestId', 'voterId'], unique: true }],
-});
-
-export default defineDb({
-  tables: {
-    FeatureRequest,
-    Vote,
-  },
-});
-```
-
-Run:
-
-```bash
-npx astro db push
-```
-
-For production, set `ASTRO_DATABASE_FILE` (local) or `ASTRO_DB_REMOTE_URL` + `ASTRO_DB_APP_TOKEN` (remote).
-
----
-
-## Step 4: Merge Content Collections
+## Step 3: Merge Content Collections
 
 If you already have `src/content.config.ts`, add the `roadmap` collection and optionally the status collections.
 
@@ -147,6 +100,16 @@ const roadmap = defineCollection({
     status: z.enum(['planned', 'in-progress', 'shipped']),
     targetQuarter: z.string().optional(),
     priority: z.enum(['high', 'medium', 'low']).optional(),
+  }),
+});
+
+const featureRequests = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/feature-requests' }),
+  schema: z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    status: z.enum(['pending', 'approved', 'rejected']),
   }),
 });
 
@@ -175,6 +138,7 @@ export const collections = {
   userGuides,
   developerGuides,
   roadmap,
+  featureRequests,
   statusIncidents,
   statusAnnouncements,
 };
@@ -220,8 +184,7 @@ Create `src/actions/index.ts`:
 ```ts
 import { defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
-import { db, Vote, eq, and } from 'astro:db';
-import { randomUUID } from 'node:crypto';
+import { recordVote } from '../lib/votes/elastic-votes';
 
 const VOTER_COOKIE = 'roadmap_voter_id';
 
@@ -236,28 +199,13 @@ export const server = {
       if (!voterId) {
         return { success: false, error: 'Identity required. Please refresh the page and try again.' };
       }
-
-      const existing = await db
-        .select()
-        .from(Vote)
-        .where(and(eq(Vote.featureRequestId, featureRequestId), eq(Vote.voterId, voterId)))
-        .limit(1);
-
-      if (existing.length > 0) {
-        return { success: false, error: 'already_voted' };
-      }
-
-      await db.insert(Vote).values({
-        id: randomUUID(),
-        featureRequestId,
-        voterId,
-        createdAt: new Date(),
-      });
-      return { success: true };
+      return recordVote(featureRequestId, voterId);
     },
   }),
 };
 ```
+
+Copy `src/lib/votes/elastic-votes.ts` from the roadmap app. Votes are stored in Elasticsearch (index `roadmap-votes` by default; set `ELASTICSEARCH_INDEX_ROADMAP_VOTES` to override).
 
 ---
 
@@ -429,15 +377,15 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 ## Checklist
 
 **Roadmap:**
-- [ ] `@astrojs/db` and `@astrojs/node` installed
-- [ ] `db/config.ts` with `FeatureRequest` and `Vote` tables (Vote includes `voterId` and unique index)
-- [ ] `astro db push` run (and `--remote` for production)
+- [ ] `@astrojs/node` and `@elastic/elasticsearch` installed
 - [ ] `src/middleware.ts` to assign `roadmap_voter_id` cookie (identity-aware voting)
-- [ ] `roadmap` content collection in `content.config.ts`
+- [ ] `roadmap` and `featureRequests` content collections in `content.config.ts`
 - [ ] `src/content/roadmap/*.md` files for coming-soon items
-- [ ] `src/actions/index.ts` with `vote` (checks voterId, rejects duplicate votes)
+- [ ] `src/content/feature-requests/*.md` files for feature requests (id, title, description, status)
+- [ ] `src/lib/votes/elastic-votes.ts` and `src/actions/index.ts` with `vote` (uses Elasticsearch)
 - [ ] Pages: `/roadmap` (includes voting)
-- [ ] `prerender: false` on requests pages
+- [ ] `prerender: false` on roadmap page
+- [ ] `ELASTICSEARCH_INDEX_ROADMAP_VOTES` env var (default: `roadmap-votes`)
 
 **Status page:**
 - [ ] `src/lib/status/` with status-models, status-utils, capability-groups, status-labels, elastic-client, status-config, elastic-status, fetch-status, mock-data
@@ -448,16 +396,16 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 
 **General:**
 - [ ] Nav/sidebar updated with roadmap and status links
-- [ ] `ASTRO_DATABASE_FILE` or `ASTRO_DB_REMOTE_URL` set for build
+- [ ] `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY` set for build (roadmap votes + status page)
 
 ---
 
 ## Deployment
 
-- **Build**: Ensure `ASTRO_DATABASE_FILE` (or remote DB env vars) is set in your CI/deploy environment.
+- **Build**: No database setup required. Feature requests are static Markdown; votes use Elasticsearch.
 - **Node adapter**: Your host must support Node.js serverless or standalone (Vercel, Netlify, etc.).
-- **Remote DB**: For production, use Turso or another libSQL host; run `astro db push --remote` in CI before build.
-- **Status page**: Set `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY` to your production Elasticsearch cluster. If Elasticsearch is unavailable, the page falls back to mock data.
+- **Elasticsearch**: Set `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY` for both roadmap votes and the status page. The `roadmap-votes` index is auto-created on first vote.
+- **Status page**: Same Elasticsearch cluster; if unavailable, the status page falls back to mock data.
 
 ---
 
@@ -465,10 +413,11 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 
 | Source (roadmap app) | Destination (your site) |
 |----------------------|--------------------------|
-| `db/config.ts` | `db/config.ts` (merge tables) |
 | `src/middleware.ts` | `src/middleware.ts` (voter cookie for identity-aware voting) |
-| `src/content.config.ts` | Merge `roadmap` and optionally `statusIncidents`, `statusAnnouncements` |
+| `src/content.config.ts` | Merge `roadmap`, `featureRequests`, and optionally `statusIncidents`, `statusAnnouncements` |
 | `src/content/roadmap/*.md` | `src/content/roadmap/*.md` |
+| `src/content/feature-requests/*.md` | `src/content/feature-requests/*.md` |
+| `src/lib/votes/elastic-votes.ts` | `src/lib/votes/elastic-votes.ts` |
 | `src/content/status/incidents/*.md` | `src/content/status/incidents/*.md` (optional) |
 | `src/content/status/announcements/*.md` | `src/content/status/announcements/*.md` (optional) |
 | `src/actions/index.ts` | `src/actions/index.ts` (merge or create) |

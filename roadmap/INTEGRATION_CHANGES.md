@@ -1,17 +1,25 @@
-# Integration Changes: Backend Consolidation
+# Integration Changes: Backend Consolidation & Data Migration
 
-If you previously integrated the roadmap and status page using the **backend + proxy** approach, this document summarizes what changed and what you need to update. The status API has been consolidated into the Astro app—the Astro server now queries Elasticsearch directly.
+If you previously integrated the roadmap and status page using the **backend + proxy** approach, or used **Astro DB** for feature requests and votes, this document summarizes what changed and what you need to update.
 
 ---
 
 ## Summary of Changes
 
+**Status page:**
 | Before | After |
 |--------|-------|
 | Separate Node/Express backend on port 4000 | No backend; Astro queries Elasticsearch directly |
 | Vite proxy `/api/status` → `localhost:4000` | No proxy |
 | `api.ts` fetches from backend HTTP endpoints | `elastic-status.ts` uses `@elastic/elasticsearch` client |
 | `PUBLIC_STATUS_API_URL` env var | Removed; use `ELASTICSEARCH_URL` instead |
+
+**Feature requests & votes:**
+| Before | After |
+|--------|-------|
+| Astro DB (`FeatureRequest`, `Vote` tables) | Content collection (`featureRequests`) + Elasticsearch (`roadmap-votes` index) |
+| `db/config.ts`, `astro db push` | Markdown in `src/content/feature-requests/`; votes in Elasticsearch |
+| `@astrojs/db` dependency | Removed |
 
 ---
 
@@ -126,6 +134,20 @@ If `render-status-html.ts` or `mock-data.ts` imported DTO types from `api.ts`, m
 - [ ] Remove `PUBLIC_STATUS_API_URL`; add Elasticsearch env vars
 - [ ] Verify status page works with `PUBLIC_USE_MOCK_STATUS=true` (no Elasticsearch)
 - [ ] Verify status page works with Elasticsearch env vars set (remote cluster)
+
+---
+
+## Feature Requests & Votes Migration (Astro DB → Content + Elasticsearch)
+
+If you were using Astro DB for feature requests and votes:
+
+1. **Add `featureRequests` content collection** to `content.config.ts` (see INTEGRATION.md).
+2. **Create Markdown files** in `src/content/feature-requests/` with frontmatter: `id`, `title`, `description`, `status`.
+3. **Copy `src/lib/votes/elastic-votes.ts`** — provides `recordVote`, `getVoteCounts`, `getVotedByMe`.
+4. **Update `src/actions/index.ts`** — call `recordVote()` instead of Astro DB insert.
+5. **Update `src/pages/roadmap.astro`** — use `getCollection('featureRequests')`, `getVoteCounts()`, `getVotedByMe()`.
+6. **Remove** `@astrojs/db`, `db/config.ts`, `db/seed.ts`, and the db integration from `astro.config.mjs`.
+7. **Add** `ELASTICSEARCH_INDEX_ROADMAP_VOTES=roadmap-votes` to `.env`.
 
 ---
 
