@@ -39,7 +39,7 @@ If your site is currently **static-only**, you must add an adapter and enable se
 From your existing Astro project root:
 
 ```bash
-npm install @astrojs/node @elastic/elasticsearch
+npm install @astrojs/node @astrojs/sitemap @elastic/elasticsearch
 npx astro add tailwind   # if not already using Tailwind
 ```
 
@@ -54,11 +54,14 @@ import { defineConfig } from 'astro/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import node from '@astrojs/node';
+import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';  // if using Tailwind
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  site: process.env.SITE_URL || 'https://example.com',
+  integrations: [sitemap()],
   adapter: node({ mode: 'standalone' }),
   vite: {
     plugins: [tailwindcss()],  // if using Tailwind
@@ -72,6 +75,8 @@ export default defineConfig({
 ```
 
 Ensure you have an adapter — without it, Actions and Astro DB will not work.
+
+**Sitemap:** The `@astrojs/sitemap` integration generates `sitemap-index.xml` and numbered sitemap files at build time from your prerendered routes. Set `SITE_URL` in your environment so the sitemap uses your production URL. For crawler discovery, add `<link rel="sitemap" href="/sitemap-index.xml" />` to your layout `<head>` and reference the sitemap in `robots.txt`.
 
 **Status page:** The `shared` alias points to `src/lib/status/` (status-models, status-utils, capability-groups, status-labels). Add to `tsconfig.json` if needed: `"paths": { "shared/*": ["src/lib/status/*"] }`. The Astro server queries Elasticsearch directly for status data.
 
@@ -263,6 +268,7 @@ Add `@elastic/elasticsearch` to your dependencies.
 | `STATUS_TIME_WINDOW_MINUTES` | Time window for status aggregation |
 | `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, etc. |
 | `PUBLIC_USE_MOCK_STATUS` | Set to `true` to always use mock data (no Elasticsearch required) |
+| `SITE_URL` | Production URL (e.g. `https://your-status-page.example.gov`). Used by sitemap and incident notification emails. |
 
 If Elasticsearch is unavailable, the status page automatically falls back to mock data.
 
@@ -393,6 +399,11 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 - [ ] `statusIncidents` and `statusAnnouncements` content collections (optional)
 - [ ] Pages: `/roadmap/status`, `/roadmap/status/workspaces/[id]`, `/roadmap/status/incidents/[id]`, `/roadmap/status/external-systems`
 - [ ] Status components: StatusBadge, Capabilities, UptimeBar, SubscribeNotifications
+
+**Sitemap:**
+- [ ] `@astrojs/sitemap` installed and added to `integrations` in astro.config
+- [ ] `site` set in astro.config (e.g. `process.env.SITE_URL || 'https://example.com'`)
+- [ ] `SITE_URL` env var set for production (used by sitemap and incident emails)
 
 **Incident notifications (optional):**
 - [ ] `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY` for internal email service
