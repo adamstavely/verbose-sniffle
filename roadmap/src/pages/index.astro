@@ -1,5 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import RoadmapIllustration from '../components/illustrations/RoadmapIllustration.astro';
+import StatusIllustration from '../components/illustrations/StatusIllustration.astro';
+import AboutIllustration from '../components/illustrations/AboutIllustration.astro';
+import UserGuideIllustration from '../components/illustrations/UserGuideIllustration.astro';
+import DeveloperGuideIllustration from '../components/illustrations/DeveloperGuideIllustration.astro';
+import ReleasesIllustration from '../components/illustrations/ReleasesIllustration.astro';
 ---
 
 <BaseLayout title="Product Roadmap" description="See what's coming soon and vote on features you want">
@@ -25,24 +31,66 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </a>
     </div>
   </section>
-  <section class="mt-16 grid gap-8 sm:grid-cols-2">
-    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 class="font-semibold text-slate-900">Roadmap</h2>
+  <section class="mt-16 grid gap-8 sm:grid-cols-3">
+    <a href="/about" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+      <AboutIllustration class="mx-auto block h-32 w-auto text-slate-400" />
+      <h2 class="mt-4 font-semibold text-slate-900">About</h2>
       <p class="mt-2 text-sm text-slate-600">
-        Browse planned features, vote on what you want, and see community requests.
+        Learn about our product, mission, and the team behind it.
       </p>
-      <a href="/roadmap" class="mt-4 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-500">
-        View roadmap →
-      </a>
-    </div>
-    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 class="font-semibold text-slate-900">Status</h2>
+      <span class="mt-4 inline-block text-sm font-medium text-indigo-600">
+        Learn more →
+      </span>
+    </a>
+    <a href="/user-guide" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+      <UserGuideIllustration class="mx-auto block h-32 w-auto text-slate-400" />
+      <h2 class="mt-4 font-semibold text-slate-900">User Guide</h2>
+      <p class="mt-2 text-sm text-slate-600">
+        Step-by-step guides for using the product and its features.
+      </p>
+      <span class="mt-4 inline-block text-sm font-medium text-indigo-600">
+        Read guide →
+      </span>
+    </a>
+    <a href="/developer-guide" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+      <DeveloperGuideIllustration class="mx-auto block h-32 w-auto text-slate-400" />
+      <h2 class="mt-4 font-semibold text-slate-900">Developer Guide</h2>
+      <p class="mt-2 text-sm text-slate-600">
+        API documentation, integration guides, and technical reference.
+      </p>
+      <span class="mt-4 inline-block text-sm font-medium text-indigo-600">
+        View docs →
+      </span>
+    </a>
+    <a href="/releases" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+      <ReleasesIllustration class="mx-auto block h-32 w-auto text-slate-400" />
+      <h2 class="mt-4 font-semibold text-slate-900">Releases</h2>
+      <p class="mt-2 text-sm text-slate-600">
+        Version history, release notes, and what's new.
+      </p>
+      <span class="mt-4 inline-block text-sm font-medium text-indigo-600">
+        View releases →
+      </span>
+    </a>
+    <a href="/roadmap/status" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+      <StatusIllustration class="mx-auto block h-32 w-auto text-slate-400" />
+      <h2 class="mt-4 font-semibold text-slate-900">Status</h2>
       <p class="mt-2 text-sm text-slate-600">
         Real-time platform status, incidents, and maintenance.
       </p>
-      <a href="/roadmap/status" class="mt-4 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-500">
+      <span class="mt-4 inline-block text-sm font-medium text-indigo-600">
         View status →
-      </a>
-    </div>
+      </span>
+    </a>
+    <a href="/roadmap" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+      <RoadmapIllustration class="mx-auto block h-32 w-auto text-slate-400" />
+      <h2 class="mt-4 font-semibold text-slate-900">Roadmap</h2>
+      <p class="mt-2 text-sm text-slate-600">
+        Browse planned features, vote on what you want, and see community requests.
+      </p>
+      <span class="mt-4 inline-block text-sm font-medium text-indigo-600">
+        View roadmap →
+      </span>
+    </a>
   </section>
 </BaseLayout>

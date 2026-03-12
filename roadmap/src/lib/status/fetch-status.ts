@@ -7,18 +7,19 @@ import type {
   IncidentSummary,
   ScheduledMaintenance,
   ResolvedIncidentEntry,
+  UptimeData,
 } from 'shared/status-models';
 import {
-  getSummary,
-  getWorkspaces,
-  getWorkspaceFeatures,
-  getExternalSystems,
+  getStatusSummary,
+  getWorkspaceStatuses,
+  getWorkspaceFeatureStatuses,
+  getExternalSystemStatuses,
   getIncidents,
   getRecentIncidents,
   getIncidentById,
   getScheduledMaintenance,
-  getUptime,
-} from './api';
+  getUptime90Days,
+} from './elastic-status';
 import {
   MOCK_SUMMARY,
   MOCK_WORKSPACES,
@@ -50,26 +51,47 @@ async function orMock<T>(
 }
 
 export async function fetchSummary() {
-  return orMock(() => getSummary(), MOCK_SUMMARY);
+  return orMock(() => getStatusSummary(), MOCK_SUMMARY);
 }
 
 export async function fetchWorkspaces() {
-  return orMock(() => getWorkspaces(), MOCK_WORKSPACES);
+  return orMock(
+    async () => {
+      const workspaces = await getWorkspaceStatuses();
+      return { workspaces };
+    },
+    MOCK_WORKSPACES
+  );
 }
 
 export async function fetchWorkspaceFeatures(workspaceId: string) {
   return orMock(
-    () => getWorkspaceFeatures(workspaceId),
+    async () => {
+      const features = await getWorkspaceFeatureStatuses(workspaceId);
+      return { workspaceId, features };
+    },
     () => getMockWorkspaceFeatures(workspaceId)
   );
 }
 
 export async function fetchExternalSystems() {
-  return orMock(() => getExternalSystems(), MOCK_EXTERNAL_SYSTEMS);
+  return orMock(
+    async () => {
+      const systems = await getExternalSystemStatuses();
+      return { systems };
+    },
+    MOCK_EXTERNAL_SYSTEMS
+  );
 }
 
 export async function fetchIncidents() {
-  return orMock(() => getIncidents(), MOCK_INCIDENTS);
+  return orMock(
+    async () => {
+      const incidents = await getIncidents();
+      return { incidents };
+    },
+    MOCK_INCIDENTS
+  );
 }
 
 export async function fetchRecentIncidents() {
@@ -89,11 +111,14 @@ export async function fetchIncidentById(
 
 export async function fetchScheduledMaintenance() {
   return orMock(
-    () => getScheduledMaintenance(),
+    async () => {
+      const maintenance = await getScheduledMaintenance();
+      return { maintenance };
+    },
     MOCK_SCHEDULED_MAINTENANCE
   );
 }
 
 export async function fetchUptime() {
-  return orMock(() => getUptime(), () => getMockUptime());
+  return orMock(() => getUptime90Days(), () => getMockUptime());
 }

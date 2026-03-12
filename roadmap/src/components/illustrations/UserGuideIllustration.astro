@@ -1,0 +1,31 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+<!-- User guide: compass - guidance and direction -->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 140 90"
+  fill="none"
+  class={className}
+  aria-hidden="true"
+>
+  <defs>
+    <linearGradient id="userguide-compass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgb(99 102 241)" />
+      <stop offset="100%" stop-color="rgb(129 140 248)" />
+    </linearGradient>
+  </defs>
+  <!-- Compass circle -->
+  <circle cx="70" cy="45" r="36" fill="rgb(248 250 252)" stroke="rgb(99 102 241)" stroke-width="2" />
+  <circle cx="70" cy="45" r="30" fill="none" stroke="rgb(226 232 240)" stroke-width="1" />
+  <!-- Needle N -->
+  <path d="M70 18 L76 45 L70 42 L64 45 Z" fill="url(#userguide-compass)" stroke="rgb(99 102 241)" stroke-width="1" />
+  <!-- Needle S -->
+  <path d="M70 72 L64 45 L70 48 L76 45 Z" fill="rgb(203 213 225)" stroke="rgb(148 163 184)" stroke-width="1" />
+  <!-- Center dot -->
+  <circle cx="70" cy="45" r="4" fill="rgb(99 102 241)" />
+</svg>

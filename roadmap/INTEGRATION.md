@@ -2,6 +2,8 @@
 
 This guide explains how to integrate the product roadmap pages, status page, and features into an existing Astro site that hosts user guides and developer guides.
 
+**Already integrated with the old backend?** See [INTEGRATION_CHANGES.md](./INTEGRATION_CHANGES.md) for what changed and how to update.
+
 ## Overview
 
 **Two integration approaches:**
@@ -67,21 +69,13 @@ export default defineConfig({
         shared: path.resolve(__dirname, 'src/lib/status'),  // status types/utils
       },
     },
-    server: {
-      proxy: {
-        '/api/status': {
-          target: 'http://localhost:4000',  // status API backend
-          changeOrigin: true,
-        },
-      },
-    },
   },
 });
 ```
 
 Ensure you have an adapter — without it, Actions and Astro DB will not work.
 
-**Status page:** The `shared` alias points to `src/lib/status/` (status-models, status-utils, capability-groups, status-labels). Add to `tsconfig.json` if needed: `"paths": { "shared/*": ["src/lib/status/*"] }`. The proxy forwards `/api/status` to your Node/Express status API in development.
+**Status page:** The `shared` alias points to `src/lib/status/` (status-models, status-utils, capability-groups, status-labels). Add to `tsconfig.json` if needed: `"paths": { "shared/*": ["src/lib/status/*"] }`. The Astro server queries Elasticsearch directly for status data.
 
 ---
 
@@ -303,34 +297,30 @@ The status page fetches from a Node/Express API. Status types and utilities live
 
 Copy from `roadmap/src/lib/status/` into your site:
 
-- `api.ts` — fetch helpers for status endpoints
-- `fetch-status.ts` — fetch with mock fallback when API unavailable
-- `mock-data.ts` — mock data for development without backend
+- `elastic-client.ts` — Elasticsearch client (connects to remote cluster)
+- `status-config.ts` — index names and time windows
+- `elastic-status.ts` — queries Elasticsearch for status data
+- `fetch-status.ts` — fetch with mock fallback when Elasticsearch unavailable
+- `mock-data.ts` — mock data for development without Elasticsearch
+
+Add `@elastic/elasticsearch` to your dependencies.
 
 **Environment variables:**
 
 | Variable | Description |
 |----------|-------------|
-| `PUBLIC_STATUS_API_URL` | Status API base URL (default: `/api/status` in browser; `http://localhost:4000/api/status` for SSR) |
-| `PUBLIC_USE_MOCK_STATUS` | Set to `true` to always use mock data (no backend required) |
+| `ELASTICSEARCH_URL` | Elasticsearch endpoint (remote cluster) |
+| `ELASTICSEARCH_API_KEY` | API key for authentication |
+| `STATUS_ENVIRONMENT` | Environment label (e.g. `production`, `staging`) |
+| `STATUS_TIME_WINDOW_MINUTES` | Time window for status aggregation |
+| `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, etc. |
+| `PUBLIC_USE_MOCK_STATUS` | Set to `true` to always use mock data (no Elasticsearch required) |
 
-**Status API endpoints** (your backend must implement these):
+If Elasticsearch is unavailable, the status page automatically falls back to mock data.
 
-- `GET /api/status/summary` — overall status and core services
-- `GET /api/status/workspaces` — workspace list
-- `GET /api/status/workspaces/:id/features` — feature status for a workspace
-- `GET /api/status/external-systems` — external system status
-- `GET /api/status/incidents` — active incidents
-- `GET /api/status/incidents/recent` — resolved incidents (90 days)
-- `GET /api/status/incidents/:id` — single incident detail
-- `GET /api/status/scheduled-maintenance` — scheduled maintenance windows
-- `GET /api/status/uptime` — 90-day daily uptime (`{ days: DailyStatus[], percentage: number }`)
+**90-day uptime:** The Astro server derives daily status from core service telemetry and incidents in Elasticsearch. Each day is classified as `operational`, `degraded`, or `unavailable` based on the worst status observed that day.
 
-If the API is unavailable, the status page automatically falls back to mock data.
-
-**90-day uptime:** The backend derives daily status from core service telemetry and incidents in Elasticsearch. Each day is classified as `operational`, `degraded`, or `unavailable` based on the worst status observed that day.
-
-**Data sources:** See [docs/STATUS_PAGE_DATA.md](../docs/STATUS_PAGE_DATA.md) for a full breakdown of what is automatically pulled from Elasticsearch vs. what can be manually updated via Markdown.
+**Data sources:** See [STATUS_PAGE_DATA.md](STATUS_PAGE_DATA.md) for a full breakdown of what is automatically pulled from Elasticsearch vs. what can be manually updated via Markdown.
 
 **Status page features:**
 - Global status header with overall platform health
@@ -339,10 +329,10 @@ If the API is unavailable, the status page automatically falls back to mock data
 - Core services table
 - Workspace cards with links to feature status
 - Connected services (external systems)
-- 90-day uptime bar (from `/api/status/uptime`, mock fallback when API unavailable)
+- 90-day uptime bar (from Elasticsearch, mock fallback when unavailable)
 - Scheduled maintenance
 - Recent incidents (resolved, last 90 days)
-- Subscribe form for incident notifications (TODO: wire to backend)
+- Subscribe form for incident notifications (TODO: wire to notification system)
 
 ---
 
@@ -450,8 +440,8 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 - [ ] `prerender: false` on requests pages
 
 **Status page:**
-- [ ] `src/lib/status/` with status-models, status-utils, capability-groups, status-labels, api.ts, fetch-status.ts, mock-data.ts
-- [ ] Vite alias for `shared` and proxy for `/api/status` in astro.config
+- [ ] `src/lib/status/` with status-models, status-utils, capability-groups, status-labels, elastic-client, status-config, elastic-status, fetch-status, mock-data
+- [ ] `@elastic/elasticsearch` dependency and Vite alias for `shared` in astro.config
 - [ ] `statusIncidents` and `statusAnnouncements` content collections (optional)
 - [ ] Pages: `/roadmap/status`, `/roadmap/status/workspaces/[id]`, `/roadmap/status/incidents/[id]`, `/roadmap/status/external-systems`
 - [ ] Status components: StatusBadge, Capabilities, UptimeBar, SubscribeNotifications
@@ -467,7 +457,7 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 - **Build**: Ensure `ASTRO_DATABASE_FILE` (or remote DB env vars) is set in your CI/deploy environment.
 - **Node adapter**: Your host must support Node.js serverless or standalone (Vercel, Netlify, etc.).
 - **Remote DB**: For production, use Turso or another libSQL host; run `astro db push --remote` in CI before build.
-- **Status page**: Set `PUBLIC_STATUS_API_URL` to your production status API URL. If the API is unavailable, the page falls back to mock data. For production, ensure the status backend is deployed and reachable.
+- **Status page**: Set `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY` to your production Elasticsearch cluster. If Elasticsearch is unavailable, the page falls back to mock data.
 
 ---
 
@@ -494,7 +484,9 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 | `src/components/status/Capabilities.astro` | `src/components/status/Capabilities.astro` |
 | `src/components/status/UptimeBar.astro` | `src/components/status/UptimeBar.astro` |
 | `src/components/status/SubscribeNotifications.astro` | `src/components/status/SubscribeNotifications.astro` |
-| `src/lib/status/api.ts` | `src/lib/status/api.ts` |
+| `src/lib/status/elastic-client.ts` | `src/lib/status/elastic-client.ts` |
+| `src/lib/status/status-config.ts` | `src/lib/status/status-config.ts` |
+| `src/lib/status/elastic-status.ts` | `src/lib/status/elastic-status.ts` |
 | `src/lib/status/fetch-status.ts` | `src/lib/status/fetch-status.ts` |
 | `src/lib/status/mock-data.ts` | `src/lib/status/mock-data.ts` |
 | `src/lib/status/*` | Status types/utils; Vite alias `shared` points to this folder |

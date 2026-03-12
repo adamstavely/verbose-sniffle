@@ -1,0 +1,42 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+<!-- Developer guide: code brackets and terminal -->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 140 90"
+  fill="none"
+  class={className}
+  aria-hidden="true"
+>
+  <defs>
+    <linearGradient id="devcode-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgb(30 41 59)" />
+      <stop offset="100%" stop-color="rgb(15 23 42)" />
+    </linearGradient>
+  </defs>
+  <!-- Terminal/code window -->
+  <rect x="18" y="18" width="104" height="54" rx="6" fill="url(#devcode-bg)" stroke="rgb(71 85 105)" stroke-width="1" />
+  <!-- Window header -->
+  <rect x="18" y="18" width="104" height="18" rx="6" fill="rgb(51 65 85)" />
+  <rect x="18" y="30" width="104" height="6" fill="rgb(51 65 85)" />
+  <!-- Window dots -->
+  <circle cx="28" cy="27" r="3" fill="rgb(239 68 68)" />
+  <circle cx="38" cy="27" r="3" fill="rgb(234 179 8)" />
+  <circle cx="48" cy="27" r="3" fill="rgb(34 197 94)" />
+  <!-- Code: brackets -->
+  <text x="32" y="52" font-family="ui-monospace, monospace" font-size="14" fill="rgb(99 102 241)">&lt;/&gt;</text>
+  <!-- Code lines -->
+  <line x1="32" y1="62" x2="70" y2="62" stroke="rgb(148 163 184)" stroke-width="1" />
+  <line x1="32" y1="68" x2="55" y2="68" stroke="rgb(148 163 184)" stroke-width="1" />
+  <line x1="36" y1="74" x2="65" y2="74" stroke="rgb(148 163 184)" stroke-width="1" />
+  <!-- Cursor -->
+  <rect x="65" y="72" width="2" height="4" fill="rgb(99 102 241)" />
+  <!-- API/gear accent -->
+  <circle cx="115" cy="45" r="12" fill="rgb(99 102 241)" stroke="white" stroke-width="2" opacity="0.9" />
+  <path d="M115 36 L115 38 M115 52 L115 54 M108 45 L106 45 M124 45 L122 45 M111 38 L109 40 M121 52 L119 54 M111 52 L109 54 M121 38 L119 40" stroke="white" stroke-width="1" stroke-linecap="round" />
+</svg>

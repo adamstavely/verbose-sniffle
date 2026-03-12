@@ -16,7 +16,7 @@ import type {
   ExternalSystemsDto,
   IncidentsDto,
   ScheduledMaintenanceDto,
-} from './api';
+} from './status-models';
 
 const now = new Date().toISOString();
 const earlier = new Date(Date.now() - 300_000).toISOString();

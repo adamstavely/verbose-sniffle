@@ -6,7 +6,7 @@ This document explains what data appears on the status page, where it comes from
 
 ## Automatically from Elasticsearch
 
-The following data is **pulled automatically** from Elasticsearch via the Node/Express status API. No manual edits are required—it updates when the backend fetches fresh data (on each page load).
+The following data is **pulled automatically** from Elasticsearch via the Astro server's Elasticsearch client. No manual edits are required—it updates when the status page fetches fresh data (on each page load).
 
 | Section | Source | Elasticsearch Index | Description |
 |---------|--------|---------------------|-------------|
@@ -22,7 +22,7 @@ The following data is **pulled automatically** from Elasticsearch via the Node/E
 | **Scheduled maintenance** | API `/scheduled-maintenance` | `status-scheduled-maintenance` | Upcoming maintenance windows |
 | **90-day uptime** | API `/uptime` | `status-core-services`, `status-incidents` | Daily status derived from core services and incidents |
 
-**Backend configuration:** Index names and time windows are set via environment variables (see `.env.example`). The backend queries Elasticsearch using `@timestamp` and other fields; ensure your observability pipeline writes to these indices.
+**Roadmap configuration:** Index names and time windows are set via environment variables (see `roadmap/.env.example`). The Astro server queries Elasticsearch using `@timestamp` and other fields; ensure your observability pipeline writes to these indices.
 
 ---
 
@@ -86,7 +86,7 @@ Search may be briefly unavailable during this window.
 
 **Purpose:** Users can enter an email or webhook to receive incident notifications.
 
-**Current state:** The form is displayed and shows a "Thanks!" message on submit. Backend integration (persisting subscribers, sending notifications) is **not yet implemented** and must be wired to your notification system.
+**Current state:** The form is displayed and shows a "Thanks!" message on submit. Integration (persisting subscribers, sending notifications) is **not yet implemented** and must be wired to your notification system.
 
 ---
 
@@ -100,4 +100,4 @@ Search may be briefly unavailable during this window.
 | 90-day uptime | Elasticsearch | Derived from core services and incidents; no direct edit |
 | Incident workarounds/updates (override) | Markdown | Edit `.md` in `roadmap/src/content/status/incidents/` |
 | Maintenance announcements (override) | Markdown | Edit `.md` in `roadmap/src/content/status/announcements/` |
-| Subscribers | (Not yet wired) | Implement backend subscribe API and notification delivery |
+| Subscribers | (Not yet wired) | Implement subscribe API and notification delivery |

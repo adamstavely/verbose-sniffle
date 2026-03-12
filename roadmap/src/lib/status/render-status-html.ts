@@ -9,7 +9,7 @@ import type {
   IncidentsDto,
   ScheduledMaintenanceDto,
   UptimeData,
-} from './api';
+} from './status-models';
 import type { CapabilityGroup, ResolvedIncidentEntry, StatusLevel } from './status-models';
 import { buildCapabilityGroups } from './capability-groups';
 import { getStatusLabel } from './status-labels';

@@ -1,0 +1,63 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+<!-- Status: monitoring dashboard with uptime chart -->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 140 90"
+  fill="none"
+  class={className}
+  aria-hidden="true"
+>
+  <defs>
+    <linearGradient id="status-chart-fill" x1="0%" y1="1" x2="0%" y2="0">
+      <stop offset="0%" stop-color="rgb(99 102 241)" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="rgb(99 102 241)" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="status-bar-green" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgb(34 197 94)" />
+      <stop offset="100%" stop-color="rgb(74 222 128)" />
+    </linearGradient>
+    <linearGradient id="status-bar-amber" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgb(234 179 8)" />
+      <stop offset="100%" stop-color="rgb(250 204 21)" />
+    </linearGradient>
+    <filter id="status-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="0" stdDeviation="1" flood-color="rgb(34 197 94)" flood-opacity="0.4" />
+    </filter>
+  </defs>
+  <!-- Dashboard panel -->
+  <rect x="8" y="8" width="124" height="74" rx="6" fill="rgb(248 250 252)" stroke="rgb(226 232 240)" stroke-width="1.5" />
+  <!-- Inner content area -->
+  <rect x="14" y="14" width="112" height="58" rx="4" fill="white" stroke="rgb(241 245 249)" stroke-width="1" />
+  <!-- Status rows -->
+  <circle cx="26" cy="28" r="4" fill="url(#status-bar-green)" stroke="white" stroke-width="1.5" filter="url(#status-glow)" />
+  <line x1="38" y1="28" x2="112" y2="28" stroke="rgb(226 232 240)" stroke-width="1" stroke-dasharray="2 2" />
+  <circle cx="26" cy="42" r="4" fill="url(#status-bar-green)" stroke="white" stroke-width="1.5" filter="url(#status-glow)" />
+  <line x1="38" y1="42" x2="112" y2="42" stroke="rgb(226 232 240)" stroke-width="1" stroke-dasharray="2 2" />
+  <circle cx="26" cy="56" r="4" fill="url(#status-bar-amber)" stroke="white" stroke-width="1.5" />
+  <line x1="38" y1="56" x2="112" y2="56" stroke="rgb(226 232 240)" stroke-width="1" stroke-dasharray="2 2" />
+  <!-- Uptime sparkline chart -->
+  <path
+    d="M18 78 L28 72 L38 74 L48 68 L58 70 L68 65 L78 67 L88 62 L98 66 L108 60 L118 64 L122 78 Z"
+    fill="url(#status-chart-fill)"
+  />
+  <path
+    d="M18 78 L28 72 L38 74 L48 68 L58 70 L68 65 L78 67 L88 62 L98 66 L108 60 L118 64"
+    stroke="rgb(99 102 241)"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+  <!-- Live indicator -->
+  <g transform="translate(108, 18)">
+    <circle cx="6" cy="6" r="5" fill="rgb(34 197 94)" opacity="0.2" />
+    <circle cx="6" cy="6" r="3" fill="rgb(34 197 94)" />
+    <circle cx="6" cy="6" r="1" fill="white" opacity="0.8" />
+  </g>
+</svg>

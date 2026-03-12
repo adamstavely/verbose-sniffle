@@ -22,14 +22,6 @@ export default defineConfig({
         shared: path.resolve(__dirname, 'src/lib/status'),
       },
     },
-    server: {
-      proxy: {
-        '/api/status': {
-          target: 'http://localhost:4000',
-          changeOrigin: true,
-        },
-      },
-    },
   },
 
   adapter: node({

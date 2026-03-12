@@ -1,6 +1,6 @@
 # Status Page & Product Roadmap
 
-A status dashboard and product roadmap for the Super App platform. Built with Astro and Tailwind, backed by an Elasticsearch-powered Node API.
+A status dashboard and product roadmap for the Super App platform. Built with Astro and Tailwind, with the Astro server querying Elasticsearch directly for status data.
 
 **Integrating into an existing Astro docs site?** See [roadmap/INTEGRATION.md](roadmap/INTEGRATION.md) for a step-by-step guide.
 
@@ -14,16 +14,14 @@ A status dashboard and product roadmap for the Super App platform. Built with As
 | Layer | Stack |
 |-------|--------|
 | **Frontend** | Astro 5, Tailwind CSS (in `roadmap/`) |
-| **Backend** | Node.js, Express 5, TypeScript |
-| **Data** | Elasticsearch (production) / mock data (development) |
+| **Status data** | Elasticsearch (production) / mock data (development) |
 | **Roadmap DB** | Astro DB (libSQL/SQLite) |
 
 ## Project Structure
 
 ```
-├── backend/           # Node/Express status API
 ├── roadmap/           # Astro app (product roadmap + status page)
-└── .env.example       # Environment template
+└── roadmap/.env.example
 ```
 
 ## Features
@@ -46,54 +44,37 @@ A status dashboard and product roadmap for the Super App platform. Built with As
 - Node.js 18+
 - npm 11+
 
-### 1. Backend
-
-```bash
-cd backend
-npm install
-cp ../.env.example .env   # Edit with your Elasticsearch URL and API key
-npm run build
-npm start
-```
-
-The API runs on **port 4000**. Use `npm run dev` for hot reload.
-
-### 2. Roadmap (Status Page + Product Roadmap)
+### 1. Roadmap (Status Page + Product Roadmap)
 
 ```bash
 cd roadmap
 npm install
+cp .env.example .env   # Edit with your Elasticsearch URL and API key (or use mock)
 npm run dev
 ```
 
-The app runs at **http://localhost:4321**. The status page is at `/roadmap/status`. API requests to `/api/status` are proxied to `http://localhost:4000` in development. A local database is created at `roadmap/.astro/content.db` automatically.
+The app runs at **http://localhost:4321**. The status page is at `/roadmap/status`. A local database is created at `roadmap/.astro/content.db` automatically.
 
-### 3. Mock Data (No Backend Required)
+### 2. Mock Data (No Elasticsearch Required)
 
-Set `PUBLIC_USE_MOCK_STATUS=true` in the roadmap environment. The status page will use in-memory mock data without Elasticsearch or the backend.
+Set `PUBLIC_USE_MOCK_STATUS=true` in the roadmap environment. The status page will use in-memory mock data without Elasticsearch.
 
 ## Environment Variables
 
-**Backend** (see `.env.example`)
-
-| Variable | Description |
-|----------|-------------|
-| `ELASTICSEARCH_URL` | Elasticsearch endpoint |
-| `ELASTICSEARCH_API_KEY` | API key for authentication |
-| `STATUS_ENVIRONMENT` | Environment label (e.g. `production`, `staging`) |
-| `STATUS_TIME_WINDOW_MINUTES` | Time window for status aggregation |
-| `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, etc. |
-
-**Roadmap**
+**Roadmap** (see `roadmap/.env.example`)
 
 | Variable | Description |
 |----------|-------------|
 | `ASTRO_DATABASE_FILE` | Local DB path (e.g. `file:.astro/content.db`) |
 | `ASTRO_DB_REMOTE_URL` | Remote libSQL URL (production) |
 | `ASTRO_DB_APP_TOKEN` | Auth token for remote DB |
-| `PUBLIC_STATUS_API_URL` | Status API base URL (default: `/api/status`) |
+| `ELASTICSEARCH_URL` | Elasticsearch endpoint (remote cluster) |
+| `ELASTICSEARCH_API_KEY` | API key for authentication |
+| `STATUS_ENVIRONMENT` | Environment label (e.g. `production`, `staging`) |
+| `STATUS_TIME_WINDOW_MINUTES` | Time window for status aggregation |
+| `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, etc. |
 | `PUBLIC_USE_MOCK_STATUS` | Set to `true` to always use mock status data |
-| `STATUS_FETCH_TIMEOUT_MS` | Timeout for status API fetches in ms (default: 15000). Set to `0` to disable |
+| `STATUS_FETCH_TIMEOUT_MS` | Timeout for status fetches in ms (default: 15000). Set to `0` to disable |
 
 ## Content Collections (Roadmap Items)
 
@@ -111,25 +92,11 @@ priority: "high"       # high | medium | low
 
 ## Status Page Data Sources
 
-See [docs/STATUS_PAGE_DATA.md](docs/STATUS_PAGE_DATA.md) for what is pulled from Elasticsearch vs. manually updated (Markdown, subscribe form).
+See [roadmap/STATUS_PAGE_DATA.md](roadmap/STATUS_PAGE_DATA.md) for what is pulled from Elasticsearch vs. manually updated (Markdown, subscribe form).
 
 To add incident workarounds or maintenance announcements via Markdown:
 - `roadmap/src/content/status/incidents/`
 - `roadmap/src/content/status/announcements/`
-
-## API Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/status/summary` | Overall status and core services |
-| `GET /api/status/workspaces` | Workspace list |
-| `GET /api/status/workspaces/:id/features` | Feature status for a workspace |
-| `GET /api/status/external-systems` | External system status |
-| `GET /api/status/incidents` | Active incidents |
-| `GET /api/status/incidents/recent` | Resolved incidents (90 days) |
-| `GET /api/status/incidents/:id` | Single incident detail |
-| `GET /api/status/scheduled-maintenance` | Scheduled maintenance windows |
-| `GET /api/status/uptime` | 90-day daily uptime |
 
 ## Accessibility
 
@@ -144,11 +111,3 @@ Semantic landmarks, accessible tables, visible focus outlines, skip links, `aria
 | `npm run dev` | Start dev server |
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build |
-
-**Backend** (`cd backend`)
-
-| Script | Description |
-|--------|-------------|
-| `npm run build` | Compile TypeScript |
-| `npm start` | Run compiled app |
-| `npm run dev` | Run with hot reload |

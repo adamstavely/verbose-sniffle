@@ -1,0 +1,78 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+<!-- Roadmap: winding journey with milestones and voting -->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 140 90"
+  fill="none"
+  class={className}
+  aria-hidden="true"
+>
+  <defs>
+    <linearGradient id="roadmap-path-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgb(99 102 241)" stop-opacity="0.3" />
+      <stop offset="50%" stop-color="rgb(99 102 241)" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="rgb(129 140 248)" />
+    </linearGradient>
+    <linearGradient id="roadmap-marker-glow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="rgb(165 180 252)" />
+      <stop offset="100%" stop-color="rgb(99 102 241)" />
+    </linearGradient>
+    <filter id="roadmap-soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="rgb(99 102 241)" flood-opacity="0.2" />
+    </filter>
+  </defs>
+  <!-- Soft background road shape -->
+  <path
+    d="M12 48 Q45 22, 75 38 Q105 54, 128 45"
+    stroke="rgb(226 232 240)"
+    stroke-width="8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+  <!-- Main path -->
+  <path
+    d="M12 48 Q45 22, 75 38 Q105 54, 128 45"
+    stroke="url(#roadmap-path-grad)"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+  <!-- Dashed center line -->
+  <path
+    d="M12 48 Q45 22, 75 38 Q105 54, 128 45"
+    stroke="rgb(255 255 255)"
+    stroke-width="1"
+    stroke-dasharray="4 6"
+    stroke-linecap="round"
+    fill="none"
+    opacity="0.8"
+  />
+  <!-- Milestone 1 -->
+  <circle cx="20" cy="46" r="6" fill="url(#roadmap-marker-glow)" stroke="white" stroke-width="2" filter="url(#roadmap-soft-shadow)" />
+  <circle cx="20" cy="46" r="2" fill="white" opacity="0.9" />
+  <!-- Milestone 2 -->
+  <circle cx="55" cy="28" r="6" fill="url(#roadmap-marker-glow)" stroke="white" stroke-width="2" filter="url(#roadmap-soft-shadow)" />
+  <circle cx="55" cy="28" r="2" fill="white" opacity="0.9" />
+  <!-- Milestone 3 -->
+  <circle cx="90" cy="42" r="6" fill="url(#roadmap-marker-glow)" stroke="white" stroke-width="2" filter="url(#roadmap-soft-shadow)" />
+  <circle cx="90" cy="42" r="2" fill="white" opacity="0.9" />
+  <!-- Destination flag -->
+  <g transform="translate(120, 38)">
+    <line x1="0" y1="14" x2="0" y2="0" stroke="rgb(99 102 241)" stroke-width="2" stroke-linecap="round" />
+    <path d="M0 0 L12 4 L0 8 Z" fill="rgb(99 102 241)" />
+    <circle cx="0" cy="14" r="2" fill="rgb(99 102 241)" />
+  </g>
+  <!-- Vote accent: upward arrow -->
+  <g transform="translate(72, 22)">
+    <circle cx="6" cy="6" r="5" fill="rgb(99 102 241)" stroke="white" stroke-width="1.5" />
+    <path d="M6 4 L6 8 M4 6 L6 4 L8 6" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  </g>
+</svg>

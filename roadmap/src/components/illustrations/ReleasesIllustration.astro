@@ -1,0 +1,30 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+<!-- Releases: megaphone - announcements and what's new -->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 140 90"
+  fill="none"
+  class={className}
+  aria-hidden="true"
+>
+  <defs>
+    <linearGradient id="releases-megaphone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgb(99 102 241)" />
+      <stop offset="100%" stop-color="rgb(129 140 248)" />
+    </linearGradient>
+  </defs>
+  <!-- Megaphone bell -->
+  <path d="M35 25 L35 65 L95 45 L35 25 Z" fill="url(#releases-megaphone)" stroke="rgb(99 102 241)" stroke-width="1" />
+  <!-- Handle -->
+  <rect x="25" y="38" width="14" height="14" rx="3" fill="url(#releases-megaphone)" stroke="rgb(99 102 241)" stroke-width="1" />
+  <!-- Sound waves -->
+  <path d="M95 38 Q105 45 95 52" stroke="rgb(165 180 252)" stroke-width="2" fill="none" stroke-linecap="round" />
+  <path d="M100 35 Q115 45 100 55" stroke="rgb(165 180 252)" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.8" />
+  <path d="M105 32 Q125 45 105 58" stroke="rgb(165 180 252)" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.6" />
+</svg>

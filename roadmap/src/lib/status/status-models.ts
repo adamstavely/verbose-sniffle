@@ -135,3 +135,30 @@ export interface ScheduledMaintenance {
   affectedCoreServiceIds?: string[];
   affectedExternalSystemIds?: string[];
 }
+
+/** DTO shapes for status API responses */
+export interface StatusSummaryDto {
+  summary: AppStatusSummary;
+  coreServices: CoreServiceStatus[];
+}
+
+export interface WorkspacesDto {
+  workspaces: Workspace[];
+}
+
+export interface WorkspaceFeaturesDto {
+  workspaceId: string;
+  features: WorkspaceFeatureStatus[];
+}
+
+export interface ExternalSystemsDto {
+  systems: ExternalSystemStatus[];
+}
+
+export interface IncidentsDto {
+  incidents: IncidentSummary[];
+}
+
+export interface ScheduledMaintenanceDto {
+  maintenance: ScheduledMaintenance[];
+}
