@@ -226,7 +226,7 @@ Choose a route prefix for the roadmap to avoid clashes with existing docs:
 Copy these pages from `roadmap/src/pages/` into your site:
 
 **Roadmap** (roadmap and voting combined in one section):
-- `roadmap.astro` → e.g. `src/pages/roadmap/index.astro` (includes planned features + feature requests with voting)
+- `roadmap.astro` → e.g. `src/pages/roadmap/index.astro` (includes planned features + feature requests with voting; shows toast feedback after vote)
 - `requests/index.astro` → redirects to `/roadmap` (optional to copy)
 
 **Status page:**
@@ -286,7 +286,7 @@ If Elasticsearch is unavailable, the status page automatically falls back to moc
 - 90-day uptime bar (from Elasticsearch, mock fallback when unavailable)
 - Scheduled maintenance
 - Recent incidents (resolved, last 90 days)
-- Subscribe form for incident notifications (TODO: wire to notification system)
+- Subscribe form for incident and maintenance notifications; confirmation email sent on subscribe
 
 ---
 
@@ -348,12 +348,13 @@ Copy these components from `roadmap/src/components/` into your site:
 **Roadmap:**
 - `RoadmapList.astro` — renders roadmap items from content collection
 - `FeatureRequestCard.astro` — single feature request with vote button
+- `Toast.astro` — vote feedback toast ("Thanks for voting!" / "You've already voted"); auto-dismiss
 
 **Status page** (from `roadmap/src/components/status/`):
 - `StatusBadge.astro` — status indicator (operational, degraded, outage, etc.)
 - `Capabilities.astro` — capability groups with expandable accordions for impact details
 - `UptimeBar.astro` — 90-day uptime visualization
-- `SubscribeNotifications.astro` — email/webhook signup for incident notifications
+- `SubscribeNotifications.astro` — email signup for incident and maintenance notifications (confirmation email sent on subscribe)
 
 Update any internal paths (e.g. `actions.vote` stays the same; layout imports may change).
 
@@ -405,12 +406,13 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 - [ ] `site` set in astro.config (e.g. `process.env.SITE_URL || 'https://example.com'`)
 - [ ] `SITE_URL` env var set for production (used by sitemap and incident emails)
 
-**Incident notifications (optional):**
+**Incident and maintenance notifications (optional):**
 - [ ] `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY` for internal email service
-- [ ] `SITE_URL` for incident links in emails
-- [ ] `ELASTICSEARCH_INDEX_STATUS_SUBSCRIBERS` and `ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT`
+- [ ] `SITE_URL` for incident/maintenance links in emails
+- [ ] `ELASTICSEARCH_INDEX_STATUS_SUBSCRIBERS`, `ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT`, and `ELASTICSEARCH_INDEX_STATUS_MAINTENANCE_NOTIFICATION_SENT`
 - [ ] Cron or webhook calling `GET` or `POST /api/notify/run` (e.g. every 5 min)
 - [ ] `NOTIFY_WEBHOOK_SECRET` if securing webhook trigger
+- [ ] Subscribers receive confirmation email on subscribe; incident and scheduled maintenance notifications when new items appear
 
 **General:**
 - [ ] Nav/sidebar updated with roadmap and status links
@@ -424,7 +426,7 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 - **Node adapter**: Your host must support Node.js serverless or standalone (Vercel, Netlify, etc.).
 - **Elasticsearch**: Set `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY` for both roadmap votes and the status page. The `roadmap-votes` index is auto-created on first vote.
 - **Status page**: Same Elasticsearch cluster; if unavailable, the status page falls back to mock data.
-- **Notifications**: Set `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY`; schedule `curl https://your-site/api/notify/run` every 5 minutes (or have your pipeline POST when incidents change).
+- **Notifications**: Set `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY`; schedule `curl https://your-site/api/notify/run` every 5 minutes (or have your pipeline POST when incidents change). Subscribers receive confirmation emails on signup; the notify job sends incident and scheduled maintenance notifications.
 
 ---
 
@@ -447,6 +449,7 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 | `src/pages/roadmap/status/external-systems.astro` | `src/pages/roadmap/status/external-systems.astro` |
 | `src/components/RoadmapList.astro` | `src/components/RoadmapList.astro` |
 | `src/components/FeatureRequestCard.astro` | `src/components/FeatureRequestCard.astro` |
+| `src/components/Toast.astro` | `src/components/Toast.astro` (vote feedback toast) |
 | `src/components/SubmitRequestForm.astro` | `src/components/SubmitRequestForm.astro` |
 | `src/components/status/StatusBadge.astro` | `src/components/status/StatusBadge.astro` |
 | `src/components/status/Capabilities.astro` | `src/components/status/Capabilities.astro` |
@@ -458,5 +461,5 @@ If your site already has a home page, add a prominent link to `/roadmap` instead
 | `src/lib/status/fetch-status.ts` | `src/lib/status/fetch-status.ts` |
 | `src/lib/status/mock-data.ts` | `src/lib/status/mock-data.ts` |
 | `src/lib/status/*` | Status types/utils; Vite alias `shared` points to this folder |
-| `src/lib/notifications/*` | Subscribers, email client, templates, notification delivery |
+| `src/lib/notifications/*` | Subscribers, email client, templates, notification delivery, maintenance-notification-state |
 | `src/pages/api/notify/run.ts` | `src/pages/api/notify/run.ts` (cron/webhook trigger) |
