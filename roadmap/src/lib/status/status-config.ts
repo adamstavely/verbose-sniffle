@@ -7,6 +7,7 @@ export interface StatusIndicesConfig {
   roadmapVotes: string;
   statusSubscribers: string;
   statusNotificationSent: string;
+  pageFeedback: string;
 }
 
 export interface StatusThresholds {
@@ -57,6 +58,7 @@ export const statusConfig: StatusServiceConfig = {
       'ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT',
       'status-notification-sent'
     ),
+    pageFeedback: env('ELASTICSEARCH_INDEX_PAGE_FEEDBACK', 'page-feedback'),
   },
   thresholds: {
     errorRate: {

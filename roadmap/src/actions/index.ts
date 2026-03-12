@@ -2,6 +2,7 @@ import { defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
 import { recordVote } from '../lib/votes/elastic-votes';
 import { addSubscriber } from '../lib/notifications/elastic-subscribers';
+import { recordFeedback } from '../lib/feedback/elastic-feedback';
 
 const VOTER_COOKIE = 'roadmap_voter_id';
 
@@ -28,6 +29,22 @@ export const server = {
     }),
     handler: async ({ email }) => {
       return addSubscriber(email);
+    },
+  }),
+
+  feedback: defineAction({
+    accept: 'form',
+    input: z.object({
+      pagePath: z.string().min(1, 'Page path is required'),
+      helpful: z.enum(['yes', 'no']),
+      message: z.string().max(500).optional(),
+    }),
+    handler: async ({ pagePath, helpful, message }, { cookies }) => {
+      const visitorId = cookies.get(VOTER_COOKIE)?.value;
+      if (!visitorId) {
+        return { success: false, error: 'Please refresh and try again.' };
+      }
+      return recordFeedback(pagePath, helpful, visitorId, message);
     },
   }),
 };
