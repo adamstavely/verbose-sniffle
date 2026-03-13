@@ -2,7 +2,7 @@
 
 A status dashboard and product roadmap for the Super App platform. Built with Astro and Tailwind, with the Astro server querying Elasticsearch directly for status data.
 
-**Integrating into an existing Astro docs site?** See [roadmap/INTEGRATION.md](roadmap/INTEGRATION.md) for a step-by-step guide.
+**Integrating into an existing Astro docs site?** See [roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md) for the comprehensive step-by-step guide.
 
 ## Overview
 
