@@ -1,75 +1,155 @@
-# Integration Guide: Product Roadmap & Status Page into Your Astro Site
+# Integration and deployment guide: roadmap and status page
 
-This guide walks you through integrating the product roadmap and status page into an existing Astro docs site. It consolidates setup instructions, migration steps, and troubleshooting in one place.
+This document is the **single reference** for merging the roadmap and status features into your Astro site and deploying them safely. It includes every **Astro server-side** requirement (adapter, middleware, API routes, Actions, and on-demand pages) so expectations stay aligned with the architecture.
 
----
-
-## Table of Contents
-
-1. [Quick Start: Which Path Are You On?](#quick-start-which-path-are-you-on)
-2. [Architecture Overview](#architecture-overview)
-3. [Prerequisites](#prerequisites)
-4. [Step-by-Step Integration](#step-by-step-integration)
-5. [Migrating from the Old Setup](#migrating-from-the-old-setup)
-6. [Environment Variables Reference](#environment-variables-reference)
-7. [File Copy Reference](#file-copy-reference)
-8. [Checklist](#checklist)
-9. [Deployment](#deployment)
+If anything here conflicts with an older note elsewhere in the repo, **this file wins**.
 
 ---
 
-## Quick Start: Which Path Are You On?
+## Table of contents
 
-| Your situation | What to do |
-|----------------|------------|
-| **New integration** — Adding roadmap + status to a fresh or existing Astro site | Follow [Step-by-Step Integration](#step-by-step-integration) |
-| **Upgrading** — You previously used the Node/Express backend, Vite proxy, or Astro DB | Read [Migrating from the Old Setup](#migrating-from-the-old-setup) first, then follow the integration steps |
-| **No content collections yet** — Your site uses `import.meta.glob`, JSON, or static files for content | See [MIGRATION_TO_COLLECTIONS.md](./MIGRATION_TO_COLLECTIONS.md) before adding roadmap collections |
-
----
-
-## Architecture Overview
-
-**Current design (no separate backend):**
-
-- **Roadmap:** Content collections (Markdown) for planned features and feature requests; votes stored in Elasticsearch
-- **Status page:** Astro server queries Elasticsearch directly via `@elastic/elasticsearch`; client fetches HTML from `/api/page-status-data`
-- **Notifications:** Subscribers stored in Elasticsearch; email sent via your internal email service; cron/webhook triggers `GET /api/notify/run`
-
-**What’s included:**
-
-| Feature | Description |
-|---------|-------------|
-| **Roadmap** | Planned features, feature requests with voting, “coming soon” items |
-| **Status page** | Platform health, incidents, capabilities, 90-day uptime, subscribe for notifications |
-| **Page feedback** (optional) | “Was this helpful?” buttons with yes/no and optional message |
-
----
-
-## Prerequisites
-
-- Astro 4.15+ (for Actions) or Astro 5.x
-- Node.js 18+
-- Server adapter (e.g. `@astrojs/node`, `@astrojs/vercel`) — required for Actions and API routes
-
-If your site is **static-only**, add an adapter and enable server rendering for roadmap and status routes.
+1. [What the refactor changed (and what it did not)](#1-what-the-refactor-changed-and-what-it-did-not)
+2. [Server-side surface area (complete inventory)](#2-server-side-surface-area-complete-inventory)
+3. [Who this guide is for](#3-who-this-guide-is-for)
+4. [Prerequisites](#4-prerequisites)
+5. [Integration: dependencies and Astro config](#5-integration-dependencies-and-astro-config)
+6. [Integration: content collections](#6-integration-content-collections)
+7. [Integration: middleware](#7-integration-middleware)
+8. [Integration: Actions](#8-integration-actions)
+9. [Integration: libraries to copy](#9-integration-libraries-to-copy)
+10. [Integration: pages and API routes](#10-integration-pages-and-api-routes)
+11. [Integration: components](#11-integration-components)
+12. [Integration: layout, navigation, styling](#12-integration-layout-navigation-styling)
+13. [Environment variables](#13-environment-variables)
+14. [File copy checklist](#14-file-copy-checklist)
+15. [Deployment overview](#15-deployment-overview)
+16. [Deployment: @astrojs/node (standalone)](#16-deployment-astrojsnode-standalone)
+17. [Deployment: Vercel](#17-deployment-vercel)
+18. [Deployment: Netlify](#18-deployment-netlify)
+19. [Deployment: incident notification job](#19-deployment-incident-notification-job)
+20. [Post-deploy verification](#20-post-deploy-verification)
+21. [Migrating from the old Express backend or Astro DB](#21-migrating-from-the-old-express-backend-or-astro-db)
+22. [Troubleshooting](#22-troubleshooting)
+23. [Related documentation](#23-related-documentation)
 
 ---
 
-## Step-by-Step Integration
+## 1. What the refactor changed (and what it did not)
 
-### Step 1: Install Dependencies
+| Statement | Accurate? |
+|-----------|-----------|
+| **There is no second application** (no separate Express/Node service on another port, no Vite proxy to a status backend). | **Yes.** One Astro project handles docs, roadmap, status UI, and server endpoints. |
+| **Nothing runs server-side.** | **No.** voting, subscribe, feedback, status HTML generation, and notification job endpoints all run **inside Astro’s server runtime** on each request (or on each invocation of a serverless function, depending on the host). |
+| **You can deploy only static HTML** (e.g. upload `dist/` to a bucket with no Node/serverless). | **No**, not while keeping voting, live status from Elasticsearch, Actions, and `/api/*` as implemented in this repo. Those features require a **hosted Astro server** (Node process, or a platform adapter that provides serverless SSR). |
+
+**Plain-language summary:** the refactor removed the **extra backend service**. It did **not** remove the need for a **server**. The “backend” is now **your Astro app’s server bundle**, produced by an **adapter**.
+
+---
+
+## 2. Server-side surface area (complete inventory)
+
+Everything below requires an **adapter** and a hosting model where **on-demand rendering** and **endpoints** work. In Astro 5, with an adapter installed, most pages can still **prerender** while specific routes stay **server-rendered** (`prerender = false`) or implemented as **API routes**.
+
+### 2.1 Middleware (`src/middleware.ts`)
+
+Runs on **every HTTP request** into the app (unless your host excludes certain paths—uncommon).
+
+| Responsibility | Notes |
+|----------------|--------|
+| Sets `roadmap_voter_id` cookie if missing | Used for identity-aware voting and page feedback visitor id. |
+| Intercepts **vote** and **subscribe** form posts | Uses `getActionContext` from `astro:actions`, runs the handler, stores the action result, **redirects** back to `Referer` (or `/roadmap`). |
+
+**Merge caveat:** if your site already has `src/middleware.ts`, you must **merge** this logic into yours (same `onRequest` pipeline, or compose helpers). There must be only one middleware entry.
+
+### 2.2 Astro Actions (`src/actions/index.ts`)
+
+Server-only handlers invoked from the browser (forms use `method="POST"` and `action={actions.vote}` etc.).
+
+| Action | Purpose | External systems |
+|--------|---------|------------------|
+| `vote` | One vote per feature per cookie id | Writes to Elasticsearch (`roadmap-votes` index by default). |
+| `subscribe` | Email signup for status notifications | Writes to Elasticsearch subscribers index; may call email service for confirmation. |
+| `feedback` | “Was this helpful?” | Writes to Elasticsearch page-feedback index (if configured). |
+
+**Merge caveat:** if you already export `server` from actions, **merge** the `vote` / `subscribe` / `feedback` definitions into your existing object (and resolve naming conflicts).
+
+### 2.3 On-demand pages (`export const prerender = false`)
+
+In the reference `roadmap` app these files use on-demand rendering:
+
+| File | URL (default layout) | Server work |
+|------|----------------------|-------------|
+| `src/pages/roadmap.astro` | `/roadmap` | `getCollection`, `getVoteCounts`, `getVotedByMe`, `Astro.getActionResult`, cookies |
+| `src/pages/requests/index.astro` | `/requests` | Redirect to `/roadmap` |
+| `src/pages/roadmap/status/index.astro` | `/roadmap/status` | Shell + subscribe result; client fetches `/api/page-status-data` |
+| `src/pages/roadmap/status/workspaces/[id].astro` | `/roadmap/status/workspaces/:id` | Status data for one workspace |
+| `src/pages/roadmap/status/incidents/[id].astro` | `/roadmap/status/incidents/:id` | Incident detail |
+| `src/pages/roadmap/status/external-systems.astro` | `/roadmap/status/external-systems` | External systems view |
+
+If you move `roadmap.astro` to `src/pages/roadmap/index.astro`, the URL is still `/roadmap`; keep `prerender = false` on that file.
+
+### 2.4 API routes (`src/pages/api/**`)
+
+| File | Methods | Purpose |
+|------|---------|--------|
+| `src/pages/api/page-status-data.ts` | `GET` | Loads all status slices via `fetch-status` (Elasticsearch or mock), returns **HTML** fragment for the status page client script. |
+| `src/pages/api/notify/run.ts` | `GET`, `POST` | Runs scheduled notification delivery (`runNotificationDelivery`). Optional `Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>` on `POST`. |
+
+Both files **must** keep `export const prerender = false`.
+
+### 2.5 Elasticsearch and email (server runtime only)
+
+Uses **`ELASTICSEARCH_URL`** and **`ELASTICSEARCH_API_KEY`** (and other index env vars) **only in server code**—never exposed as `PUBLIC_*`. The browser talks only to **your origin** (`/api/...`, Actions), not directly to Elasticsearch.
+
+### 2.6 What stays build-time / static
+
+- **Content collections** are built and validated at build time; Markdown lives in the repo.
+- **Docs pages** that omit `prerender = false` are **prerendered** like a normal Astro site, as long as you do not need request-only data on them.
+
+---
+
+## 3. Who this guide is for
+
+| Situation | Where to start |
+|-----------|----------------|
+| New integration into an existing Astro site | Sections [5](#5-integration-dependencies-and-astro-config)–[12](#12-integration-layout-navigation-styling), then [15](#15-deployment-overview)–[20](#20-post-deploy-verification). |
+| You used the old Express + proxy setup or Astro DB | Section [21](#21-migrating-from-the-old-express-backend-or-astro-db), then the integration steps. |
+| Your site does not use content collections yet | [MIGRATION_TO_COLLECTIONS.md](./MIGRATION_TO_COLLECTIONS.md) **before** section [6](#6-integration-content-collections). |
+
+---
+
+## 4. Prerequisites
+
+- **Astro** 4.15+ (Actions) or **5.x** (this repo uses 5.x patterns).
+- **Node.js** 18+ at build time; match your host’s Node version when possible.
+- **Exactly one** official **adapter** in `astro.config`, appropriate for **production** (see [15](#15-deployment-overview)).
+- **Network path** from your deployed server to **Elasticsearch** (allowlist IP/VPC or HTTPS endpoint), unless you rely on **`PUBLIC_USE_MOCK_STATUS=true`** (status only, mock data).
+
+---
+
+## 5. Integration: dependencies and Astro config
+
+### 5.1 Packages
 
 ```bash
-npm install @astrojs/node @astrojs/sitemap @elastic/elasticsearch
-npx astro add tailwind   # if not already using Tailwind
+npm install @astrojs/sitemap @elastic/elasticsearch
 ```
 
----
+Add **one** adapter package for where you deploy, for example:
 
-### Step 2: Update Astro Config
+- **Node / Docker / many traditional hosts:** `npm install @astrojs/node`
+- **Vercel:** `npm install @astrojs/vercel` (do not use `@astrojs/node` as the deploy adapter on Vercel)
+- **Netlify:** `npm install @astrojs/netlify`
 
-In `astro.config.mjs` (or `astro.config.ts`):
+If you already have an adapter, **do not add a second**—merge new dependencies only.
+
+Optional but common for this UI:
+
+```bash
+npx astro add tailwind
+```
+
+### 5.2 `astro.config.mjs` (baseline pattern)
 
 ```js
 import { defineConfig } from 'astro/config';
@@ -77,7 +157,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import node from '@astrojs/node';
 import sitemap from '@astrojs/sitemap';
-import tailwindcss from '@tailwindcss/vite';  // if using Tailwind
+import tailwindcss from '@tailwindcss/vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -96,9 +176,13 @@ export default defineConfig({
 });
 ```
 
-**Important:** Do **not** add a Vite proxy for `/api/status`. The status page uses `/api/page-status-data` and queries Elasticsearch directly from the Astro server.
+**Replace `node(...)`** with `vercel()`, `netlify()`, etc., when that matches production.
 
-Add to `tsconfig.json` if needed:
+**Do not** add a Vite **`server.proxy`** for `/api/status`. Status is served from **`/api/page-status-data`** on the same app.
+
+### 5.3 TypeScript paths
+
+If you use the `shared/*` imports from status libraries, add paths in `tsconfig.json`:
 
 ```json
 {
@@ -112,458 +196,312 @@ Add to `tsconfig.json` if needed:
 
 ---
 
-### Step 3: Content Collections
+## 6. Integration: content collections
 
-Create or update `src/content.config.ts`. Add the roadmap and feature request collections (and optionally status collections):
+Create or extend **`src/content.config.ts`** at the project root (same level Astro expects).
 
-```ts
-import { defineCollection } from 'astro:content';
-import { glob } from 'astro/loaders';
-import { z } from 'astro/zod';
+Reference schema from this repo: `roadmap/src/content.config.ts` — collections:
 
-// Your existing collections (e.g. userGuides, developerGuides)
-// const userGuides = defineCollection({ ... });
-// const developerGuides = defineCollection({ ... });
+- `roadmap` → `src/content/roadmap/**/*.md`
+- `featureRequests` → `src/content/feature-requests/**/*.md`
+- `statusIncidents` → `src/content/status/incidents/**/*.md` (optional)
+- `statusAnnouncements` → `src/content/status/announcements/**/*.md` (optional)
 
-const roadmap = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/roadmap' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    status: z.enum(['planned', 'in-progress', 'shipped']),
-    targetQuarter: z.string().optional(),
-    priority: z.enum(['high', 'medium', 'low']).optional(),
-  }),
-});
+Example frontmatter for feature requests (see `roadmap/src/content/feature-requests/*.md`):
 
-const featureRequests = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/feature-requests' }),
-  schema: z.object({
-    id: z.string(),
-    title: z.string(),
-    description: z.string(),
-    status: z.enum(['pending', 'approved', 'rejected']),
-  }),
-});
-
-// Optional: incident workarounds and maintenance announcements
-const statusIncidents = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/status/incidents' }),
-  schema: z.object({
-    incidentId: z.string().optional(),
-    title: z.string(),
-    severity: z.enum(['HEALTHY', 'DEGRADED', 'OUTAGE', 'MAINTENANCE', 'UNKNOWN']).optional(),
-    workaround: z.string().optional(),
-  }),
-});
-
-const statusAnnouncements = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/status/announcements' }),
-  schema: z.object({
-    title: z.string(),
-    scheduledStart: z.string().optional(),
-    scheduledEnd: z.string().optional(),
-    status: z.enum(['scheduled', 'in_progress', 'completed']).optional(),
-  }),
-});
-
-export const collections = {
-  roadmap,
-  featureRequests,
-  statusIncidents,
-  statusAnnouncements,
-  // ... your existing collections
-};
-```
-
-Create directories and add Markdown files:
-
-- `src/content/roadmap/` — planned features (see `roadmap/src/content/roadmap/` for examples)
-- `src/content/feature-requests/` — feature requests with `id`, `title`, `description`, `status`
-- `src/content/status/incidents/` — optional incident overrides
-- `src/content/status/announcements/` — optional maintenance announcements
-
+```yaml
 ---
-
-### Step 4: Middleware (Voter Cookie + Form Handling)
-
-Create `src/middleware.ts` to assign a visitor cookie (used for voting and feedback) and handle vote/subscribe form redirects:
-
-```ts
-import { defineMiddleware } from 'astro:middleware';
-import { getActionContext } from 'astro:actions';
-import { randomUUID } from 'node:crypto';
-
-const VOTER_COOKIE = 'roadmap_voter_id';
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
-
-export const onRequest = defineMiddleware(async (context, next) => {
-  if (!context.cookies.has(VOTER_COOKIE)) {
-    context.cookies.set(VOTER_COOKIE, randomUUID(), {
-      path: '/',
-      maxAge: COOKIE_MAX_AGE,
-      httpOnly: true,
-      secure: import.meta.env.PROD,
-      sameSite: 'lax',
-    });
-  }
-
-  const { action, setActionResult, serializeActionResult } = getActionContext(context);
-  const isVoteForm = action?.calledFrom === 'form' && action.name?.endsWith('vote');
-  const isSubscribeForm = action?.calledFrom === 'form' && action.name?.endsWith('subscribe');
-  if (isVoteForm || isSubscribeForm) {
-    try {
-      const result = await action.handler();
-      setActionResult(action.name, serializeActionResult(result));
-      const referer = context.request.headers.get('Referer');
-      const redirectTo = referer ? new URL(referer).pathname : '/roadmap';
-      return context.redirect(redirectTo);
-    } catch (err) {
-      setActionResult(action.name, serializeActionResult({ success: false, error: String(err) }));
-      const referer = context.request.headers.get('Referer');
-      const redirectTo = referer ? new URL(referer).pathname : '/roadmap';
-      return context.redirect(redirectTo);
-    }
-  }
-
-  return next();
-});
+id: "req-example"
+title: "Example request"
+description: "Short description"
+status: "pending"
+---
 ```
 
 ---
 
-### Step 5: Actions
+## 7. Integration: middleware
 
-Create or merge into `src/actions/index.ts`:
+Copy the behavior from `roadmap/src/middleware.ts`:
 
-```ts
-import { defineAction } from 'astro:actions';
-import { z } from 'astro/zod';
-import { recordVote } from '../lib/votes/elastic-votes';
-import { addSubscriber } from '../lib/notifications/elastic-subscribers';
-import { recordFeedback } from '../lib/feedback/elastic-feedback';
-import { sendEmail, isEmailServiceConfigured } from '../lib/notifications/email-client';
-import {
-  buildSubscribeConfirmation,
-  buildSubscribeConfirmationSubject,
-} from '../lib/notifications/email-templates';
+- Cookie `roadmap_voter_id`
+- Vote and subscribe **form** handling via `getActionContext` + redirect
 
-const VOTER_COOKIE = 'roadmap_voter_id';
+**If you already have middleware:** combine into a single `onRequest` (or export a shared helper) so cookie handling and action handling still run. Pay attention to ordering relative to auth or locale middleware.
 
-export const server = {
-  vote: defineAction({
-    accept: 'form',
-    input: z.object({
-      featureRequestId: z.string().min(1, 'Feature request ID is required'),
-    }),
-    handler: async ({ featureRequestId }, { cookies }) => {
-      const voterId = cookies.get(VOTER_COOKIE)?.value;
-      if (!voterId) {
-        return { success: false, error: 'Identity required. Please refresh the page and try again.' };
-      }
-      return recordVote(featureRequestId, voterId);
-    },
-  }),
-
-  subscribe: defineAction({
-    accept: 'form',
-    input: z.object({
-      email: z.string().email('Please enter a valid email address'),
-    }),
-    handler: async ({ email }) => {
-      const normalized = email.trim().toLowerCase();
-      const result = await addSubscriber(normalized);
-      if (result.success && isEmailServiceConfigured()) {
-        await sendEmail(
-          normalized,
-          buildSubscribeConfirmationSubject(),
-          buildSubscribeConfirmation(normalized)
-        );
-      }
-      return result;
-    },
-  }),
-
-  feedback: defineAction({
-    accept: 'form',
-    input: z.object({
-      pagePath: z.string().min(1, 'Page path is required'),
-      helpful: z.enum(['yes', 'no']),
-      message: z.string().max(500).optional(),
-    }),
-    handler: async ({ pagePath, helpful, message }, { cookies }) => {
-      const visitorId = cookies.get(VOTER_COOKIE)?.value;
-      if (!visitorId) {
-        return { success: false, error: 'Please refresh and try again.' };
-      }
-      return recordFeedback(pagePath, helpful, visitorId, message);
-    },
-  }),
-};
-```
-
-You can omit `subscribe` and `feedback` if you only want roadmap voting. Copy the corresponding lib files only if you use them.
+**Path hard-coding:** default fallback redirect uses `/roadmap`; change if your roadmap lives elsewhere.
 
 ---
 
-### Step 6: Copy Lib Files
+## 8. Integration: Actions
 
-**Votes (required for roadmap):**
+Copy or merge `roadmap/src/actions/index.ts`.
+
+Minimum for **roadmap only:** `vote` action + `recordVote` from `elastic-votes.ts`.
+
+For **status subscribe** section:
+
+- `subscribe` + notification helpers and Elasticsearch subscriber modules.
+
+For **page feedback** component:
+
+- `feedback` + `elastic-feedback.ts`.
+
+---
+
+## 9. Integration: libraries to copy
+
+### Votes (roadmap voting)
 
 - `src/lib/votes/elastic-votes.ts`
 
-**Status (required for status page):**
+### Status (status page and `page-status-data`)
 
-Copy from `roadmap/src/lib/status/`:
+From `roadmap/src/lib/status/`:
 
-- `elastic-client.ts`
-- `status-config.ts`
-- `elastic-status.ts`
-- `fetch-status.ts`
-- `mock-data.ts`
-- `status-models.ts`
-- `status-utils.ts`
-- `capability-groups.ts`
-- `status-labels.ts`
-- `render-status-html.ts`
+- `elastic-client.ts`, `status-config.ts`, `elastic-status.ts`, `fetch-status.ts`, `mock-data.ts`
+- `status-models.ts`, `status-utils.ts`, `capability-groups.ts`, `status-labels.ts`, `render-status-html.ts`
 
-**Notifications (required for subscribe form):**
+### Notifications (subscribe + `/api/notify/run`)
 
-Copy from `roadmap/src/lib/notifications/`:
+From `roadmap/src/lib/notifications/`:
 
-- `elastic-subscribers.ts`
-- `email-client.ts`
-- `email-templates.ts`
-- `send-notifications.ts`
-- `notification-state.ts`
-- `maintenance-notification-state.ts`
+- `elastic-subscribers.ts`, `email-client.ts`, `email-templates.ts`
+- `send-notifications.ts`, `notification-state.ts`, `maintenance-notification-state.ts`
 
-**Feedback (optional):**
+### Feedback (optional)
 
 - `src/lib/feedback/elastic-feedback.ts`
 
 ---
 
-### Step 7: Route Structure
+## 10. Integration: pages and API routes
 
-Choose a route prefix to avoid clashes with existing docs. Example: `/roadmap` and `/roadmap/status`.
+### Pages
 
-| Source (roadmap app) | Destination (your site) |
-|---------------------|--------------------------|
-| `src/pages/roadmap.astro` | `src/pages/roadmap/index.astro` |
-| `src/pages/roadmap/status/index.astro` | `src/pages/roadmap/status/index.astro` |
-| `src/pages/roadmap/status/workspaces/[id].astro` | `src/pages/roadmap/status/workspaces/[id].astro` |
-| `src/pages/roadmap/status/incidents/[id].astro` | `src/pages/roadmap/status/incidents/[id].astro` |
-| `src/pages/roadmap/status/external-systems.astro` | `src/pages/roadmap/status/external-systems.astro` |
-| `src/pages/api/page-status-data.ts` | `src/pages/api/page-status-data.ts` |
-| `src/pages/api/notify/run.ts` | `src/pages/api/notify/run.ts` |
+| From `roadmap/src/pages/` | Suggested location in your app | `prerender` |
+|---------------------------|--------------------------------|-------------|
+| `roadmap.astro` | `src/pages/roadmap/index.astro` (or keep `roadmap.astro` for `/roadmap`) | `false` |
+| `requests/index.astro` | optional; redirects to `/roadmap` | `false` |
+| `roadmap/status/index.astro` | same path under `src/pages/` | `false` |
+| `roadmap/status/workspaces/[id].astro` | same | `false` |
+| `roadmap/status/incidents/[id].astro` | same | `false` |
+| `roadmap/status/external-systems.astro` | same | `false` |
 
-Set `export const prerender = false` on all roadmap and status pages, and on the API routes.
+### API routes (required for current status UX)
 
-**Path updates:** If your roadmap lives at `/roadmap`, update internal links (e.g. redirect targets in middleware) from `/roadmap` to your chosen path. The status page fetches from `/api/page-status-data` — keep that path.
+| File | Must copy? |
+|------|------------|
+| `src/pages/api/page-status-data.ts` | **Yes**, unless you redesign status to avoid it |
+| `src/pages/api/notify/run.ts` | Only if you use email notifications |
 
----
-
-### Step 8: Copy Components
-
-**Roadmap:**
-
-- `RoadmapList.astro`
-- `FeatureRequestCard.astro`
-- `Toast.astro`
-
-**Status:**
-
-- `status/StatusBadge.astro`
-- `status/Capabilities.astro`
-- `status/UptimeBar.astro`
-- `status/SubscribeNotifications.astro`
-- `status/StatusSkeleton.astro`
-
-**Optional:**
-
-- `PageFeedback.astro` — for “Was this helpful?” on pages
-
-Update layout imports (e.g. `BaseLayout` → your `DocsLayout`) and any path references.
+**Client contract:** `roadmap/status/index.astro` expects `GET /api/page-status-data` to return **HTML** (`text/html`). If you change the path, update the `fetch` URL in that page’s `<script>`.
 
 ---
 
-### Step 9: Layout and Navigation
-
-Use your existing layout for roadmap and status pages:
-
-```astro
----
-import DocsLayout from '../layouts/DocsLayout.astro';
-// ...
----
-
-<DocsLayout title="Roadmap" description="What's coming soon">
-  <!-- content -->
-</DocsLayout>
-```
-
-Add nav links:
-
-```html
-<a href="/roadmap">Roadmap</a>
-<a href="/roadmap/status">Status</a>
-```
-
----
-
-### Step 10: Styling
-
-If you use Tailwind, the components should work with minimal changes. If you use custom CSS or Starlight, map the Tailwind classes to your design system or add a small roadmap-specific stylesheet.
-
----
-
-## Migrating from the Old Setup
-
-If you previously integrated using the **Node/Express backend**, **Vite proxy**, or **Astro DB**, apply these changes.
-
-### Summary of Changes
-
-| Before | After |
-|--------|-------|
-| Separate Node/Express backend on port 4000 | No backend; Astro queries Elasticsearch directly |
-| Vite proxy `/api/status` → `localhost:4000` | No proxy; status uses `/api/page-status-data` |
-| `api.ts` fetches from backend HTTP endpoints | `elastic-status.ts` uses `@elastic/elasticsearch` client |
-| `PUBLIC_STATUS_API_URL` env var | Removed; use `ELASTICSEARCH_URL` |
-| Astro DB for feature requests and votes | Content collection + Elasticsearch (`roadmap-votes` index) |
-| `@astrojs/db` | Removed |
-
-### Migration Steps
-
-1. **Stop and remove the backend** — Stop `cd backend && npm start`; delete or ignore the `backend/` directory.
-
-2. **Remove Vite proxy** — Delete any `proxy` config for `/api/status` from `astro.config.mjs`.
-
-3. **Replace status lib files:**
-   - Remove: `src/lib/status/api.ts`
-   - Add: `elastic-client.ts`, `status-config.ts`, `elastic-status.ts`
-   - Update `fetch-status.ts` to import from `elastic-status` (see `roadmap/src/lib/status/fetch-status.ts`).
-
-4. **Update environment variables:**
-   - Remove: `PUBLIC_STATUS_API_URL`
-   - Add: `ELASTICSEARCH_URL`, `ELASTICSEARCH_API_KEY`, and index names (see [Environment Variables Reference](#environment-variables-reference)).
-
-5. **Feature requests & votes (Astro DB → Content + Elasticsearch):**
-   - Add `featureRequests` content collection and create Markdown files in `src/content/feature-requests/`.
-   - Copy `src/lib/votes/elastic-votes.ts` and update `src/actions/index.ts` to use `recordVote()`.
-   - Remove `@astrojs/db`, `db/config.ts`, db integration from config.
-   - Add `ELASTICSEARCH_INDEX_ROADMAP_VOTES=roadmap-votes` to `.env`.
-
-6. **DTO types** — If `render-status-html.ts` or `mock-data.ts` imported types from `api.ts`, move them to `status-models.ts` and update imports.
-
----
-
-## Environment Variables Reference
-
-| Variable | Description |
-|----------|-------------|
-| `ELASTICSEARCH_URL` | Elasticsearch endpoint (e.g. `https://your-cluster.example.com:9200`) |
-| `ELASTICSEARCH_API_KEY` | API key for authentication |
-| `STATUS_ENVIRONMENT` | Label (e.g. `production`, `staging`) |
-| `STATUS_TIME_WINDOW_MINUTES` | Time window for status aggregation (default: 5) |
-| `ELASTICSEARCH_INDEX_CORE_SERVICES` | Index for core services |
-| `ELASTICSEARCH_INDEX_WORKSPACES` | Index for workspaces |
-| `ELASTICSEARCH_INDEX_EXTERNAL_SYSTEMS` | Index for external systems |
-| `ELASTICSEARCH_INDEX_INCIDENTS` | Index for incidents |
-| `ELASTICSEARCH_INDEX_SCHEDULED_MAINTENANCE` | Index for scheduled maintenance |
-| `ELASTICSEARCH_INDEX_ROADMAP_VOTES` | Index for roadmap votes (default: `roadmap-votes`) |
-| `ELASTICSEARCH_INDEX_STATUS_SUBSCRIBERS` | Index for notification subscribers |
-| `ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT` | Index for sent incident notifications |
-| `ELASTICSEARCH_INDEX_STATUS_MAINTENANCE_NOTIFICATION_SENT` | Index for sent maintenance notifications |
-| `ELASTICSEARCH_INDEX_PAGE_FEEDBACK` | Index for page feedback (optional) |
-| `EMAIL_SERVICE_URL` | Internal email service URL |
-| `EMAIL_SERVICE_API_KEY` | API key for email service |
-| `EMAIL_SERVICE_PATH` | Email API path (default: `/send`) |
-| `SITE_URL` | Production URL (sitemap, incident links in emails) |
-| `NOTIFICATION_INCIDENT_WINDOW_MINUTES` | Window for incident notifications (default: 1440) |
-| `NOTIFY_WEBHOOK_SECRET` | Optional secret for webhook auth |
-| `PUBLIC_USE_MOCK_STATUS` | Set to `true` to use mock data (no Elasticsearch) |
-
-See `roadmap/.env.example` for a full template.
-
----
-
-## File Copy Reference
-
-| Source (roadmap app) | Destination (your site) |
-|----------------------|--------------------------|
-| `src/middleware.ts` | `src/middleware.ts` |
-| `src/content.config.ts` | Merge collections into your `content.config.ts` |
-| `src/content/roadmap/*.md` | `src/content/roadmap/*.md` |
-| `src/content/feature-requests/*.md` | `src/content/feature-requests/*.md` |
-| `src/content/status/incidents/*.md` | `src/content/status/incidents/*.md` (optional) |
-| `src/content/status/announcements/*.md` | `src/content/status/announcements/*.md` (optional) |
-| `src/lib/votes/elastic-votes.ts` | `src/lib/votes/elastic-votes.ts` |
-| `src/lib/status/*` | `src/lib/status/*` |
-| `src/lib/notifications/*` | `src/lib/notifications/*` |
-| `src/lib/feedback/elastic-feedback.ts` | `src/lib/feedback/elastic-feedback.ts` (optional) |
-| `src/actions/index.ts` | Merge into `src/actions/index.ts` |
-| `src/pages/roadmap.astro` | `src/pages/roadmap/index.astro` |
-| `src/pages/roadmap/status/index.astro` | `src/pages/roadmap/status/index.astro` |
-| `src/pages/roadmap/status/workspaces/[id].astro` | `src/pages/roadmap/status/workspaces/[id].astro` |
-| `src/pages/roadmap/status/incidents/[id].astro` | `src/pages/roadmap/status/incidents/[id].astro` |
-| `src/pages/roadmap/status/external-systems.astro` | `src/pages/roadmap/status/external-systems.astro` |
-| `src/pages/api/page-status-data.ts` | `src/pages/api/page-status-data.ts` |
-| `src/pages/api/notify/run.ts` | `src/pages/api/notify/run.ts` |
-| `src/components/RoadmapList.astro` | `src/components/RoadmapList.astro` |
-| `src/components/FeatureRequestCard.astro` | `src/components/FeatureRequestCard.astro` |
-| `src/components/Toast.astro` | `src/components/Toast.astro` |
-| `src/components/PageFeedback.astro` | `src/components/PageFeedback.astro` (optional) |
-| `src/components/status/*` | `src/components/status/*` |
-
----
-
-## Checklist
+## 11. Integration: components
 
 **Roadmap**
 
-- [ ] `@astrojs/node` and `@elastic/elasticsearch` installed
-- [ ] `src/middleware.ts` with voter cookie and form handling
-- [ ] `roadmap` and `featureRequests` collections in `content.config.ts`
-- [ ] `src/content/roadmap/*.md` and `src/content/feature-requests/*.md`
-- [ ] `src/lib/votes/elastic-votes.ts` and vote action in `src/actions/index.ts`
-- [ ] Roadmap page at `/roadmap` with `prerender: false`
-- [ ] `ELASTICSEARCH_INDEX_ROADMAP_VOTES` set (default: `roadmap-votes`)
+- `RoadmapList.astro`, `FeatureRequestCard.astro`, `Toast.astro`
 
-**Status page**
+**Status**
 
-- [ ] `src/lib/status/` with all status lib files
-- [ ] `shared` Vite alias pointing to `src/lib/status`
-- [ ] `src/pages/api/page-status-data.ts`
-- [ ] Status pages: `/roadmap/status`, workspaces, incidents, external-systems
-- [ ] Status components: StatusBadge, Capabilities, UptimeBar, SubscribeNotifications, StatusSkeleton
+- `status/StatusBadge.astro`, `Capabilities.astro`, `UptimeBar.astro`
+- `SubscribeNotifications.astro`, `StatusSkeleton.astro`
 
-**Notifications (optional)**
+**Optional**
 
-- [ ] `src/lib/notifications/*` and subscribe action
-- [ ] `EMAIL_SERVICE_URL`, `EMAIL_SERVICE_API_KEY`, `SITE_URL`
-- [ ] `src/pages/api/notify/run.ts`
-- [ ] Cron or webhook calling `GET` or `POST /api/notify/run`
+- `PageFeedback.astro`
 
-**General**
-
-- [ ] Nav/sidebar links to `/roadmap` and `/roadmap/status`
-- [ ] `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY` set
-- [ ] `PUBLIC_USE_MOCK_STATUS=true` for local dev without Elasticsearch
+Switch layout imports from `BaseLayout.astro` to your site’s layout as needed.
 
 ---
 
-## Deployment
+## 12. Integration: layout, navigation, styling
 
-- **Build:** No separate database setup. Feature requests are Markdown; votes and status use Elasticsearch.
-- **Adapter:** Use a Node adapter (e.g. `@astrojs/node`) for serverless or standalone.
-- **Elasticsearch:** Set `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY`. The `roadmap-votes` index is created on first vote.
-- **Status:** Uses the same Elasticsearch cluster. If unavailable, the status page falls back to mock data when `PUBLIC_USE_MOCK_STATUS=true` or when the client catches errors.
-- **Notifications:** Configure `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY`; schedule `curl https://your-site/api/notify/run` (e.g. every 5 minutes) or trigger via webhook.
+- Wrap roadmap and status pages in your shared layout.
+- Add navigation links, for example `/roadmap` and `/roadmap/status`.
+- Tailwind utility classes are used heavily; align with your design system if you are not on Tailwind.
 
 ---
 
-## Related Docs
+## 13. Environment variables
 
-- [STATUS_PAGE_DATA.md](./STATUS_PAGE_DATA.md) — Data sources and how to update status content
-- [MIGRATION_TO_COLLECTIONS.md](./MIGRATION_TO_COLLECTIONS.md) — Migrating existing content to Astro collections
+See **`roadmap/.env.example`** for the authoritative list.
+
+**Critical for server behavior**
+
+| Variable | Role |
+|----------|------|
+| `ELASTICSEARCH_URL` | Elasticsearch endpoint |
+| `ELASTICSEARCH_API_KEY` | Server-only auth |
+| `ELASTICSEARCH_INDEX_*` | Index names (core services, workspaces, incidents, votes, subscribers, etc.) |
+| `SITE_URL` | Canonical site URL (sitemap, emails) |
+| `PUBLIC_USE_MOCK_STATUS` | When `true`, status fetch uses mock data (no ES required for **status** paths) |
+
+**Email / notifications (optional)**
+
+| Variable | Role |
+|----------|------|
+| `EMAIL_SERVICE_URL`, `EMAIL_SERVICE_API_KEY` | Outbound mail for subscribe confirm and incidents |
+| `NOTIFY_WEBHOOK_SECRET` | Protects `POST /api/notify/run` |
+
+Set these on the **hosting provider** (dashboard or secrets), not only in local `.env`, for production.
+
+---
+
+## 14. File copy checklist
+
+| Source in `roadmap/` | Destination in your app |
+|----------------------|-------------------------|
+| `src/middleware.ts` | merge into your `src/middleware.ts` |
+| `src/content.config.ts` | merge collections |
+| `src/content/roadmap/**` | `src/content/roadmap/**` |
+| `src/content/feature-requests/**` | `src/content/feature-requests/**` |
+| `src/content/status/**` | optional |
+| `src/lib/votes/**` | `src/lib/votes/**` |
+| `src/lib/status/**` | `src/lib/status/**` |
+| `src/lib/notifications/**` | if using subscribe / notify job |
+| `src/lib/feedback/**` | optional |
+| `src/actions/index.ts` | merge |
+| `src/pages/roadmap.astro` or `roadmap/**` | per section 10 |
+| `src/pages/api/page-status-data.ts` | same path recommended |
+| `src/pages/api/notify/run.ts` | if using notifications |
+| `src/components/**` (roadmap + status) | merge |
+
+---
+
+## 15. Deployment overview
+
+1. With **an adapter**, running **`astro build`** produces:
+
+- **Prerendered** assets for pages that do not opt out.
+- A **server bundle** for on-demand pages, Actions, and `/api/*` routes.
+
+2. Your host must run that server (Node process, or the platform’s serverless SSR).
+
+3. You must inject **production environment variables** so Elasticsearch and email work.
+
+| Platform | Adapter package | Typical pattern |
+|----------|-----------------|-----------------|
+| VM, Docker, bare metal, many “Node” PaaS | `@astrojs/node` | Long-lived Node process |
+| Vercel | `@astrojs/vercel` | Serverless functions for SSR/API |
+| Netlify | `@astrojs/netlify` | Netlify Functions for SSR/API |
+
+**Elasticsearch:** ensure outbound HTTPS (or VPC routing) is allowed from the runtime to your cluster.
+
+---
+
+## 16. Deployment: @astrojs/node (standalone)
+
+1. **Build**
+
+   ```bash
+   npm run build
+   ```
+
+2. **Artifacts** — Astro emits a **client** folder and a **server** folder under `dist/` (exact layout is versioned; see [Node adapter docs](https://docs.astro.build/en/guides/integrations-guide/node/)).
+
+3. **Runtime** — run the server entry with Node (exact command is in the adapter docs / build output). Example pattern:
+
+   ```bash
+   node ./dist/server/entry.mjs
+   ```
+
+   Your platform should set `PORT` (or your app reads `process.env.PORT`).
+
+4. **Environment** — set all server variables from section [13](#13-environment-variables) in the process environment or secret manager.
+
+5. **Do not** deploy only static files if you need voting or `/api/page-status-data`. Deploy the **server** output as well.
+
+---
+
+## 17. Deployment: Vercel
+
+1. **`npm install @astrojs/vercel`**; in `astro.config`, use `adapter: vercel({ ... })` per [Vercel adapter docs](https://docs.astro.build/en/guides/integrations-guide/vercel/).
+
+2. Set environment variables in the Vercel project settings (Production / Preview).
+
+3. Confirm **Elasticsearch** is reachable from Vercel’s serverless region (firewall / IP allowlist may block).
+
+4. Connect the repo and deploy; `astro build` runs on Vercel.
+
+---
+
+## 18. Deployment: Netlify
+
+1. **`npm install @astrojs/netlify`**; use `adapter: netlify()` per [Netlify adapter docs](https://docs.astro.build/en/guides/integrations-guide/netlify/).
+
+2. Set environment variables in Netlify UI.
+
+3. Confirm network path to Elasticsearch from Netlify Functions.
+
+---
+
+## 19. Deployment: incident notification job
+
+The endpoint **`/api/notify/run`** runs `runNotificationDelivery()`:
+
+- **`GET`** — no auth in the reference app (protect with network rules or front-door auth in production).
+- **`POST`** — if `NOTIFY_WEBHOOK_SECRET` is set, require header `Authorization: Bearer <secret>`.
+
+Schedule (cron), for example every few minutes:
+
+```bash
+curl -sS "https://YOUR_DOMAIN/api/notify/run"
+```
+
+Or `POST` with Bearer token if the secret is configured.
+
+---
+
+## 20. Post-deploy verification
+
+| Check | How |
+|-------|-----|
+| Prerendered docs | Open existing static pages; confirm they still load. |
+| Roadmap | Visit `/roadmap` (or your path); vote; confirm duplicate vote is rejected. |
+| Status | Visit `/roadmap/status`; confirm content loads (or mock when `PUBLIC_USE_MOCK_STATUS=true`). |
+| Status API | `curl -I https://YOUR_DOMAIN/api/page-status-data` → `200` and `text/html`. |
+| Notify job | Hit `/api/notify/run` in a safe environment; inspect JSON response. |
+
+---
+
+## 21. Migrating from the old Express backend or Astro DB
+
+| Before | After |
+|--------|-------|
+| Express (or similar) on another port | No separate service; Elasticsearch from Astro server code |
+| `PUBLIC_STATUS_API_URL` + HTTP client | `ELASTICSEARCH_URL` + `@elastic/elasticsearch` |
+| Astro DB for requests/votes | Markdown `featureRequests` + Elasticsearch `roadmap-votes` |
+| Vite `proxy` for `/api/status` | Remove proxy; use `/api/page-status-data` |
+
+Steps:
+
+1. Remove backend process from deploy and delete proxy config.
+2. Replace old `api.ts` with `elastic-client`, `status-config`, `elastic-status`; align `fetch-status.ts` with this repo.
+3. Move feature requests to content collection; add `elastic-votes.ts` and vote Action.
+4. Remove `@astrojs/db` if present.
+5. Migrate env vars per section [13](#13-environment-variables).
+
+---
+
+## 22. Troubleshooting
+
+| Symptom | Likely cause | Direction |
+|---------|--------------|-----------|
+| Build: adapter required | SSR pages or API routes without adapter | Install platform adapter; add to `astro.config` |
+| Two adapters configured | Merge added `node` while host needs `vercel` | Exactly one `adapter` |
+| 404 on `/api/page-status-data` | Static-only deploy or wrong base path | Ensure server output is deployed; check `base` in config |
+| Votes never persist | ES credentials or index env wrong | Check server env and logs |
+| Status empty but no error | `PUBLIC_USE_MOCK_STATUS=true` or ES returned empty | Verify env |
+
+---
+
+## 23. Related documentation
+
+- [STATUS_PAGE_DATA.md](./STATUS_PAGE_DATA.md) — what comes from Elasticsearch vs Markdown vs forms
+- [MIGRATION_TO_COLLECTIONS.md](./MIGRATION_TO_COLLECTIONS.md) — adopting content collections
+- [Astro: on-demand rendering](https://docs.astro.build/en/guides/on-demand-rendering/) — adapters and `prerender`
+- [Astro: server endpoints](https://docs.astro.build/en/guides/endpoints/) — `/api` routes
