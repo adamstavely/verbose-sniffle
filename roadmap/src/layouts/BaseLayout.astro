@@ -5,10 +5,13 @@ import PageFeedback from '../components/PageFeedback.astro';
 interface Props {
   title: string;
   description?: string;
-  showFeedback?: boolean;
 }
 
-const { title, description = 'Product roadmap - vote on features and request new ones', showFeedback = true } = Astro.props;
+const { title, description = 'Product roadmap - vote on features and request new ones' } = Astro.props;
+
+/** "Was this helpful?" only on doc-style pages (not home, roadmap, or status). */
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).has(path);
 ---
 
 <!doctype html>
@@ -51,7 +54,7 @@ const { title, description = 'Product roadmap - vote on features and request new
     </header>
     <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <slot />
-      {showFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
+      {showPageFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
     </main>
   </body>
 </html>
