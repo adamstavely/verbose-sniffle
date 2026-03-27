@@ -101,6 +101,8 @@ Both files **must** keep `export const prerender = false`.
 
 Uses **`ELASTICSEARCH_URL`** and **`ELASTICSEARCH_API_KEY`** (and other index env vars) **only in server code**—never exposed as `PUBLIC_*`. The browser talks only to **your origin** (`/api/...`, Actions), not directly to Elasticsearch.
 
+Details: [ELASTICSEARCH_GUIDE.md](./ELASTICSEARCH_GUIDE.md), [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md).
+
 ### 2.6 What stays build-time / static
 
 - **Content collections** are built and validated at build time; Markdown lives in the repo.
@@ -114,7 +116,7 @@ Uses **`ELASTICSEARCH_URL`** and **`ELASTICSEARCH_API_KEY`** (and other index en
 |-----------|----------------|
 | New integration into an existing Astro site | Sections [5](#5-integration-dependencies-and-astro-config)–[12](#12-integration-layout-navigation-styling), then [15](#15-deployment-overview)–[20](#20-post-deploy-verification). |
 | You used the old Express + proxy setup or Astro DB | Section [21](#21-migrating-from-the-old-express-backend-or-astro-db), then the integration steps. |
-| Your site does not use content collections yet | [MIGRATION_TO_COLLECTIONS.md](./MIGRATION_TO_COLLECTIONS.md) **before** section [6](#6-integration-content-collections). |
+| Your site does not use content collections yet | [Astro: Content collections](https://docs.astro.build/en/guides/content-collections/) and section [6](#6-integration-content-collections) below. |
 
 ---
 
@@ -349,6 +351,8 @@ See **`roadmap/.env.example`** for the authoritative list.
 
 Set these on the **hosting provider** (dashboard or secrets), not only in local `.env`, for production.
 
+**Operational deep dives:** [ELASTICSEARCH_GUIDE.md](./ELASTICSEARCH_GUIDE.md) (cluster connectivity, index names, field expectations, query semantics) and [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md) (HTTP email service contract, environment variables, scheduling `/api/notify/run`).
+
 ---
 
 ## 14. File copy checklist
@@ -502,6 +506,8 @@ Steps:
 ## 23. Related documentation
 
 - [STATUS_PAGE_DATA.md](./STATUS_PAGE_DATA.md) — what comes from Elasticsearch vs Markdown vs forms
-- [MIGRATION_TO_COLLECTIONS.md](./MIGRATION_TO_COLLECTIONS.md) — adopting content collections
+- [ELASTICSEARCH_GUIDE.md](./ELASTICSEARCH_GUIDE.md) — Elasticsearch indices, fields, queries, and verification
+- [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md) — email HTTP service, subscribers, and `/api/notify/run`
+- [Astro: Content collections](https://docs.astro.build/en/guides/content-collections/) — adopting content collections
 - [Astro: on-demand rendering](https://docs.astro.build/en/guides/on-demand-rendering/) — adapters and `prerender`
 - [Astro: server endpoints](https://docs.astro.build/en/guides/endpoints/) — `/api` routes

@@ -4,6 +4,8 @@ A status dashboard and product roadmap for the Super App platform. Built with As
 
 **Integrating into an existing Astro docs site?** See [roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md) for the comprehensive step-by-step guide.
 
+**Operating Elasticsearch or email notifications?** See [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md) and [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md).
+
 ## Overview
 
 - **Status page** — Real-time visibility into platform health: core services, workspace capabilities, external dependencies, active incidents, and scheduled maintenance. Supports live data (via Elasticsearch) and mock data for local development.
