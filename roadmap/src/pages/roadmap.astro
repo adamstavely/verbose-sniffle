@@ -1,52 +1,21 @@
 ---
-export const prerender = false;
-
-import { actions } from 'astro:actions';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RoadmapList from '../components/RoadmapList.astro';
 import FeatureRequestCard from '../components/FeatureRequestCard.astro';
-import Toast from '../components/Toast.astro';
 import { getCollection } from 'astro:content';
-import { getVoteCounts, getVotedByMe } from '../lib/votes/elastic-votes';
-
-const VOTER_COOKIE = 'roadmap_voter_id';
-const voterId = Astro.cookies.get(VOTER_COOKIE)?.value;
-
-const voteResult = Astro.getActionResult(actions.vote);
-const voteMessage = voteResult?.data?.success
-  ? 'Thanks for voting!'
-  : voteResult?.data?.error === 'already_voted'
-    ? "You've already voted."
-    : voteResult?.data?.error
-      ? voteResult.data.error
-      : null;
 
 const roadmapItems = await getCollection('roadmap');
 const requests = await getCollection('featureRequests');
-const [voteCounts, votedByMe] = await Promise.all([
-  getVoteCounts(),
-  getVotedByMe(voterId ?? ''),
-]);
 
-const sortedRequests = [...requests].sort(
-  (a, b) => (voteCounts[b.data.id] ?? 0) - (voteCounts[a.data.id] ?? 0)
+const sortedRequests = [...requests].sort((a, b) =>
+  a.data.id.localeCompare(b.data.id, 'en')
 );
 ---
 
-<BaseLayout title="Roadmap - Product Roadmap" description="What's coming soon - planned features and community votes">
-  {voteMessage && (
-    <Toast
-      message={voteMessage}
-      variant={
-        voteResult?.data?.success || voteResult?.data?.error === 'already_voted'
-          ? 'success'
-          : 'error'
-      }
-    />
-  )}
+<BaseLayout title="Roadmap - Product Roadmap" description="What's coming soon - planned features and community requests">
   <h1 class="mb-6 text-2xl font-bold text-slate-900">Roadmap</h1>
   <p class="mb-8 text-slate-600">
-    See what we're planning, vote on features you want, and request new ones.
+    See what we're planning and browse community feature requests.
   </p>
 
   <section class="mb-12">
@@ -57,7 +26,7 @@ const sortedRequests = [...requests].sort(
   <section>
     <h2 class="mb-4 text-lg font-semibold text-slate-700">Feature Requests</h2>
     <p class="mb-4 text-sm text-slate-600">
-      Vote for features you'd like to see. The most requested items rise to the top.
+      Requests from the community. Status reflects current planning.
     </p>
     {sortedRequests.length === 0 ? (
       <p class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-600">
@@ -68,12 +37,9 @@ const sortedRequests = [...requests].sort(
         {sortedRequests.map((req) => (
           <li>
             <FeatureRequestCard
-              id={req.data.id}
               title={req.data.title}
               description={req.data.description}
-              voteCount={voteCounts[req.data.id] ?? 0}
               status={req.data.status}
-              hasVoted={votedByMe.has(req.data.id)}
             />
           </li>
         ))}

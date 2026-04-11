@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import tailwindcss from '@tailwindcss/vite';
 
-import node from '@astrojs/node';
+import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -13,7 +13,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // https://astro.build/config
 export default defineConfig({
   site: process.env.SITE_URL || 'https://example.com',
-  integrations: [sitemap()],
+  output: 'static',
+  /** Explicit default: single-segment URLs; nested static `index.html` hosts resolve consistently. */
+  trailingSlash: 'never',
+  integrations: [mdx(), sitemap()],
+
+  redirects: {
+    '/requests': '/roadmap',
+  },
 
   vite: {
     plugins: [tailwindcss()],
@@ -23,8 +30,4 @@ export default defineConfig({
       },
     },
   },
-
-  adapter: node({
-    mode: 'standalone'
-  })
 });

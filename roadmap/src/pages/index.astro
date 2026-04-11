@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/site-url';
 import RoadmapIllustration from '../components/illustrations/RoadmapIllustration.astro';
 import StatusIllustration from '../components/illustrations/StatusIllustration.astro';
 import AboutIllustration from '../components/illustrations/AboutIllustration.astro';
@@ -8,23 +9,23 @@ import DeveloperGuideIllustration from '../components/illustrations/DeveloperGui
 import ReleasesIllustration from '../components/illustrations/ReleasesIllustration.astro';
 ---
 
-<BaseLayout title="Product Roadmap" description="See what's coming soon and vote on features you want">
+<BaseLayout title="Product Roadmap" description="See what's coming soon and browse planned work">
   <section class="text-center">
     <h1 class="text-3xl font-bold text-slate-900 sm:text-4xl">
       Product Roadmap
     </h1>
     <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-      See what we're building and vote on features you want.
+      See what we're building and what's on the roadmap.
     </p>
     <div class="mt-10 flex flex-wrap justify-center gap-4">
       <a
-        href="/roadmap"
+        href={withBase('roadmap')}
         class="rounded-md bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-500"
       >
         View Roadmap
       </a>
       <a
-        href="/roadmap/status"
+        href={withBase('roadmap/status')}
         class="rounded-md border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 hover:bg-slate-50"
       >
         Status
@@ -32,7 +33,7 @@ import ReleasesIllustration from '../components/illustrations/ReleasesIllustrati
     </div>
   </section>
   <section class="mt-16 grid gap-8 sm:grid-cols-3">
-    <a href="/about" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+    <a href={withBase('about')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
       <AboutIllustration class="mx-auto block h-32 w-auto text-slate-400" />
       <h2 class="mt-4 font-semibold text-slate-900">About</h2>
       <p class="mt-2 text-sm text-slate-600">
@@ -42,7 +43,7 @@ import ReleasesIllustration from '../components/illustrations/ReleasesIllustrati
         Learn more →
       </span>
     </a>
-    <a href="/user-guide" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+    <a href={withBase('user-guide')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
       <UserGuideIllustration class="mx-auto block h-32 w-auto text-slate-400" />
       <h2 class="mt-4 font-semibold text-slate-900">User Guide</h2>
       <p class="mt-2 text-sm text-slate-600">
@@ -52,7 +53,7 @@ import ReleasesIllustration from '../components/illustrations/ReleasesIllustrati
         Read guide →
       </span>
     </a>
-    <a href="/developer-guide" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+    <a href={withBase('developer-guide')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
       <DeveloperGuideIllustration class="mx-auto block h-32 w-auto text-slate-400" />
       <h2 class="mt-4 font-semibold text-slate-900">Developer Guide</h2>
       <p class="mt-2 text-sm text-slate-600">
@@ -62,7 +63,7 @@ import ReleasesIllustration from '../components/illustrations/ReleasesIllustrati
         View docs →
       </span>
     </a>
-    <a href="/releases" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+    <a href={withBase('releases')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
       <ReleasesIllustration class="mx-auto block h-32 w-auto text-slate-400" />
       <h2 class="mt-4 font-semibold text-slate-900">Releases</h2>
       <p class="mt-2 text-sm text-slate-600">
@@ -72,21 +73,21 @@ import ReleasesIllustration from '../components/illustrations/ReleasesIllustrati
         View releases →
       </span>
     </a>
-    <a href="/roadmap/status" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+    <a href={withBase('roadmap/status')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
       <StatusIllustration class="mx-auto block h-32 w-auto text-slate-400" />
       <h2 class="mt-4 font-semibold text-slate-900">Status</h2>
       <p class="mt-2 text-sm text-slate-600">
-        Real-time platform status, incidents, and maintenance.
+        Platform status, incidents, and maintenance (sample data).
       </p>
       <span class="mt-4 inline-block text-sm font-medium text-indigo-600">
         View status →
       </span>
     </a>
-    <a href="/roadmap" class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+    <a href={withBase('roadmap')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
       <RoadmapIllustration class="mx-auto block h-32 w-auto text-slate-400" />
       <h2 class="mt-4 font-semibold text-slate-900">Roadmap</h2>
       <p class="mt-2 text-sm text-slate-600">
-        Browse planned features, vote on what you want, and see community requests.
+        Browse planned features and community requests.
       </p>
       <span class="mt-4 inline-block text-sm font-medium text-indigo-600">
         View roadmap →

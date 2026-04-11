@@ -1,23 +1,24 @@
 # Status Page & Product Roadmap
 
-A status dashboard and product roadmap for the Super App platform. Built with Astro and Tailwind, with the Astro server querying Elasticsearch directly for status data.
+**Phase 1:** This roadmap app is built as a **fully static** Astro site (no Elasticsearch, voting, or email). The **status hub** (`/roadmap/status`) is edited via **Markdown** under `roadmap/src/content/status/` (active incidents, maintenance, recent incidents). Subpages for workspaces and external systems still use bundled mock telemetry until phase 2.
 
-**Integrating into an existing Astro docs site?** See [roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md) for the comprehensive step-by-step guide.
+A status dashboard and product roadmap for the Super App platform. Built with Astro and Tailwind.
 
-**Operating Elasticsearch or email notifications?** See [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md) and [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md).
+Legacy integration guides ([roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md), [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md), [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md)) describe the previous server + Elasticsearch architecture and are not required for the static build.
 
 ## Overview
 
-- **Status page** — Real-time visibility into platform health: core services, workspace capabilities, external dependencies, active incidents, and scheduled maintenance. Supports live data (via Elasticsearch) and mock data for local development.
-- **Product roadmap** — Planned features, user-submitted requests with voting, and "coming soon" items via content collections.
+- **Status page** — Active issues, scheduled maintenance, and recent incidents from Markdown collections; workspace and external-system drill-downs still use mock data.
+- **Product roadmap** — Planned features and community feature requests via content collections.
 
 ## Tech Stack
 
 | Layer | Stack |
 |-------|--------|
 | **Frontend** | Astro 5, Tailwind CSS (in `roadmap/`) |
-| **Status data** | Elasticsearch (production) / mock data (development) |
-| **Roadmap data** | Content collections (feature requests) + Elasticsearch (votes) |
+| **Status hub** | Markdown (`src/content/status/`) + helpers in `src/lib/status/status-content.ts` |
+| **Status drill-downs (workspaces / external systems)** | Mock data (`src/lib/status/mock-data.ts`) |
+| **Roadmap data** | Content collections |
 
 ## Project Structure
 
@@ -30,13 +31,13 @@ A status dashboard and product roadmap for the Super App platform. Built with As
 
 **Status page** (`/roadmap/status`)
 
-- Global status header, active incidents, capabilities by workspace type
-- Connected services, 90-day uptime, scheduled maintenance, recent incidents
-- Workspace detail (`/roadmap/status/workspaces/:id`), external systems, incident detail
+- **Active issues**, **scheduled maintenance**, and **recent incidents** (edit `.md` files under `roadmap/src/content/status/active-incidents/`, `maintenance/`, `recent-incidents/`)
+- Incident detail pages at `/roadmap/status/incidents/:id` (one page per active incident file)
+- Optional: workspace (`/roadmap/status/workspaces/:id`) and external systems pages still use mock telemetry for demo layout
 
 **Product roadmap** (`/roadmap`)
 
-- Browse planned features, vote on user-submitted requests
+- Browse planned features and community-submitted requests
 - Content collections for "coming soon" items
 
 ## Getting Started
@@ -46,38 +47,28 @@ A status dashboard and product roadmap for the Super App platform. Built with As
 - Node.js 18+
 - npm 11+
 
-### 1. Roadmap (Status Page + Product Roadmap)
+### Roadmap app
 
 ```bash
 cd roadmap
 npm install
-cp .env.example .env   # Edit with your Elasticsearch URL and API key (or use mock)
 npm run dev
 ```
 
-The app runs at **http://localhost:4321**. The status page is at `/roadmap/status`. Feature requests are stored as Markdown in `src/content/feature-requests/`; votes are stored in Elasticsearch.
+The app runs at **http://localhost:4321**. The status page is at `/roadmap/status`. Edit status content in `roadmap/src/content/status/`. Feature requests live in `roadmap/src/content/feature-requests/`.
 
-### 2. Mock Data (No Elasticsearch Required)
+### Build (static output)
 
-Set `PUBLIC_USE_MOCK_STATUS=true` in the roadmap environment. The status page will use in-memory mock data without Elasticsearch.
+```bash
+cd roadmap
+npm run build
+```
+
+Deploy the `roadmap/dist/` directory to any static host (no Node server required).
 
 ## Environment Variables
 
-**Roadmap** (see `roadmap/.env.example`)
-
-| Variable | Description |
-|----------|-------------|
-| `ELASTICSEARCH_URL` | Elasticsearch endpoint (remote cluster) |
-| `ELASTICSEARCH_API_KEY` | API key for authentication |
-| `STATUS_ENVIRONMENT` | Environment label (e.g. `production`, `staging`) |
-| `STATUS_TIME_WINDOW_MINUTES` | Time window for status aggregation |
-| `ELASTICSEARCH_INDEX_*` | Index names for core services, workspaces, incidents, roadmap votes, subscribers, page feedback, etc. |
-| `EMAIL_SERVICE_URL` | Internal email service URL for incident notifications |
-| `EMAIL_SERVICE_API_KEY` | API key for email service (optional) |
-| `SITE_URL` | Base URL for incident links in emails |
-| `NOTIFY_WEBHOOK_SECRET` | Optional secret for webhook auth when triggering notifications |
-| `PUBLIC_USE_MOCK_STATUS` | Set to `true` to always use mock status data |
-| `STATUS_FETCH_TIMEOUT_MS` | Timeout for status fetches in ms (default: 15000). Set to `0` to disable |
+Optional: set `SITE_URL` at build time for canonical URLs in the sitemap (see `roadmap/astro.config.mjs`).
 
 ## Content Collections (Roadmap Items)
 
@@ -88,29 +79,19 @@ Add Markdown files to `roadmap/src/content/roadmap/`:
 title: "Dark mode support"
 description: "Full dark theme across the app"
 status: "planned"      # planned | in-progress | shipped
-targetQuarter: "Q2 2025"
-priority: "high"       # high | medium | low
 ---
+
+Details here.
 ```
 
-## Status Page Data Sources
+## Content Collections (Feature Requests)
 
-See [roadmap/STATUS_PAGE_DATA.md](roadmap/STATUS_PAGE_DATA.md) for what is pulled from Elasticsearch vs. manually updated (Markdown, subscribe form).
+Add Markdown to `roadmap/src/content/feature-requests/` with frontmatter `id`, `title`, `description`, `status`.
 
-To add incident workarounds or maintenance announcements via Markdown:
-- `roadmap/src/content/status/incidents/`
-- `roadmap/src/content/status/announcements/`
+## Status page (Markdown)
 
-## Accessibility
-
-Semantic landmarks, accessible tables, visible focus outlines, skip links, `aria-live` regions. Aimed at Section 508 / WCAG 2.1 AA compliance.
-
-## Scripts
-
-**Roadmap** (`cd roadmap`)
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start dev server |
-| `npm run build` | Production build |
-| `npm run preview` | Preview production build |
+| Folder | Collection | Purpose |
+|--------|------------|---------|
+| `roadmap/src/content/status/active-incidents/` | `statusActiveIncidents` | Active issues list + `/roadmap/status/incidents/:id` — frontmatter: `id`, `title`, `level` (HEALTHY, DEGRADED, OUTAGE, MAINTENANCE, UNKNOWN), `startedAt` (ISO), optional `description`, `workaround`, `resolvedAt`, `aiNote`, `updates` (array of `timestamp`, `message`, optional `status`). Body is optional extra copy. |
+| `roadmap/src/content/status/maintenance/` | `statusMaintenance` | Scheduled maintenance — `id`, `title`, `scheduledStart`, `scheduledEnd`, `status` (SCHEDULED, IN_PROGRESS, COMPLETED), optional `description`. |
+| `roadmap/src/content/status/recent-incidents/` | `statusRecentIncidents` | Recent resolved incidents table — `id`, `date`, `title`, `duration`, `severity`, `cause`, optional `sortOrder` (higher sorts first). |

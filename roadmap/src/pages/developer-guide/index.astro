@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../lib/site-url';
+---
+
+<BaseLayout title="Developer Guide - Product Roadmap" description="API and integration documentation">
+  <h1 class="mb-6 text-2xl font-bold text-slate-900">Developer Guide</h1>
+  <p class="mb-6 text-slate-600">
+    API documentation, integration guides, and technical reference.
+  </p>
+  <p>
+    <a
+      href={withBase('style-guide')}
+      class="font-medium text-slate-800 underline decoration-slate-300 underline-offset-2 hover:text-slate-600"
+    >
+      Style guide
+    </a>
+    <span class="text-slate-600"> — colors, typography, spacing, and UI patterns.</span>
+  </p>
+</BaseLayout>

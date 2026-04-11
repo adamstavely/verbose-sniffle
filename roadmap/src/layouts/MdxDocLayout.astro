@@ -1,0 +1,17 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  frontmatter: {
+    title: string;
+    description?: string;
+  };
+}
+
+const { frontmatter } = Astro.props;
+const { title, description = 'Product roadmap - documentation and guides' } = frontmatter;
+---
+
+<BaseLayout title={title} description={description}>
+  <slot />
+</BaseLayout>

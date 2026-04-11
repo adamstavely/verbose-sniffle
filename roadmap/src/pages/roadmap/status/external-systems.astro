@@ -1,12 +1,11 @@
 ---
-export const prerender = false;
-
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import StatusBadge from '../../../components/status/StatusBadge.astro';
-import { fetchExternalSystems } from '../../../lib/status/fetch-status';
+import { MOCK_EXTERNAL_SYSTEMS } from '../../../lib/status/mock-data';
 import { getExternalSystemTypeLabel } from 'shared/status-labels';
+import { withBase } from '../../../lib/site-url';
 
-const { systems } = await fetchExternalSystems();
+const systems = MOCK_EXTERNAL_SYSTEMS.systems;
 ---
 
 <BaseLayout
@@ -14,7 +13,7 @@ const { systems } = await fetchExternalSystems();
   description="External systems and dependencies status"
 >
   <div class="max-w-4xl mx-auto">
-    <a href="/roadmap/status" class="text-sm text-indigo-600 hover:text-indigo-700 mb-4 inline-block">
+    <a href={withBase('roadmap/status')} class="text-sm text-indigo-600 hover:text-indigo-700 mb-4 inline-block">
       ← Back to Status
     </a>
     <h1 class="text-2xl font-semibold text-slate-900 mt-2">Connected services</h1>

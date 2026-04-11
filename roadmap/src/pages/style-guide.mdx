@@ -1,0 +1,250 @@
+---
+layout: ../layouts/MdxDocLayout.astro
+title: Style Guide - Developer Guide
+description: Brand colors, typography, spacing, and UI patterns for the Product Roadmap app.
+---
+
+import { withBase } from '../lib/site-url';
+
+  <h1 class="mb-2 text-2xl font-bold text-slate-900">Style guide</h1>
+  <p class="mb-8 text-slate-600">
+    Reference for Tailwind-based tokens and patterns used in this project. Replace or extend with final brand tokens when defined.
+  </p>
+
+  <nav class="mb-10 rounded-lg border border-slate-200 bg-white p-4 text-sm shadow-sm" aria-label="On this page">
+    <p class="mb-2 font-semibold text-slate-800">On this page</p>
+    <ul class="flex flex-wrap gap-x-4 gap-y-1 text-slate-600">
+      <li><a href="#brand-colors" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Brand colors</a></li>
+      <li><a href="#typography" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Typography</a></li>
+      <li><a href="#buttons" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Buttons</a></li>
+      <li><a href="#spacing" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Spacing</a></li>
+      <li><a href="#elevation" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Elevation</a></li>
+      <li><a href="#icons" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Icons</a></li>
+      <li><a href="#radius-focus-layout" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Radius, focus, layout</a></li>
+    </ul>
+  </nav>
+
+  <section id="brand-colors" class="mb-12 scroll-mt-8">
+    <h2 class="mb-4 text-xl font-semibold text-slate-900">Brand colors</h2>
+    <p class="mb-6 text-slate-600">
+      Neutrals use the Tailwind <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">slate</code> scale. Semantic names map to common UI roles.
+    </p>
+    <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div class="text-center">
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg border border-slate-200 bg-white shadow-sm" />
+        <p class="text-xs font-medium text-slate-800">Surface / card</p>
+        <p class="font-mono text-xs text-slate-500">bg-white</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg border border-slate-200 bg-slate-50" />
+        <p class="text-xs font-medium text-slate-800">Page background</p>
+        <p class="font-mono text-xs text-slate-500">bg-slate-50</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-slate-200" />
+        <p class="text-xs font-medium text-slate-800">Border / divider</p>
+        <p class="font-mono text-xs text-slate-500">border-slate-200</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-slate-600" />
+        <p class="text-xs font-medium text-slate-800">Muted text / nav</p>
+        <p class="font-mono text-xs text-slate-500">text-slate-600</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-slate-900" />
+        <p class="text-xs font-medium text-slate-800">Primary text / emphasis</p>
+        <p class="font-mono text-xs text-slate-500">text-slate-900</p>
+      </div>
+    </div>
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Slate scale</h3>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-5 md:grid-cols-10">
+      {[
+        { token: 'slate-50', swatch: 'bg-slate-50' },
+        { token: 'slate-100', swatch: 'bg-slate-100' },
+        { token: 'slate-200', swatch: 'bg-slate-200' },
+        { token: 'slate-300', swatch: 'bg-slate-300' },
+        { token: 'slate-400', swatch: 'bg-slate-400' },
+        { token: 'slate-500', swatch: 'bg-slate-500' },
+        { token: 'slate-600', swatch: 'bg-slate-600' },
+        { token: 'slate-700', swatch: 'bg-slate-700' },
+        { token: 'slate-800', swatch: 'bg-slate-800' },
+        { token: 'slate-900', swatch: 'bg-slate-900' },
+      ].map(({ token, swatch }) => (
+        <div key={token} class="text-center">
+          <div class={`mx-auto mb-1.5 h-14 w-full max-w-[5rem] rounded-md border border-slate-200/80 ${swatch}`} />
+          <p class="font-mono text-[10px] text-slate-500">{token}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section id="typography" class="mb-12 scroll-mt-8">
+    <h2 class="mb-4 text-xl font-semibold text-slate-900">Typography</h2>
+    <p class="mb-6 text-slate-600">
+      Default body uses the browser stack inherited by Tailwind; use weight and size utilities for hierarchy.
+    </p>
+    <div class="mb-6 space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <p class="text-2xl font-bold text-slate-900">Heading level — text-2xl font-bold</p>
+      <p class="text-xl font-semibold text-slate-900">Section title — text-xl font-semibold</p>
+      <p class="text-lg font-semibold text-slate-800">Subsection — text-lg font-semibold</p>
+      <p class="text-base text-slate-900">Body — text-base (default)</p>
+      <p class="text-sm text-slate-600">Secondary / caption — text-sm text-slate-600</p>
+      <p class="text-xs text-slate-500">Meta — text-xs text-slate-500</p>
+      <p class="font-mono text-sm text-slate-800">
+        <span class="text-slate-500">Code / tokens —</span> font-mono text-sm
+      </p>
+    </div>
+    <div class="overflow-x-auto rounded-lg border border-slate-200">
+      <table class="w-full min-w-[28rem] text-left text-sm">
+        <thead class="border-b border-slate-200 bg-slate-50">
+          <tr>
+            <th class="px-4 py-2 font-semibold text-slate-800">Role</th>
+            <th class="px-4 py-2 font-semibold text-slate-800">Classes</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white text-slate-700">
+          <tr><td class="px-4 py-2">Page title</td><td class="px-4 py-2 font-mono text-xs">text-2xl font-bold text-slate-900</td></tr>
+          <tr><td class="px-4 py-2">Section heading</td><td class="px-4 py-2 font-mono text-xs">text-xl font-semibold text-slate-900</td></tr>
+          <tr><td class="px-4 py-2">Body</td><td class="px-4 py-2 font-mono text-xs">text-base text-slate-900</td></tr>
+          <tr><td class="px-4 py-2">Muted</td><td class="px-4 py-2 font-mono text-xs">text-slate-600</td></tr>
+          <tr><td class="px-4 py-2">Inline code</td><td class="px-4 py-2 font-mono text-xs">font-mono text-sm + bg-slate-100</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="buttons" class="mb-12 scroll-mt-8">
+    <h2 class="mb-4 text-xl font-semibold text-slate-900">Buttons</h2>
+    <p class="mb-4 text-slate-600">Common patterns using native <code class="rounded bg-slate-100 px-1 font-mono text-sm">&lt;button&gt;</code> elements.</p>
+    <div class="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <button type="button" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+        Primary
+      </button>
+      <button type="button" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+        Secondary
+      </button>
+      <button type="button" class="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+        Ghost
+      </button>
+      <button type="button" disabled class="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-500">
+        Disabled
+      </button>
+    </div>
+  </section>
+
+  <section id="spacing" class="mb-12 scroll-mt-8">
+    <h2 class="mb-4 text-xl font-semibold text-slate-900">Spacing</h2>
+    <p class="mb-6 text-slate-600">
+      Tailwind spacing scale (multiples of <code class="rounded bg-slate-100 px-1 font-mono text-sm">0.25rem</code>). Main content uses horizontal padding <code class="rounded bg-slate-100 px-1 font-mono text-sm">px-4 sm:px-6</code> and vertical <code class="rounded bg-slate-100 px-1 font-mono text-sm">py-8</code>.
+    </p>
+    <div class="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      {[
+        { label: 'p-2', cls: 'p-2' },
+        { label: 'p-4', cls: 'p-4' },
+        { label: 'p-6', cls: 'p-6' },
+        { label: 'p-8', cls: 'p-8' },
+      ].map((row) => (
+        <div key={row.label} class="flex items-center gap-4">
+          <span class="w-14 shrink-0 font-mono text-xs text-slate-500">{row.label}</span>
+          <div class={`inline-flex rounded-md border border-slate-200 bg-slate-100 ${row.cls}`}>
+            <span class="block h-6 w-6 rounded bg-slate-400" />
+          </div>
+        </div>
+      ))}
+      <div class="flex items-center gap-4 pt-2">
+        <span class="w-14 shrink-0 font-mono text-xs text-slate-500">gap-4</span>
+        <div class="inline-flex gap-4 rounded-md border border-dashed border-slate-300 p-2">
+          <span class="h-8 w-8 rounded bg-slate-300" />
+          <span class="h-8 w-8 rounded bg-slate-300" />
+          <span class="h-8 w-8 rounded bg-slate-300" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="elevation" class="mb-12 scroll-mt-8">
+    <h2 class="mb-4 text-xl font-semibold text-slate-900">Elevation</h2>
+    <p class="mb-6 text-slate-600">Combine light borders with shadows for cards and interactive surfaces.</p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-lg border border-slate-200 bg-white p-4">
+        <p class="mb-1 text-sm font-medium text-slate-800">Border only</p>
+        <p class="font-mono text-xs text-slate-500">border border-slate-200</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="mb-1 text-sm font-medium text-slate-800">Subtle</p>
+        <p class="font-mono text-xs text-slate-500">shadow-sm</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-md">
+        <p class="mb-1 text-sm font-medium text-slate-800">Raised</p>
+        <p class="font-mono text-xs text-slate-500">shadow-md</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-lg">
+        <p class="mb-1 text-sm font-medium text-slate-800">Modal / emphasis</p>
+        <p class="font-mono text-xs text-slate-500">shadow-lg</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="icons" class="mb-12 scroll-mt-8">
+    <h2 class="mb-4 text-xl font-semibold text-slate-900">Icons</h2>
+    <p class="mb-4 text-slate-600">
+      The project includes <strong class="font-medium text-slate-800">lucide-react</strong> for icons. Import named icons and size them with Tailwind (<code class="rounded bg-slate-100 px-1 font-mono text-sm">h-4 w-4</code>, <code class="rounded bg-slate-100 px-1 font-mono text-sm">h-5 w-5</code>, etc.). Prefer <code class="rounded bg-slate-100 px-1 font-mono text-sm">stroke-[1.5]</code> or default stroke for consistency.
+    </p>
+    <p class="mb-4 text-slate-600">
+      For interactive or animated icon demos in MDX, wrap React icon components with a <code class="rounded bg-slate-100 px-1 font-mono text-sm">client:*</code> directive as needed.
+    </p>
+    <div class="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-6 text-slate-700 shadow-sm" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
+      <span class="text-sm text-slate-500">Static stroke icons (Lucide-style)</span>
+    </div>
+  </section>
+
+  <section id="radius-focus-layout" class="mb-8 scroll-mt-8">
+    <h2 class="mb-4 text-xl font-semibold text-slate-900">Border radius, focus, and layout</h2>
+    <div class="space-y-8">
+      <div>
+        <h3 class="mb-3 text-sm font-semibold text-slate-800">Border radius</h3>
+        <div class="flex flex-wrap gap-4">
+          <div class="flex flex-col items-center gap-2">
+            <div class="h-14 w-14 border border-slate-300 bg-slate-100 rounded-sm" />
+            <span class="font-mono text-xs text-slate-500">rounded-sm</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <div class="h-14 w-14 border border-slate-300 bg-slate-100 rounded-lg" />
+            <span class="font-mono text-xs text-slate-500">rounded-lg</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <div class="h-14 w-14 border border-slate-300 bg-slate-100 rounded-full" />
+            <span class="font-mono text-xs text-slate-500">rounded-full</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 class="mb-3 text-sm font-semibold text-slate-800">Focus rings</h3>
+        <p class="mb-3 text-sm text-slate-600">Use visible focus styles for keyboard users; match ring color to neutrals.</p>
+        <button type="button" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+          Focus me (Tab)
+        </button>
+      </div>
+      <div>
+        <h3 class="mb-3 text-sm font-semibold text-slate-800">Layout width</h3>
+        <p class="text-sm text-slate-600">
+          Main column aligns to <code class="rounded bg-slate-100 px-1 font-mono text-sm">max-w-4xl</code> with horizontal padding, matching the site shell.
+        </p>
+      </div>
+    </div>
+  </section>
+
+<p class="text-sm text-slate-500">
+  <a href={withBase('developer-guide')} class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Back to Developer Guide</a>
+</p>

@@ -1,23 +1,24 @@
 ---
-export const prerender = false;
-
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import StatusBadge from '../../../../components/status/StatusBadge.astro';
-import { fetchWorkspaceFeatures, fetchExternalSystems, fetchWorkspaces } from '../../../../lib/status/fetch-status';
 import { getFeatureDisplayName } from 'shared/status-labels';
+import {
+  MOCK_WORKSPACES,
+  MOCK_EXTERNAL_SYSTEMS,
+  getMockWorkspaceFeatures,
+} from '../../../../lib/status/mock-data';
+import { withBase } from '../../../../lib/site-url';
+
+export function getStaticPaths() {
+  return MOCK_WORKSPACES.workspaces.map((w) => ({ params: { id: w.id } }));
+}
 
 const { id } = Astro.params;
-if (!id) return Astro.redirect('/roadmap/status');
+if (!id) throw new Error('Missing workspace id');
 
-const [featuresRes, externalRes, workspacesRes] = await Promise.all([
-  fetchWorkspaceFeatures(id),
-  fetchExternalSystems(),
-  fetchWorkspaces(),
-]);
-
-const features = featuresRes.features;
-const externalSystems = externalRes.systems;
-const workspace = workspacesRes.workspaces.find((w) => w.id === id);
+const { features } = getMockWorkspaceFeatures(id);
+const externalSystems = MOCK_EXTERNAL_SYSTEMS.systems;
+const workspace = MOCK_WORKSPACES.workspaces.find((w) => w.id === id);
 const workspaceName = workspace?.name ?? `Workspace ${id}`;
 ---
 
@@ -26,7 +27,7 @@ const workspaceName = workspace?.name ?? `Workspace ${id}`;
   description={`Feature status for ${workspaceName}`}
 >
   <div class="max-w-4xl mx-auto">
-    <a href="/roadmap/status" class="text-sm text-indigo-600 hover:text-indigo-700 mb-4 inline-block">
+    <a href={withBase('roadmap/status')} class="text-sm text-indigo-600 hover:text-indigo-700 mb-4 inline-block">
       ← Back to Status
     </a>
     <h1 class="text-2xl font-semibold text-slate-900 mt-2">{workspaceName}</h1>

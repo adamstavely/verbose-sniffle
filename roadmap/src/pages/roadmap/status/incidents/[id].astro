@@ -1,15 +1,22 @@
 ---
-export const prerender = false;
-
+import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import StatusBadge from '../../../../components/status/StatusBadge.astro';
-import { fetchIncidentById } from '../../../../lib/status/fetch-status';
+import { entryToIncidentSummary } from '../../../../lib/status/status-content';
+import { withBase } from '../../../../lib/site-url';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('statusActiveIncidents');
+  return entries.map((e) => ({ params: { id: e.data.id } }));
+}
 
 const { id } = Astro.params;
-if (!id) return Astro.redirect('/roadmap/status');
+const entries = await getCollection('statusActiveIncidents');
+const entry = entries.find((e) => e.data.id === id);
+if (!entry) throw new Error(`Unknown incident: ${id}`);
 
-const incident = await fetchIncidentById(id);
-if (!incident) return Astro.redirect('/roadmap/status');
+const incident = entryToIncidentSummary(entry);
+const { Content } = await render(entry);
 ---
 
 <BaseLayout
@@ -17,7 +24,7 @@ if (!incident) return Astro.redirect('/roadmap/status');
   description={incident.description ?? incident.title}
 >
   <div class="max-w-4xl mx-auto">
-    <a href="/roadmap/status" class="text-sm text-indigo-600 hover:text-indigo-700 mb-4 inline-block">
+    <a href={withBase('roadmap/status')} class="text-sm text-indigo-600 hover:text-indigo-700 mb-4 inline-block">
       ← Back to Status
     </a>
     <div class="flex items-center justify-between gap-4 mt-2">
@@ -27,6 +34,12 @@ if (!incident) return Astro.redirect('/roadmap/status');
 
     {incident.description && (
       <p class="mt-4 text-slate-600">{incident.description}</p>
+    )}
+
+    {incident.aiNote && (
+      <p class="mt-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm text-indigo-900">
+        <strong class="font-semibold">Note:</strong> {incident.aiNote}
+      </p>
     )}
 
     {incident.workaround && (
@@ -59,6 +72,12 @@ if (!incident) return Astro.redirect('/roadmap/status');
             ))}
         </ul>
       </section>
+    )}
+
+    {entry.body?.trim() && (
+      <div class="mt-8 text-slate-700 [&_p]:mt-3 [&_p:first-child]:mt-0">
+        <Content />
+      </div>
     )}
 
     <p class="mt-6 text-sm text-slate-500">
