@@ -9,7 +9,7 @@ prose: false
 import { withBase } from '../../lib/site-url';
 
   <p class="mb-8 text-slate-600">
-    Reference for Tailwind-based tokens and patterns used in this project. Replace or extend with final brand tokens when defined.
+    Reference for the design tokens and patterns used in this project. Colors, typography, and radius follow <strong>Design System v2.1</strong>: a navy <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">primary</code>, a blue <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">accent</code> for links and focus, semantic success/warning/info/danger roles, and the Inter typeface.
   </p>
 
   <nav class="mb-10 rounded-lg border border-slate-200 bg-white p-4 text-sm shadow-sm" aria-label="On this page">
@@ -28,8 +28,57 @@ import { withBase } from '../../lib/site-url';
   <section id="brand-colors" class="mb-12 scroll-mt-8">
     <h2 class="mb-4 text-xl font-semibold text-slate-900">Brand colors</h2>
     <p class="mb-6 text-slate-600">
-      Neutrals use the Tailwind <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">slate</code> scale. Semantic names map to common UI roles.
+      Brand and semantic colors are Design System v2.1 tokens exposed as Tailwind utilities (<code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">bg-primary</code>, <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">text-accent</code>, etc.). Neutrals use the Tailwind <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">slate</code> scale.
     </p>
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Brand</h3>
+    <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div class="text-center">
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-primary shadow-sm" />
+        <p class="text-xs font-medium text-slate-800">Primary — CTAs</p>
+        <p class="font-mono text-xs text-slate-500">bg-primary · #1D3557</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-accent shadow-sm" />
+        <p class="text-xs font-medium text-slate-800">Accent — links, focus</p>
+        <p class="font-mono text-xs text-slate-500">bg-accent · #0073E6</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg border border-accent bg-accent-subtle" />
+        <p class="text-xs font-medium text-slate-800">Accent subtle</p>
+        <p class="font-mono text-xs text-slate-500">bg-accent-subtle · #EBF4FF</p>
+      </div>
+    </div>
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Semantic</h3>
+    <p class="mb-4 text-sm text-slate-600">
+      Status roles. Each pairs a solid tone with a subtle fill for badges and callouts (see <code class="rounded bg-slate-100 px-1 font-mono text-sm">status-utils.ts</code>).
+    </p>
+    <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div class="text-center">
+        <div class="mx-auto mb-2 flex h-16 w-full max-w-[7rem] items-center justify-center rounded-lg bg-success-subtle">
+          <span class="rounded-md bg-success px-2 py-0.5 text-xs font-medium text-white">Healthy</span>
+        </div>
+        <p class="font-mono text-xs text-slate-500">success · #16A34A</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto mb-2 flex h-16 w-full max-w-[7rem] items-center justify-center rounded-lg bg-warning-subtle">
+          <span class="rounded-md bg-warning px-2 py-0.5 text-xs font-medium text-warning-strong">Degraded</span>
+        </div>
+        <p class="font-mono text-xs text-slate-500">warning · #EABA1C</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto mb-2 flex h-16 w-full max-w-[7rem] items-center justify-center rounded-lg bg-info-subtle">
+          <span class="rounded-md bg-info px-2 py-0.5 text-xs font-medium text-white">Maintenance</span>
+        </div>
+        <p class="font-mono text-xs text-slate-500">info · #0EA5E9</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto mb-2 flex h-16 w-full max-w-[7rem] items-center justify-center rounded-lg bg-danger-subtle">
+          <span class="rounded-md bg-danger px-2 py-0.5 text-xs font-medium text-white">Outage</span>
+        </div>
+        <p class="font-mono text-xs text-slate-500">danger · #DC2626</p>
+      </div>
+    </div>
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Neutrals</h3>
     <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
       <div class="text-center">
         <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg border border-slate-200 bg-white shadow-sm" />
@@ -82,7 +131,7 @@ import { withBase } from '../../lib/site-url';
   <section id="typography" class="mb-12 scroll-mt-8">
     <h2 class="mb-4 text-xl font-semibold text-slate-900">Typography</h2>
     <p class="mb-6 text-slate-600">
-      Default body uses the browser stack inherited by Tailwind; use weight and size utilities for hierarchy.
+      The type family is <strong>Inter</strong> (self-hosted variable font, same-origin for CSP), with JetBrains Mono for code. Use weight and size utilities for hierarchy.
     </p>
     <div class="mb-6 space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
       <p class="text-2xl font-bold text-slate-900">Heading level — text-2xl font-bold</p>
@@ -118,13 +167,13 @@ import { withBase } from '../../lib/site-url';
     <h2 class="mb-4 text-xl font-semibold text-slate-900">Buttons</h2>
     <p class="mb-4 text-slate-600">Common patterns using native <code class="rounded bg-slate-100 px-1 font-mono text-sm">&lt;button&gt;</code> elements.</p>
     <div class="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-      <button type="button" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+      <button type="button" class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
         Primary
       </button>
-      <button type="button" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+      <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
         Secondary
       </button>
-      <button type="button" class="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+      <button type="button" class="rounded-md px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
         Ghost
       </button>
       <button type="button" disabled class="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-500">
@@ -229,8 +278,8 @@ import { withBase } from '../../lib/site-url';
       </div>
       <div>
         <h3 class="mb-3 text-sm font-semibold text-slate-800">Focus rings</h3>
-        <p class="mb-3 text-sm text-slate-600">Use visible focus styles for keyboard users; match ring color to neutrals.</p>
-        <button type="button" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+        <p class="mb-3 text-sm text-slate-600">Use visible focus styles for keyboard users. Focus rings use the <code class="rounded bg-slate-100 px-1 font-mono text-sm">accent</code> color system-wide.</p>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
           Focus me (Tab)
         </button>
       </div>

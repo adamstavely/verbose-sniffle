@@ -85,7 +85,7 @@ const recent = recentIncidents.slice(0, 10);
                 <div class="flex items-center justify-between gap-4">
                   <a
                     href={withBase(`roadmap/status/incidents/${inc.id}`)}
-                    class="font-medium text-slate-900 hover:text-indigo-600"
+                    class="font-medium text-slate-900 hover:text-accent"
                   >
                     {inc.title}
                   </a>
@@ -95,7 +95,7 @@ const recent = recentIncidents.slice(0, 10);
                   <p class="mt-2 text-sm text-slate-600">{inc.description}</p>
                 )}
                 {inc.workaround && (
-                  <p class="mt-2 text-sm text-amber-700 bg-amber-50 rounded p-2">
+                  <p class="mt-2 text-sm text-warning-strong bg-warning-subtle rounded p-2">
                     <strong>Workaround:</strong> {inc.workaround}
                   </p>
                 )}
@@ -115,7 +115,7 @@ const recent = recentIncidents.slice(0, 10);
         </h2>
         <ul class="space-y-3">
           {activeMaintenance.map((m) => (
-            <li class="rounded-lg border border-slate-200 bg-sky-50/50 p-4">
+            <li class="rounded-lg border border-slate-200 bg-info-subtle p-4">
               <div class="font-medium text-slate-900">{m.title}</div>
               {m.description && (
                 <p class="mt-1 text-sm text-slate-600">{m.description}</p>
@@ -132,7 +132,7 @@ const recent = recentIncidents.slice(0, 10);
     <section aria-labelledby="external-heading">
       <div class="flex items-center justify-between mb-3">
         <h2 id="external-heading" class="text-lg font-semibold text-slate-900">Connected services</h2>
-        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-indigo-600 hover:text-indigo-700">
+        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-accent hover:text-accent-hover">
           View all →
         </a>
       </div>

@@ -37,7 +37,7 @@ export interface CapabilityItem {
 export interface CapabilityGroup {
   id: string;
   group: string;
-  /** Tailwind color for bar (e.g. violet-500, amber-500, sky-500) */
+  /** Design-system token key for the decorative group bar (e.g. 'primary'). */
   barColor: string;
   items: CapabilityItem[];
 }

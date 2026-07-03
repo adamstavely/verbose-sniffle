@@ -18,22 +18,14 @@ function groupWorstStatus(group: CapabilityGroup): StatusLevel {
   return 'HEALTHY';
 }
 
-function barColorClass(color: string): string {
-  switch (color) {
-    case 'violet-500': return 'bg-violet-500';
-    case 'amber-500': return 'bg-amber-500';
-    case 'sky-500': return 'bg-sky-500';
-    default: return 'bg-slate-500';
-  }
+// Group accent bars are decorative brand markers, not status — they use the
+// primary brand color so they never read as a semantic (success/warning) signal.
+function barColorClass(_color: string): string {
+  return 'bg-primary';
 }
 
-function barTextClass(color: string): string {
-  switch (color) {
-    case 'violet-500': return 'text-violet-500';
-    case 'amber-500': return 'text-amber-500';
-    case 'sky-500': return 'text-sky-500';
-    default: return 'text-slate-500';
-  }
+function barTextClass(_color: string): string {
+  return 'text-primary';
 }
 ---
 
@@ -79,7 +71,7 @@ function barTextClass(color: string): string {
                   {trailing}
                 </summary>
                 <div class="px-4 py-3 pl-14 border-t border-slate-100 bg-slate-50/30">
-                  <p class="text-[12px] text-slate-600 leading-relaxed border-l-2 border-amber-500/50 pl-3">
+                  <p class="text-[12px] text-slate-600 leading-relaxed border-l-2 border-warning pl-3">
                     {item.impact}
                   </p>
                 </div>
