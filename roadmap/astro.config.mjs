@@ -24,7 +24,7 @@ export default defineConfig({
 
   redirects: {
     '/requests': '/roadmap',
-    '/developer-guide/style-guide': '/style-guide',
+    '/style-guide': '/developer-guide/style-guide',
   },
 
   vite: {

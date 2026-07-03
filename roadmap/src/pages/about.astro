@@ -1,10 +1,27 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import DocList from '../components/DocList.astro';
+
+const modules = import.meta.glob<{
+  frontmatter: { title: string; description?: string; order?: number };
+  url?: string;
+}>('./about/*.mdx', { eager: true });
+
+const pages = Object.values(modules)
+  .filter((m) => m.url)
+  .map((m) => ({
+    title: m.frontmatter.title,
+    description: m.frontmatter.description,
+    url: m.url as string,
+    order: m.frontmatter.order ?? 99,
+  }))
+  .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
 ---
 
 <BaseLayout title="About - Product Roadmap" description="Learn about our product and team">
   <h1 class="mb-6 text-2xl font-bold text-slate-900">About</h1>
-  <p class="text-slate-600">
+  <p class="mb-8 text-slate-600">
     Learn about our product, mission, and the team behind it.
   </p>
+  <DocList pages={pages} />
 </BaseLayout>
