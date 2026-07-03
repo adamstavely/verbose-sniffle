@@ -2,7 +2,6 @@ import type {
   Workspace,
   WorkspaceFeatureStatus,
   ExternalSystemStatus,
-  UptimeData,
 } from 'shared/status-models';
 import type {
   WorkspacesDto,
@@ -124,20 +123,3 @@ export const MOCK_EXTERNAL_SYSTEMS: ExternalSystemsDto = {
     },
   ] as ExternalSystemStatus[],
 };
-
-/** Deterministic mock uptime for when API is unavailable */
-export function getMockUptime(): UptimeData {
-  const days: UptimeData['days'] = [];
-  let operational = 0;
-  for (let i = 0; i < 90; i++) {
-    const r = ((i * 7 + 13) % 100) / 100;
-    const status: UptimeData['days'][number] =
-      r > 0.97 ? 'unavailable' : r > 0.94 ? 'degraded' : 'operational';
-    days.push(status);
-    if (status === 'operational') operational++;
-  }
-  return {
-    days,
-    percentage: Math.round((operational / 90) * 1000) / 10,
-  };
-}

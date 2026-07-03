@@ -20,6 +20,7 @@ export default defineConfig({
 
   redirects: {
     '/requests': '/roadmap',
+    '/developer-guide/style-guide': '/style-guide',
   },
 
   vite: {

@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { renderStatusContent } from '../../../lib/status/render-status-html';
+import StatusBadge from '../../../components/status/StatusBadge.astro';
 import {
   getActiveIncidentsFromContent,
   getMaintenanceFromContent,
@@ -14,19 +14,96 @@ const [incidents, maintenanceList, recentIncidents] = await Promise.all([
   getRecentIncidentsFromContent(),
 ]);
 
-const statusHtml = renderStatusContent({
-  incidents,
-  maintenance: maintenanceList,
-  recentIncidents,
-  incidentDetailPath: (id) => withBase(`roadmap/status/incidents/${id}`),
-});
+const activeMaintenance = maintenanceList.filter((m) => m.status !== 'COMPLETED');
+const recent = recentIncidents.slice(0, 10);
 ---
 
 <BaseLayout
   title="Status - Product Roadmap"
   description="Platform status: active issues, scheduled maintenance, and recent incidents (edit Markdown under src/content/status/)."
 >
-  <div id="status-root" set:html={statusHtml} />
+  <div class="max-w-4xl mx-auto space-y-12">
+    <section class="rounded-xl border border-slate-200 bg-white p-6" aria-labelledby="status-heading">
+      <h1 id="status-heading" class="text-2xl font-semibold text-slate-900">Platform status</h1>
+      <p class="mt-2 text-sm text-slate-600">
+        Active issues, scheduled maintenance, and recent incident history. Content is maintained in
+        Markdown under <code class="text-xs bg-slate-100 px-1 rounded">src/content/status/</code>.
+      </p>
+    </section>
+
+    <section aria-labelledby="incidents-heading">
+      <h2 id="incidents-heading" class="text-lg font-semibold text-slate-900 mb-3">Active issues</h2>
+      {incidents.length > 0 ? (
+        <>
+          <p class="text-sm text-slate-600 mb-4">
+            Active incidents we're investigating. Workarounds and updates appear below.
+          </p>
+          <ul class="space-y-4">
+            {incidents.map((inc) => (
+              <li class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="flex items-center justify-between gap-4">
+                  <a
+                    href={withBase(`roadmap/status/incidents/${inc.id}`)}
+                    class="font-medium text-slate-900 hover:text-indigo-600"
+                  >
+                    {inc.title}
+                  </a>
+                  <StatusBadge level={inc.level} variant="pillCompact" />
+                </div>
+                {inc.description && (
+                  <p class="mt-2 text-sm text-slate-600">{inc.description}</p>
+                )}
+                {inc.workaround && (
+                  <p class="mt-2 text-sm text-amber-700 bg-amber-50 rounded p-2">
+                    <strong>Workaround:</strong> {inc.workaround}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p class="text-sm text-slate-600">No active incidents.</p>
+      )}
+    </section>
+
+    {activeMaintenance.length > 0 && (
+      <section aria-labelledby="maintenance-heading">
+        <h2 id="maintenance-heading" class="text-lg font-semibold text-slate-900 mb-3">
+          Scheduled maintenance
+        </h2>
+        <ul class="space-y-3">
+          {activeMaintenance.map((m) => (
+            <li class="rounded-lg border border-slate-200 bg-sky-50/50 p-4">
+              <div class="font-medium text-slate-900">{m.title}</div>
+              {m.description && (
+                <p class="mt-1 text-sm text-slate-600">{m.description}</p>
+              )}
+              <p class="mt-2 text-xs text-slate-500">
+                {new Date(m.scheduledStart).toLocaleString()} – {new Date(m.scheduledEnd).toLocaleString()}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <section aria-labelledby="recent-heading">
+      <h2 id="recent-heading" class="text-lg font-semibold text-slate-900 mb-3">Recent incidents</h2>
+      <p class="text-sm text-slate-600 mb-4">Resolved incidents from the last 90 days.</p>
+      <ul class="space-y-2">
+        {recent.map((inc) => (
+          <li class="flex items-center justify-between rounded border border-slate-200 bg-white px-4 py-2 text-sm">
+            <div>
+              <span class="text-slate-500">{inc.date}</span>
+              <span class="ml-2 font-medium text-slate-900">{inc.title}</span>
+            </div>
+            <StatusBadge level={inc.severity} variant="text" />
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
 
   <footer class="max-w-4xl mx-auto pt-8 mt-12 border-t border-slate-200 text-sm text-slate-500">
     <p>Questions? Contact the Platform team via the #platform-support channel.</p>
