@@ -80,11 +80,11 @@ In the reference `roadmap` app these files use on-demand rendering:
 | File | URL (default layout) | Server work |
 |------|----------------------|-------------|
 | `src/pages/roadmap.astro` | `/roadmap` | `getCollection`, `getVoteCounts`, `getVotedByMe`, `Astro.getActionResult`, cookies |
-| `src/pages/requests/index.astro` | `/requests` | Redirect to `/roadmap` |
 | `src/pages/roadmap/status/index.astro` | `/roadmap/status` | Server-renders the full hub (Markdown incidents/maintenance/recent + live ES telemetry via `fetch-status`) and the subscribe result. No client-side data fetch. |
 | `src/pages/roadmap/status/workspaces/[id].astro` | `/roadmap/status/workspaces/:id` | Status data for one workspace |
-| `src/pages/roadmap/status/incidents/[id].astro` | `/roadmap/status/incidents/:id` | Incident detail |
 | `src/pages/roadmap/status/external-systems.astro` | `/roadmap/status/external-systems` | External systems view |
+
+> `/requests` → `/roadmap` is a **config redirect** in `astro.config.mjs` (`redirects`), not a page file. `src/pages/roadmap/status/incidents/[id].astro` is **prerendered (SSG)** via `getStaticPaths` from the active-incident Markdown — it is not on-demand.
 
 If you move `roadmap.astro` to `src/pages/roadmap/index.astro`, the URL is still `/roadmap`; keep `prerender = false` on that file.
 
@@ -285,11 +285,12 @@ From `roadmap/src/lib/notifications/`:
 | From `roadmap/src/pages/` | Suggested location in your app | `prerender` |
 |---------------------------|--------------------------------|-------------|
 | `roadmap.astro` | `src/pages/roadmap/index.astro` (or keep `roadmap.astro` for `/roadmap`) | `false` |
-| `requests/index.astro` | optional; redirects to `/roadmap` | `false` |
 | `roadmap/status/index.astro` | same path under `src/pages/` | `false` |
 | `roadmap/status/workspaces/[id].astro` | same | `false` |
-| `roadmap/status/incidents/[id].astro` | same | `false` |
+| `roadmap/status/incidents/[id].astro` | same | **`true`** (SSG via `getStaticPaths`) |
 | `roadmap/status/external-systems.astro` | same | `false` |
+
+(`/requests` → `/roadmap` is a config `redirects` entry, not a page.)
 
 ### API routes
 

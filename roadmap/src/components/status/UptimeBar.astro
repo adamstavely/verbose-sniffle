@@ -1,13 +1,13 @@
 ---
 import type { UptimeData } from 'shared/status-models';
-import { getMockUptime } from '../../lib/status/mock-data';
 
 interface Props {
-  data?: UptimeData | null;
+  data: UptimeData;
 }
 
-const { data } = Astro.props;
-const uptime = data ?? getMockUptime();
+// `data` is required and always real (or mock in demo mode) — never fabricate
+// uptime here. The status page renders "unavailable" when the series is empty.
+const { data: uptime } = Astro.props;
 
 function getBarClasses(day: UptimeData['days'][number]): string {
   const base = 'flex-1 rounded-sm min-w-[2px] transition-[height] duration-100';
