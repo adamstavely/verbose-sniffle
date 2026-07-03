@@ -62,7 +62,13 @@ const recent = recentIncidents.slice(0, 10);
 
     <section aria-labelledby="uptime-heading">
       <h2 id="uptime-heading" class="text-lg font-semibold text-slate-900 mb-3">90-day uptime</h2>
-      <UptimeBar data={uptime} />
+      {uptime.days.length > 0 ? (
+        <UptimeBar data={uptime} />
+      ) : (
+        <p class="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-500">
+          Uptime data is currently unavailable.
+        </p>
+      )}
     </section>
 
     <section aria-labelledby="incidents-heading">

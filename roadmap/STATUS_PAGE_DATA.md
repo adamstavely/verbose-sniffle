@@ -97,7 +97,7 @@ sortOrder: 3                 # optional; higher sorts first
 
 ### Subscribe
 
-Users enter an email to receive incident and scheduled-maintenance notifications. Subscribers are stored in Elasticsearch (`status-subscribers` index) via the `subscribe` Action. On subscribe, a confirmation email is sent when the email service is configured. When incidents occur or new scheduled maintenance appears, the notification job sends emails via your internal email service. Configure `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY` in `.env`, and trigger delivery via cron (`GET /api/notify/run`) or webhook (`POST /api/notify/run` with `Authorization: Bearer NOTIFY_WEBHOOK_SECRET`). See [`.env.example`](.env.example) and [`EMAIL_NOTIFICATIONS_GUIDE.md`](EMAIL_NOTIFICATIONS_GUIDE.md).
+Users enter an email to receive incident and scheduled-maintenance notifications. Subscribers are stored in Elasticsearch (`status-subscribers` index) via the `subscribe` Action. On subscribe, a confirmation email is sent when the email service is configured. When incidents occur or new scheduled maintenance appears, the notification job sends emails via your internal email service. Configure `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY` in `.env`, and trigger delivery with an authenticated `POST /api/notify/run` (`Authorization: Bearer NOTIFY_WEBHOOK_SECRET`) from cron/CI; the endpoint fails closed if the secret is unset. See [`.env.example`](.env.example) and [`EMAIL_NOTIFICATIONS_GUIDE.md`](EMAIL_NOTIFICATIONS_GUIDE.md).
 
 ### Voting & page feedback
 

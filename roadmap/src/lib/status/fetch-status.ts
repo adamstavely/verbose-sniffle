@@ -30,14 +30,15 @@ async function orMock<T>(
   fn: () => Promise<T>,
   mock: T | (() => T)
 ): Promise<T> {
+  // Mock data is ONLY for the explicit demo/dev mode (PUBLIC_USE_MOCK_STATUS=true).
+  // In production we never silently substitute mock data: on an Elasticsearch
+  // failure the underlying query functions return an honest "unknown"/empty state
+  // (UNKNOWN summary, empty lists), which the status page renders as such rather
+  // than showing fake healthy telemetry.
   if (USE_MOCK) {
     return typeof mock === 'function' ? (mock as () => T)() : mock;
   }
-  try {
-    return await fn();
-  } catch {
-    return typeof mock === 'function' ? (mock as () => T)() : mock;
-  }
+  return await fn();
 }
 
 export async function fetchSummary() {
@@ -92,11 +93,8 @@ export async function fetchIncidentById(
   incidentId: string
 ): Promise<IncidentSummary | null> {
   if (USE_MOCK) return getMockIncidentById(incidentId);
-  try {
-    return await getIncidentById(incidentId);
-  } catch {
-    return getMockIncidentById(incidentId);
-  }
+  // getIncidentById handles its own errors and returns null when unavailable.
+  return await getIncidentById(incidentId);
 }
 
 export async function fetchScheduledMaintenance() {

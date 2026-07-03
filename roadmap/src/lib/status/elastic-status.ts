@@ -757,11 +757,9 @@ export async function getUptime90Days(): Promise<UptimeData> {
     return { days, percentage };
   } catch (error) {
     console.error('Failed to query ElasticSearch for uptime', error);
-    const fallback: DailyStatus[] = new Array(90).fill('operational');
-    return {
-      days: fallback,
-      percentage: 100,
-    };
+    // Telemetry unavailable — do not fabricate 100% uptime. Return an empty
+    // series so the UI can show an "unavailable" state instead of a green bar.
+    return { days: [], percentage: 0 };
   }
 }
 

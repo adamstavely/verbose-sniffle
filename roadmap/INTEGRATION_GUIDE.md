@@ -93,7 +93,7 @@ If you move `roadmap.astro` to `src/pages/roadmap/index.astro`, the URL is still
 | File | Methods | Purpose |
 |------|---------|--------|
 | `src/pages/api/page-status-data.ts` | `GET` | Loads all status slices via `fetch-status` (Elasticsearch or mock), returns **HTML** fragment for the status page client script. |
-| `src/pages/api/notify/run.ts` | `GET`, `POST` | Runs scheduled notification delivery (`runNotificationDelivery`). Optional `Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>` on `POST`. |
+| `src/pages/api/notify/run.ts` | `POST` | Runs scheduled notification delivery (`runNotificationDelivery`). Requires `Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>`; fails closed (`503`) if the secret is unset. |
 
 Both files **must** keep `export const prerender = false`.
 
@@ -445,18 +445,17 @@ Set these on the **hosting provider** (dashboard or secrets), not only in local 
 
 ## 19. Deployment: incident notification job
 
-The endpoint **`/api/notify/run`** runs `runNotificationDelivery()`:
+The endpoint **`/api/notify/run`** runs `runNotificationDelivery()`. It is **`POST`-only and always authenticated**:
 
-- **`GET`** — no auth in the reference app (protect with network rules or front-door auth in production).
-- **`POST`** — if `NOTIFY_WEBHOOK_SECRET` is set, require header `Authorization: Bearer <secret>`.
+- **`POST`** — requires `Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>`. If the secret is unset the endpoint fails closed (`503`); a missing/incorrect token returns `401`. The response is `{ ok, sent, failed }` only — no subscriber emails or incident IDs.
+- **`GET`** — not supported (delivery is a state-changing action and must not be triggerable via `GET`).
 
 Schedule (cron), for example every few minutes:
 
 ```bash
-curl -sS "https://YOUR_DOMAIN/api/notify/run"
+curl -sS -X POST "https://YOUR_DOMAIN/api/notify/run" \
+  -H "Authorization: Bearer $NOTIFY_WEBHOOK_SECRET"
 ```
-
-Or `POST` with Bearer token if the secret is configured.
 
 ---
 

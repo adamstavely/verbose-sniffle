@@ -1,5 +1,5 @@
 ---
-import type { CapabilityGroup } from 'shared/status-models';
+import type { CapabilityGroup, StatusLevel } from 'shared/status-models';
 import StatusBadge from './StatusBadge.astro';
 import { getStatusLabel } from 'shared/status-labels';
 
@@ -9,10 +9,12 @@ interface Props {
 
 const { groups } = Astro.props;
 
-function groupWorstStatus(group: CapabilityGroup): 'HEALTHY' | 'DEGRADED' | 'OUTAGE' | 'MAINTENANCE' {
+function groupWorstStatus(group: CapabilityGroup): StatusLevel {
   if (group.items.some((i) => i.level === 'OUTAGE')) return 'OUTAGE';
   if (group.items.some((i) => i.level === 'DEGRADED')) return 'DEGRADED';
   if (group.items.some((i) => i.level === 'MAINTENANCE')) return 'MAINTENANCE';
+  // Don't report "all operational" when telemetry is unknown for any item.
+  if (group.items.some((i) => i.level === 'UNKNOWN')) return 'UNKNOWN';
   return 'HEALTHY';
 }
 

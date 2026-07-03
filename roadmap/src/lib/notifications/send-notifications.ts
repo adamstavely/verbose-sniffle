@@ -108,16 +108,24 @@ export async function runNotificationDelivery(): Promise<{
 
     const updatesSig = type === 'new' || type === 'update' ? updatesSignature(incident) : undefined;
 
+    let deliveryFailures = 0;
     for (const to of subscribers) {
       const ok = await sendEmail(to, subject, body);
       if (ok) {
         sent++;
       } else {
+        deliveryFailures++;
         errors.push(`Failed to send to ${to} for incident ${incident.id}`);
       }
     }
 
-    await recordSent(incident.id, type, lastUpdatedAt, updatesSig);
+    // Only mark this incident as notified when every delivery succeeded, so a
+    // failed batch is retried on the next run instead of being silently skipped.
+    // (A retry may re-send to subscribers who already received it; per-subscriber
+    // delivery tracking would be the fuller fix.)
+    if (deliveryFailures === 0) {
+      await recordSent(incident.id, type, lastUpdatedAt, updatesSig);
+    }
   }
 
   const maintenanceItems = await getMaintenanceForNotifications();
@@ -126,15 +134,19 @@ export async function runNotificationDelivery(): Promise<{
     if (alreadySent) continue;
 
     const { subject, body } = buildMaintenanceEmail(maintenance);
+    let maintenanceFailures = 0;
     for (const to of subscribers) {
       const ok = await sendEmail(to, subject, body);
       if (ok) {
         sent++;
       } else {
+        maintenanceFailures++;
         errors.push(`Failed to send maintenance notification to ${to} for ${maintenance.id}`);
       }
     }
-    await recordMaintenanceSent(maintenance.id);
+    if (maintenanceFailures === 0) {
+      await recordMaintenanceSent(maintenance.id);
+    }
   }
 
   return { sent, errors };
