@@ -9,6 +9,8 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import node from '@astrojs/node';
 
+import rehypeExternalLinks from 'rehype-external-links';
+
 import { unified } from '@astrojs/markdown-remark';
 import { remarkReadingTime } from './src/lib/remark-reading-time.mjs';
 import { remarkLastUpdated } from './src/lib/remark-last-updated.mjs';
@@ -24,11 +26,19 @@ export default defineConfig({
   adapter: node({ mode: 'standalone' }),
   /** Explicit default: single-segment URLs; nested static `index.html` hosts resolve consistently. */
   trailingSlash: 'never',
-  // Astro 7's default markdown processor (satteri) doesn't run remark plugins.
-  // Give MDX a unified processor so the reading-time remark plugin runs on the
-  // .mdx doc pages; .md content collections keep the default processor.
+  // Astro 7's default markdown processor (satteri) doesn't run remark/rehype
+  // plugins. Give MDX a unified processor so our plugins run on the .mdx doc
+  // pages; .md content collections keep the default processor.
   integrations: [
-    mdx({ processor: unified({ remarkPlugins: [remarkReadingTime, remarkLastUpdated] }) }),
+    mdx({
+      processor: unified({
+        remarkPlugins: [remarkReadingTime, remarkLastUpdated],
+        // Open external links in a new tab with safe rel attributes.
+        rehypePlugins: [
+          [rehypeExternalLinks, { target: '_blank', rel: ['nofollow', 'noopener', 'noreferrer'] }],
+        ],
+      }),
+    }),
     sitemap(),
   ],
 
