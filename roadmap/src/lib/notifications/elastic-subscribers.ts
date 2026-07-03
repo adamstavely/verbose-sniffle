@@ -1,11 +1,15 @@
 import { getElasticClient } from '../status/elastic-client';
 import { statusConfig } from '../status/status-config';
+import { esDocId, isConflict } from '../es-utils';
 
 const INDEX = () => statusConfig.indices.statusSubscribers;
 
 export async function addSubscriber(
   email: string
-): Promise<{ success: true } | { success: false; error: string }> {
+): Promise<
+  | { success: true; alreadySubscribed: boolean }
+  | { success: false; error: string }
+> {
   const normalized = email.trim().toLowerCase();
   if (!normalized) {
     return { success: false, error: 'Email is required.' };
@@ -17,32 +21,23 @@ export async function addSubscriber(
   const client = getElasticClient();
 
   try {
-    const existing = await client.search({
+    // Key the document by the email so subscribing is idempotent and atomic;
+    // a conflict means they were already subscribed (so we skip the
+    // confirmation email rather than re-sending it).
+    await client.create({
       index: INDEX(),
-      size: 1,
-      query: {
-        term: { 'email.keyword': normalized },
-      },
-    });
-
-    const total =
-      typeof existing.hits.total === 'object' && 'value' in existing.hits.total
-        ? (existing.hits.total as { value: number }).value
-        : Number(existing.hits.total ?? 0);
-    if (total > 0) {
-      return { success: true };
-    }
-
-    await client.index({
-      index: INDEX(),
+      id: esDocId('subscriber', normalized),
       document: {
         email: normalized,
         '@timestamp': new Date().toISOString(),
       },
     });
 
-    return { success: true };
+    return { success: true, alreadySubscribed: false };
   } catch (err) {
+    if (isConflict(err)) {
+      return { success: true, alreadySubscribed: true };
+    }
     console.error('Failed to add subscriber in Elasticsearch', err);
     return { success: false, error: 'Failed to subscribe. Please try again.' };
   }

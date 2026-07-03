@@ -11,23 +11,11 @@ export interface StatusIndicesConfig {
   pageFeedback: string;
 }
 
-export interface StatusThresholds {
-  errorRate: {
-    healthyMax: number;
-    degradedMax: number;
-  };
-  latencyP95Ms: {
-    healthyMax: number;
-    degradedMax: number;
-  };
-}
-
 export interface StatusServiceConfig {
   timeWindowMinutes: number;
   /** Minutes to look back for incidents when running notification delivery (default 1440 = 24h) */
   notificationIncidentWindowMinutes: number;
   indices: StatusIndicesConfig;
-  thresholds: StatusThresholds;
 }
 
 function env(name: string, fallback: string): string {
@@ -64,15 +52,5 @@ export const statusConfig: StatusServiceConfig = {
       'status-maintenance-notification-sent'
     ),
     pageFeedback: env('ELASTICSEARCH_INDEX_PAGE_FEEDBACK', 'page-feedback'),
-  },
-  thresholds: {
-    errorRate: {
-      healthyMax: envNum('STATUS_ERROR_RATE_HEALTHY_MAX', 0.01),
-      degradedMax: envNum('STATUS_ERROR_RATE_DEGRADED_MAX', 0.05),
-    },
-    latencyP95Ms: {
-      healthyMax: envNum('STATUS_LATENCY_P95_HEALTHY_MAX', 500),
-      degradedMax: envNum('STATUS_LATENCY_P95_DEGRADED_MAX', 1500),
-    },
   },
 };

@@ -1,5 +1,6 @@
 import { getElasticClient } from '../status/elastic-client';
 import { statusConfig } from '../status/status-config';
+import { esDocId, isConflict } from '../es-utils';
 
 const INDEX = () => statusConfig.indices.pageFeedback;
 
@@ -12,29 +13,11 @@ export async function recordFeedback(
   const client = getElasticClient();
 
   try {
-    const existing = await client.search({
+    // One feedback per (page, visitor): deterministic id + create is atomic,
+    // so a conflict means they've already submitted feedback for this page.
+    await client.create({
       index: INDEX(),
-      size: 1,
-      query: {
-        bool: {
-          must: [
-            { term: { 'page_path.keyword': pagePath } },
-            { term: { 'visitor_id.keyword': visitorId } },
-          ],
-        },
-      },
-    });
-
-    const total =
-      typeof existing.hits.total === 'object' && 'value' in existing.hits.total
-        ? (existing.hits.total as { value: number }).value
-        : Number(existing.hits.total ?? 0);
-    if (total > 0) {
-      return { success: false, error: "You've already submitted feedback for this page." };
-    }
-
-    await client.index({
-      index: INDEX(),
+      id: esDocId('feedback', pagePath, visitorId),
       document: {
         page_path: pagePath,
         helpful,
@@ -46,6 +29,9 @@ export async function recordFeedback(
 
     return { success: true };
   } catch (err) {
+    if (isConflict(err)) {
+      return { success: false, error: "You've already submitted feedback for this page." };
+    }
     console.error('Failed to record feedback in Elasticsearch', err);
     return { success: false, error: 'Failed to submit feedback. Please try again.' };
   }

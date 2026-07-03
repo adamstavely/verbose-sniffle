@@ -81,7 +81,7 @@ In the reference `roadmap` app these files use on-demand rendering:
 |------|----------------------|-------------|
 | `src/pages/roadmap.astro` | `/roadmap` | `getCollection`, `getVoteCounts`, `getVotedByMe`, `Astro.getActionResult`, cookies |
 | `src/pages/requests/index.astro` | `/requests` | Redirect to `/roadmap` |
-| `src/pages/roadmap/status/index.astro` | `/roadmap/status` | Shell + subscribe result; client fetches `/api/page-status-data` |
+| `src/pages/roadmap/status/index.astro` | `/roadmap/status` | Server-renders the full hub (Markdown incidents/maintenance/recent + live ES telemetry via `fetch-status`) and the subscribe result. No client-side data fetch. |
 | `src/pages/roadmap/status/workspaces/[id].astro` | `/roadmap/status/workspaces/:id` | Status data for one workspace |
 | `src/pages/roadmap/status/incidents/[id].astro` | `/roadmap/status/incidents/:id` | Incident detail |
 | `src/pages/roadmap/status/external-systems.astro` | `/roadmap/status/external-systems` | External systems view |
@@ -92,10 +92,11 @@ If you move `roadmap.astro` to `src/pages/roadmap/index.astro`, the URL is still
 
 | File | Methods | Purpose |
 |------|---------|--------|
-| `src/pages/api/page-status-data.ts` | `GET` | Loads all status slices via `fetch-status` (Elasticsearch or mock), returns **HTML** fragment for the status page client script. |
 | `src/pages/api/notify/run.ts` | `POST` | Runs scheduled notification delivery (`runNotificationDelivery`). Requires `Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>`; fails closed (`503`) if the secret is unset. |
 
-Both files **must** keep `export const prerender = false`.
+> The status page is **fully server-rendered** in `src/pages/roadmap/status/index.astro`; there is no `/api/page-status-data` endpoint or client-side HTML fetch.
+
+This file **must** keep `export const prerender = false`.
 
 ### 2.5 Elasticsearch and email (server runtime only)
 
@@ -180,7 +181,7 @@ export default defineConfig({
 
 **Replace `node(...)`** with `vercel()`, `netlify()`, etc., when that matches production.
 
-**Do not** add a Vite **`server.proxy`** for `/api/status`. Status is served from **`/api/page-status-data`** on the same app.
+**Do not** add a Vite **`server.proxy`** for status data. The status page is server-rendered on the same app; there is no separate status API to proxy.
 
 ### 5.3 TypeScript paths
 
@@ -257,12 +258,12 @@ For **page feedback** component:
 
 - `src/lib/votes/elastic-votes.ts`
 
-### Status (status page and `page-status-data`)
+### Status (server-rendered status page)
 
 From `roadmap/src/lib/status/`:
 
-- `elastic-client.ts`, `status-config.ts`, `elastic-status.ts`, `fetch-status.ts`, `mock-data.ts`
-- `status-models.ts`, `status-utils.ts`, `capability-groups.ts`, `status-labels.ts`, `render-status-html.ts`
+- `elastic-client.ts`, `status-config.ts`, `elastic-status.ts`, `fetch-status.ts`, `cache.ts`, `mock-data.ts`
+- `status-models.ts`, `status-utils.ts`, `capability-groups.ts`, `status-labels.ts`, `status-content.ts`
 
 ### Notifications (subscribe + `/api/notify/run`)
 
@@ -290,14 +291,13 @@ From `roadmap/src/lib/notifications/`:
 | `roadmap/status/incidents/[id].astro` | same | `false` |
 | `roadmap/status/external-systems.astro` | same | `false` |
 
-### API routes (required for current status UX)
+### API routes
 
 | File | Must copy? |
 |------|------------|
-| `src/pages/api/page-status-data.ts` | **Yes**, unless you redesign status to avoid it |
 | `src/pages/api/notify/run.ts` | Only if you use email notifications |
 
-**Client contract:** `roadmap/status/index.astro` expects `GET /api/page-status-data` to return **HTML** (`text/html`). If you change the path, update the `fetch` URL in that page’s `<script>`.
+The status page is server-rendered directly in `roadmap/status/index.astro`; there is no status API route or client-side fetch to copy.
 
 ---
 
@@ -310,7 +310,7 @@ From `roadmap/src/lib/notifications/`:
 **Status**
 
 - `status/StatusBadge.astro`, `Capabilities.astro`, `UptimeBar.astro`
-- `SubscribeNotifications.astro`, `StatusSkeleton.astro`
+- `SubscribeNotifications.astro`, `PageFeedback.astro`
 
 **Optional**
 
@@ -370,7 +370,6 @@ Set these on the **hosting provider** (dashboard or secrets), not only in local 
 | `src/lib/feedback/**` | optional |
 | `src/actions/index.ts` | merge |
 | `src/pages/roadmap.astro` or `roadmap/**` | per section 10 |
-| `src/pages/api/page-status-data.ts` | same path recommended |
 | `src/pages/api/notify/run.ts` | if using notifications |
 | `src/components/**` (roadmap + status) | merge |
 
@@ -417,7 +416,7 @@ Set these on the **hosting provider** (dashboard or secrets), not only in local 
 
 4. **Environment** — set all server variables from section [13](#13-environment-variables) in the process environment or secret manager.
 
-5. **Do not** deploy only static files if you need voting or `/api/page-status-data`. Deploy the **server** output as well.
+5. **Do not** deploy only static files if you need voting, the server-rendered status page, or notifications. Deploy the **server** output as well.
 
 ---
 
@@ -465,9 +464,8 @@ curl -sS -X POST "https://YOUR_DOMAIN/api/notify/run" \
 |-------|-----|
 | Prerendered docs | Open existing static pages; confirm they still load. |
 | Roadmap | Visit `/roadmap` (or your path); vote; confirm duplicate vote is rejected. |
-| Status | Visit `/roadmap/status`; confirm content loads (or mock when `PUBLIC_USE_MOCK_STATUS=true`). |
-| Status API | `curl -I https://YOUR_DOMAIN/api/page-status-data` → `200` and `text/html`. |
-| Notify job | Hit `/api/notify/run` in a safe environment; inspect JSON response. |
+| Status | Visit `/roadmap/status`; confirm content loads (or mock when `PUBLIC_USE_MOCK_STATUS=true`). With ES unreachable it should show an **Unknown** state, not fake healthy data. |
+| Notify job | `POST /api/notify/run` with `Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>` in a safe environment; inspect the JSON response. |
 
 ---
 
@@ -478,7 +476,7 @@ curl -sS -X POST "https://YOUR_DOMAIN/api/notify/run" \
 | Express (or similar) on another port | No separate service; Elasticsearch from Astro server code |
 | `PUBLIC_STATUS_API_URL` + HTTP client | `ELASTICSEARCH_URL` + `@elastic/elasticsearch` |
 | Astro DB for requests/votes | Markdown `featureRequests` + Elasticsearch `roadmap-votes` |
-| Vite `proxy` for `/api/status` | Remove proxy; use `/api/page-status-data` |
+| Vite `proxy` for `/api/status` | Remove proxy; status is server-rendered in-app |
 
 Steps:
 
@@ -496,7 +494,7 @@ Steps:
 |---------|--------------|-----------|
 | Build: adapter required | SSR pages or API routes without adapter | Install platform adapter; add to `astro.config` |
 | Two adapters configured | Merge added `node` while host needs `vercel` | Exactly one `adapter` |
-| 404 on `/api/page-status-data` | Static-only deploy or wrong base path | Ensure server output is deployed; check `base` in config |
+| Status page 500s or is empty | Static-only deploy, or ES unreachable | Ensure server output is deployed; check ES env/logs (ES-down should render Unknown, not error) |
 | Votes never persist | ES credentials or index env wrong | Check server env and logs |
 | Status empty but no error | `PUBLIC_USE_MOCK_STATUS=true` or ES returned empty | Verify env |
 

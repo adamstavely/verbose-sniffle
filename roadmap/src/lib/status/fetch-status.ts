@@ -21,6 +21,7 @@ import {
   MOCK_SCHEDULED_MAINTENANCE,
   getMockUptime,
 } from './mock-data';
+import { cached } from './cache';
 
 const USE_MOCK =
   typeof import.meta.env !== 'undefined' &&
@@ -41,72 +42,77 @@ async function orMock<T>(
   return await fn();
 }
 
+// Reads are cached briefly (see cache.ts) so a burst of status-page loads does
+// not hit Elasticsearch on every request.
+
 export async function fetchSummary() {
-  return orMock(() => getStatusSummary(), MOCK_SUMMARY);
+  return cached('summary', () => orMock(() => getStatusSummary(), MOCK_SUMMARY));
 }
 
 export async function fetchWorkspaces() {
-  return orMock(
-    async () => {
+  return cached('workspaces', () =>
+    orMock(async () => {
       const workspaces = await getWorkspaceStatuses();
       return { workspaces };
-    },
-    MOCK_WORKSPACES
+    }, MOCK_WORKSPACES)
   );
 }
 
 export async function fetchWorkspaceFeatures(workspaceId: string) {
-  return orMock(
-    async () => {
-      const features = await getWorkspaceFeatureStatuses(workspaceId);
-      return { workspaceId, features };
-    },
-    () => getMockWorkspaceFeatures(workspaceId)
+  return cached(`workspace-features:${workspaceId}`, () =>
+    orMock(
+      async () => {
+        const features = await getWorkspaceFeatureStatuses(workspaceId);
+        return { workspaceId, features };
+      },
+      () => getMockWorkspaceFeatures(workspaceId)
+    )
   );
 }
 
 export async function fetchExternalSystems() {
-  return orMock(
-    async () => {
+  return cached('external-systems', () =>
+    orMock(async () => {
       const systems = await getExternalSystemStatuses();
       return { systems };
-    },
-    MOCK_EXTERNAL_SYSTEMS
+    }, MOCK_EXTERNAL_SYSTEMS)
   );
 }
 
 export async function fetchIncidents() {
-  return orMock(
-    async () => {
+  return cached('incidents', () =>
+    orMock(async () => {
       const incidents = await getIncidents();
       return { incidents };
-    },
-    MOCK_INCIDENTS
+    }, MOCK_INCIDENTS)
   );
 }
 
 export async function fetchRecentIncidents() {
-  return orMock(() => getRecentIncidents(), MOCK_RECENT_INCIDENTS);
+  return cached('recent-incidents', () =>
+    orMock(() => getRecentIncidents(), MOCK_RECENT_INCIDENTS)
+  );
 }
 
 export async function fetchIncidentById(
   incidentId: string
 ): Promise<IncidentSummary | null> {
-  if (USE_MOCK) return getMockIncidentById(incidentId);
-  // getIncidentById handles its own errors and returns null when unavailable.
-  return await getIncidentById(incidentId);
+  return cached(`incident:${incidentId}`, async () => {
+    if (USE_MOCK) return getMockIncidentById(incidentId);
+    // getIncidentById handles its own errors and returns null when unavailable.
+    return await getIncidentById(incidentId);
+  });
 }
 
 export async function fetchScheduledMaintenance() {
-  return orMock(
-    async () => {
+  return cached('scheduled-maintenance', () =>
+    orMock(async () => {
       const maintenance = await getScheduledMaintenance();
       return { maintenance };
-    },
-    MOCK_SCHEDULED_MAINTENANCE
+    }, MOCK_SCHEDULED_MAINTENANCE)
   );
 }
 
 export async function fetchUptime() {
-  return orMock(() => getUptime90Days(), () => getMockUptime());
+  return cached('uptime', () => orMock(() => getUptime90Days(), () => getMockUptime()));
 }
