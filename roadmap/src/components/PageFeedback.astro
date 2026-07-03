@@ -4,14 +4,16 @@ import { actions } from 'astro:actions';
 interface Props {
   question?: string;
   pagePath?: string;
+  /** Bare mode: drop the top border/margin so the widget can sit inside a footer row. */
+  bare?: boolean;
 }
 
-const { question = 'Was this page helpful?', pagePath = Astro.url.pathname } = Astro.props;
+const { question = 'Was this page helpful?', pagePath = Astro.url.pathname, bare = false } = Astro.props;
 ---
 
 <div
   id="page-feedback"
-  class="mt-12 border-t border-slate-200 pt-8"
+  class={bare ? '' : 'mt-12 border-t border-slate-200 pt-8'}
   role="group"
   aria-labelledby="page-feedback-question"
 >
@@ -20,7 +22,7 @@ const { question = 'Was this page helpful?', pagePath = Astro.url.pathname } = A
     <input type="hidden" name="helpful" id="page-feedback-helpful" value="" />
     <input type="hidden" name="message" id="page-feedback-msg-hidden" value="" />
   </form>
-  <div id="page-feedback-buttons" class="flex w-full flex-wrap items-center justify-end gap-3">
+  <div id="page-feedback-buttons" class={`flex flex-wrap items-center justify-end gap-3 ${bare ? '' : 'w-full'}`}>
     <p id="page-feedback-question" class="text-sm font-medium text-slate-700">
       {question}
     </p>

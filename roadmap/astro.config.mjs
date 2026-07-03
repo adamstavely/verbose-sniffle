@@ -11,6 +11,7 @@ import node from '@astrojs/node';
 
 import { unified } from '@astrojs/markdown-remark';
 import { remarkReadingTime } from './src/lib/remark-reading-time.mjs';
+import { remarkLastUpdated } from './src/lib/remark-last-updated.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,7 +28,7 @@ export default defineConfig({
   // Give MDX a unified processor so the reading-time remark plugin runs on the
   // .mdx doc pages; .md content collections keep the default processor.
   integrations: [
-    mdx({ processor: unified({ remarkPlugins: [remarkReadingTime] }) }),
+    mdx({ processor: unified({ remarkPlugins: [remarkReadingTime, remarkLastUpdated] }) }),
     sitemap(),
   ],
 
