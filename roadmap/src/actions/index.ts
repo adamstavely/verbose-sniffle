@@ -30,7 +30,7 @@ export const server = {
   subscribe: defineAction({
     accept: 'form',
     input: z.object({
-      email: z.string().email('Please enter a valid email address'),
+      email: z.email('Please enter a valid email address'),
     }),
     handler: async ({ email }) => {
       const normalized = email.trim().toLowerCase();
