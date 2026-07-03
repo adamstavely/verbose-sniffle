@@ -21,7 +21,8 @@ const subscribeResult = Astro.getActionResult(actions.subscribe);
 
 // Incident/maintenance/recent sections are Markdown-driven; the live telemetry
 // (summary, capabilities, uptime, external systems) comes from Elasticsearch via
-// fetch-status, which transparently falls back to mock data when ES is unavailable.
+// fetch-status. In production an ES failure surfaces as an honest unknown/empty
+// state; mock data is only used in the explicit PUBLIC_USE_MOCK_STATUS demo mode.
 const [incidents, maintenanceList, recentIncidents, summaryDto, uptime, externalDto] =
   await Promise.all([
     getActiveIncidentsFromContent(),

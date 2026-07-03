@@ -1,0 +1,11 @@
+# Treat all text files with LF and let git auto-detect; never mark source as binary.
+* text=auto eol=lf
+*.ts text
+*.tsx text
+*.astro text
+*.mjs text
+*.js text
+*.json text
+*.md text
+*.mdx text
+*.css text

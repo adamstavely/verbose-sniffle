@@ -45,19 +45,33 @@ export async function addSubscriber(
 
 export async function getSubscribers(): Promise<string[]> {
   const client = getElasticClient();
+  const PAGE_SIZE = 1000;
+  const emails = new Set<string>();
 
   try {
-    const result = await client.search({
-      index: INDEX(),
-      size: 1000,
-      _source: ['email'],
-    });
+    // Paginate with search_after so every subscriber is notified — no silent
+    // truncation at a single page. Emails are unique (doc id is keyed by email),
+    // so `email.keyword` is a total sort order.
+    let searchAfter: unknown[] | undefined;
+    for (;;) {
+      const result = await client.search<{ email?: string }>({
+        index: INDEX(),
+        size: PAGE_SIZE,
+        _source: ['email'],
+        sort: [{ 'email.keyword': 'asc' }],
+        ...(searchAfter ? { search_after: searchAfter } : {}),
+      });
 
-    const emails = new Set<string>();
-    for (const hit of result.hits.hits ?? []) {
-      const src = hit._source as { email?: string };
-      if (src?.email) emails.add(src.email);
+      const hits = result.hits.hits ?? [];
+      for (const hit of hits) {
+        if (hit._source?.email) emails.add(hit._source.email);
+      }
+
+      if (hits.length < PAGE_SIZE) break;
+      searchAfter = hits[hits.length - 1]?.sort;
+      if (!searchAfter) break;
     }
+
     return Array.from(emails);
   } catch (err) {
     console.error('Failed to get subscribers from Elasticsearch', err);

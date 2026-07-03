@@ -24,7 +24,9 @@ function env(name: string, fallback: string): string {
 
 function envNum(name: string, fallback: number): number {
   const v = typeof process !== 'undefined' ? process.env?.[name] : undefined;
-  return v !== undefined ? Number(v) : fallback;
+  if (v === undefined || v === '') return fallback;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 export const statusConfig: StatusServiceConfig = {
