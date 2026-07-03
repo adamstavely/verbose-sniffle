@@ -363,7 +363,7 @@ After deployment, align with [INTEGRATION_GUIDE.md §20](./INTEGRATION_GUIDE.md#
 | Telemetry | `_search` on each telemetry index with a `range` on `@timestamp` matching `STATUS_TIME_WINDOW_MINUTES` |
 | Votes | Visit `/roadmap`, vote; confirm document in `roadmap-votes` |
 | Subscribers | Submit subscribe form; confirm document in `status-subscribers` with `email.keyword` query |
-| Status API | `GET /api/page-status-data` returns `200` and `text/html` |
+| Status page | `GET /roadmap/status` returns `200`; server-rendered telemetry (Unknown state if ES is unreachable) |
 | Mock mode | `PUBLIC_USE_MOCK_STATUS=true` shows mock status without ES reads for status fetch |
 
 ---

@@ -34,12 +34,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const redirectTo = referer ? new URL(referer).pathname : '/roadmap';
       return context.redirect(redirectTo);
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      // Log the real error server-side; return a generic message so internal
+      // details are never surfaced to the user.
+      console.error('[middleware] action handler failed', err);
       setActionResult(
         action.name,
         serializeActionResult({
           data: undefined,
-          error: new ActionError({ code: 'INTERNAL_SERVER_ERROR', message }),
+          error: new ActionError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Something went wrong. Please try again.',
+          }),
         })
       );
       const referer = context.request.headers.get('Referer');

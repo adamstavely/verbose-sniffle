@@ -62,7 +62,7 @@ flowchart LR
 ```
 
 - **Subscribe:** The user submits an email on the status page; the `subscribe` Action validates input, **indexes a document** in the subscribers index (see [ELASTICSEARCH_GUIDE.md §6.8](./ELASTICSEARCH_GUIDE.md#68-status-subscribers-write--read)), and optionally sends a **confirmation email** if the email service is configured.
-- **Delivery job:** Something you operate (cron, Kubernetes CronJob, GitHub Actions, platform scheduler, etc.) calls **`GET` or `POST`** `/api/notify/run` on a schedule. That handler runs `runNotificationDelivery()` which loads incidents and maintenance from Elasticsearch, compares against dedupe indices, and calls the HTTP email service once per recipient per logical send.
+- **Delivery job:** Something you operate (cron, Kubernetes CronJob, GitHub Actions, platform scheduler, etc.) sends an authenticated **`POST`** to `/api/notify/run` on a schedule (`Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>`). That handler runs `runNotificationDelivery()` which loads incidents and maintenance from Elasticsearch, compares against dedupe indices, and calls the HTTP email service once per recipient per logical send.
 
 There is **no in-app queue** (no Redis, SQS, Bull). Sending is **synchronous** in the request: the handler awaits each `sendEmail` call in sequence.
 
@@ -107,7 +107,7 @@ If your internal API uses a different path or JSON shape, you have two options:
 | `SITE_URL` | Recommended for links | _(empty)_ | Preferred base URL for links in incident/maintenance emails. |
 | `STATUS_PAGE_BASE_URL` | Fallback | _(empty)_ | Used if `SITE_URL` is empty when building links. |
 | `NOTIFICATION_INCIDENT_WINDOW_MINUTES` | No | `1440` | How far back to look for incidents and maintenance relevant to notifications (see [ELASTICSEARCH_GUIDE.md §5.3–5.7](./ELASTICSEARCH_GUIDE.md#53-notifications-getincidentsfornotifications)). |
-| `NOTIFY_WEBHOOK_SECRET` | No | _(unset)_ | If set, **`POST /api/notify/run`** requires `Authorization: Bearer <same secret>`. |
+| `NOTIFY_WEBHOOK_SECRET` | **Yes** (to run delivery) | _(unset)_ | Required for **`POST /api/notify/run`** (`Authorization: Bearer <same secret>`). If unset, the endpoint fails closed (`503`) and delivery cannot be triggered. |
 
 Copy-paste list: `roadmap/.env.example`.
 
@@ -182,8 +182,8 @@ Implementation: `src/pages/api/notify/run.ts`.
 
 | Method | Auth | Use |
 |--------|------|-----|
-| `GET` | **None** in the reference app | Cron `curl` / health checks. **Protect at the edge** in production (private network, mTLS, API gateway, or IP allowlist) because anyone who can hit the URL could trigger delivery. |
-| `POST` | If `NOTIFY_WEBHOOK_SECRET` is set, require **`Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>`**; otherwise 401 | Webhooks from CI or schedulers that can send headers. If the secret is **unset**, `POST` is **not** gated by this check. |
+| `GET` | — | **Not supported.** Delivery is a state-changing action (sends mass email) and is never exposed over `GET`. |
+| `POST` | **Required.** `Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>` | Webhooks/cron/CI that can send headers. **Fails closed:** if `NOTIFY_WEBHOOK_SECRET` is unset the endpoint returns `503` and does not run; a missing/incorrect token returns `401`. The response contains only `{ ok, sent, failed }` — never subscriber emails or incident IDs. |
 
 **Suggested cron:** every **2–5 minutes** is a reasonable starting point; align with how quickly you need incident emails and with serverless timeouts if applicable.
 

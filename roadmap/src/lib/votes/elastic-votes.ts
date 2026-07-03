@@ -1,5 +1,6 @@
 import { getElasticClient } from '../status/elastic-client';
 import { statusConfig } from '../status/status-config';
+import { esDocId, isConflict } from '../es-utils';
 
 const INDEX = () => statusConfig.indices.roadmapVotes;
 
@@ -10,29 +11,11 @@ export async function recordVote(
   const client = getElasticClient();
 
   try {
-      const existing = await client.search({
+    // One vote per (feature request, voter): a deterministic id + create is
+    // atomic, so concurrent double-clicks can't produce two vote documents.
+    await client.create({
       index: INDEX(),
-      size: 1,
-      query: {
-        bool: {
-          must: [
-            { term: { 'feature_request_id.keyword': featureRequestId } },
-            { term: { 'voter_id.keyword': voterId } },
-          ],
-        },
-      },
-    });
-
-    const total =
-      typeof existing.hits.total === 'object' && 'value' in existing.hits.total
-        ? (existing.hits.total as { value: number }).value
-        : Number(existing.hits.total ?? 0);
-    if (total > 0) {
-      return { success: false, error: 'already_voted' };
-    }
-
-    await client.index({
-      index: INDEX(),
+      id: esDocId('vote', featureRequestId, voterId),
       document: {
         feature_request_id: featureRequestId,
         voter_id: voterId,
@@ -42,6 +25,9 @@ export async function recordVote(
 
     return { success: true };
   } catch (err) {
+    if (isConflict(err)) {
+      return { success: false, error: 'already_voted' };
+    }
     console.error('Failed to record vote in Elasticsearch', err);
     return { success: false, error: 'Failed to record vote. Please try again.' };
   }

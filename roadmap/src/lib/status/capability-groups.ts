@@ -5,7 +5,11 @@ export function buildCapabilityGroups(
   services: CoreServiceStatus[]
 ): CapabilityGroup[] {
   const byId = new Map(services.map((s) => [s.id, s]));
-  const get = (id: string) => byId.get(id)?.level ?? 'HEALTHY';
+  // Default to UNKNOWN (not HEALTHY) when a service has no telemetry, so a
+  // service whose data is missing — or all of it, when Elasticsearch is down —
+  // is shown as unknown rather than falsely reported as operational.
+  const get = (id: string): CoreServiceStatus['level'] =>
+    byId.get(id)?.level ?? 'UNKNOWN';
   const getDesc = (id: string) => byId.get(id)?.description;
 
   return [

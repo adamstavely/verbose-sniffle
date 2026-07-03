@@ -26,6 +26,12 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
     <title>{title}</title>
   </head>
   <body class="min-h-screen bg-slate-50 text-slate-900">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-indigo-700 focus:shadow focus:ring-2 focus:ring-indigo-500"
+    >
+      Skip to main content
+    </a>
     <header class="border-b border-slate-200 bg-white">
       <nav class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6" aria-label="Main navigation">
         <a href={withBase('')} class="text-lg font-semibold text-slate-800 hover:text-slate-600">
@@ -53,7 +59,7 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
         </ul>
       </nav>
     </header>
-    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+    <main id="main-content" class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <slot />
       {showPageFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
     </main>

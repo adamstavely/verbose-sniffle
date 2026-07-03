@@ -10,7 +10,9 @@ const { result } = Astro.props;
 
 <div class="rounded-lg border border-slate-200 bg-white p-5 md:p-6" aria-labelledby="subscribe-heading">
   <form method="POST" action={actions.subscribe} class="flex flex-col sm:flex-row gap-3">
+    <label for="subscribe-email" class="sr-only">Email address for incident notifications</label>
     <input
+      id="subscribe-email"
       type="email"
       name="email"
       placeholder="your@email.gov"
