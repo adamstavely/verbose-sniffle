@@ -4,7 +4,7 @@ A status dashboard and product roadmap for the Super App platform. Built with **
 
 The app is **static by default** and opts the interactive routes into on-demand rendering (`export const prerender = false`). Live service health, workspace, and external-system telemetry come from **Elasticsearch** (with a mock-data fallback when ES is unavailable). Feature-request **voting**, incident **email subscriptions**, and page **feedback** are handled server-side with **Astro Actions**. Incident/maintenance content is authored in **Markdown** under `roadmap/src/content/status/`.
 
-See [roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md), [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md), and [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md) for the server + Elasticsearch operational reference. ([roadmap/INTEGRATION_STATIC.md](roadmap/INTEGRATION_STATIC.md) documents the fully-static variant, if you ever need to drop the server.)
+See [roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md), [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md), [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md), and [roadmap/STATUS_PAGE_DATA.md](roadmap/STATUS_PAGE_DATA.md) for the server + Elasticsearch operational reference.
 
 ## Overview
 
