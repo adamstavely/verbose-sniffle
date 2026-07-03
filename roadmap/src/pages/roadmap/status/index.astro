@@ -1,34 +1,68 @@
 ---
+export const prerender = false;
+
+import { actions } from 'astro:actions';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import StatusBadge from '../../../components/status/StatusBadge.astro';
+import Capabilities from '../../../components/status/Capabilities.astro';
+import UptimeBar from '../../../components/status/UptimeBar.astro';
+import SubscribeNotifications from '../../../components/status/SubscribeNotifications.astro';
 import {
   getActiveIncidentsFromContent,
   getMaintenanceFromContent,
   getRecentIncidentsFromContent,
 } from '../../../lib/status/status-content';
+import { buildCapabilityGroups } from '../../../lib/status/capability-groups';
+import { fetchSummary, fetchUptime, fetchExternalSystems } from '../../../lib/status/fetch-status';
+import { getExternalSystemTypeLabel } from '../../../lib/status/status-labels';
 import { withBase } from '../../../lib/site-url';
 
-const [incidents, maintenanceList, recentIncidents] = await Promise.all([
-  getActiveIncidentsFromContent(),
-  getMaintenanceFromContent(),
-  getRecentIncidentsFromContent(),
-]);
+const subscribeResult = Astro.getActionResult(actions.subscribe);
 
+// Incident/maintenance/recent sections are Markdown-driven; the live telemetry
+// (summary, capabilities, uptime, external systems) comes from Elasticsearch via
+// fetch-status, which transparently falls back to mock data when ES is unavailable.
+const [incidents, maintenanceList, recentIncidents, summaryDto, uptime, externalDto] =
+  await Promise.all([
+    getActiveIncidentsFromContent(),
+    getMaintenanceFromContent(),
+    getRecentIncidentsFromContent(),
+    fetchSummary(),
+    fetchUptime(),
+    fetchExternalSystems(),
+  ]);
+
+const { summary, coreServices } = summaryDto;
+const capabilityGroups = buildCapabilityGroups(coreServices);
+const externalSystems = externalDto.systems;
 const activeMaintenance = maintenanceList.filter((m) => m.status !== 'COMPLETED');
 const recent = recentIncidents.slice(0, 10);
 ---
 
 <BaseLayout
   title="Status - Product Roadmap"
-  description="Platform status: active issues, scheduled maintenance, and recent incidents (edit Markdown under src/content/status/)."
+  description="Platform status: live service health, active issues, scheduled maintenance, and recent incidents."
 >
   <div class="max-w-4xl mx-auto space-y-12">
     <section class="rounded-xl border border-slate-200 bg-white p-6" aria-labelledby="status-heading">
-      <h1 id="status-heading" class="text-2xl font-semibold text-slate-900">Platform status</h1>
-      <p class="mt-2 text-sm text-slate-600">
-        Active issues, scheduled maintenance, and recent incident history. Content is maintained in
-        Markdown under <code class="text-xs bg-slate-100 px-1 rounded">src/content/status/</code>.
+      <div class="flex items-center justify-between gap-4">
+        <h1 id="status-heading" class="text-2xl font-semibold text-slate-900">Platform status</h1>
+        <StatusBadge level={summary.level} variant="pillCompact" />
+      </div>
+      <p class="mt-2 text-sm text-slate-600">{summary.overallMessage}</p>
+      <p class="mt-1 text-xs text-slate-400">
+        {summary.environment} · updated {new Date(summary.lastUpdated).toLocaleString()}
       </p>
+    </section>
+
+    <section aria-labelledby="capabilities-heading">
+      <h2 id="capabilities-heading" class="text-lg font-semibold text-slate-900 mb-3">Service health</h2>
+      <Capabilities groups={capabilityGroups} />
+    </section>
+
+    <section aria-labelledby="uptime-heading">
+      <h2 id="uptime-heading" class="text-lg font-semibold text-slate-900 mb-3">90-day uptime</h2>
+      <UptimeBar data={uptime} />
     </section>
 
     <section aria-labelledby="incidents-heading">
@@ -88,6 +122,26 @@ const recent = recentIncidents.slice(0, 10);
       </section>
     )}
 
+    <section aria-labelledby="external-heading">
+      <div class="flex items-center justify-between mb-3">
+        <h2 id="external-heading" class="text-lg font-semibold text-slate-900">Connected services</h2>
+        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-indigo-600 hover:text-indigo-700">
+          View all →
+        </a>
+      </div>
+      <ul class="space-y-2">
+        {externalSystems.map((sys) => (
+          <li class="flex items-center justify-between rounded border border-slate-200 bg-white px-4 py-2 text-sm">
+            <div>
+              <span class="font-medium text-slate-900">{sys.name}</span>
+              <span class="ml-2 text-slate-500">{getExternalSystemTypeLabel(sys.type)}</span>
+            </div>
+            <StatusBadge level={sys.level} variant="pillCompact" />
+          </li>
+        ))}
+      </ul>
+    </section>
+
     <section aria-labelledby="recent-heading">
       <h2 id="recent-heading" class="text-lg font-semibold text-slate-900 mb-3">Recent incidents</h2>
       <p class="text-sm text-slate-600 mb-4">Resolved incidents from the last 90 days.</p>
@@ -102,6 +156,12 @@ const recent = recentIncidents.slice(0, 10);
           </li>
         ))}
       </ul>
+    </section>
+
+    <section id="status-subscribe" aria-labelledby="subscribe-heading">
+      <h2 id="subscribe-heading" class="text-lg font-semibold text-slate-900 mb-3">Get incident notifications</h2>
+      <p class="text-sm text-slate-600 mb-4">Enter your email to receive incident and maintenance notifications.</p>
+      <SubscribeNotifications result={subscribeResult?.data} />
     </section>
   </div>
 

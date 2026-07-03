@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { withBase } from '../lib/site-url';
+import PageFeedback from '../components/PageFeedback.astro';
 
 interface Props {
   title: string;
@@ -8,6 +9,10 @@ interface Props {
 }
 
 const { title, description = 'Product roadmap - planned features and release information' } = Astro.props;
+
+// Show the "was this helpful?" widget only on the about and guide pages.
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).has(path);
 ---
 
 <!doctype html>
@@ -50,6 +55,7 @@ const { title, description = 'Product roadmap - planned features and release inf
     </header>
     <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <slot />
+      {showPageFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
     </main>
   </body>
 </html>

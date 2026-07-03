@@ -1,23 +1,24 @@
 # Status Page & Product Roadmap
 
-**Phase 1:** This roadmap app is built as a **fully static** Astro site (no Elasticsearch, voting, or email). The **status hub** (`/roadmap/status`) is edited via **Markdown** under `roadmap/src/content/status/` (active incidents, maintenance, recent incidents). Subpages for workspaces and external systems still use bundled mock telemetry until phase 2.
+A status dashboard and product roadmap for the Super App platform. Built with **Astro** (server-rendered via the Node adapter) and **Tailwind CSS**.
 
-A status dashboard and product roadmap for the Super App platform. Built with Astro and Tailwind.
+The app is **static by default** and opts the interactive routes into on-demand rendering (`export const prerender = false`). Live service health, workspace, and external-system telemetry come from **Elasticsearch** (with a mock-data fallback when ES is unavailable). Feature-request **voting**, incident **email subscriptions**, and page **feedback** are handled server-side with **Astro Actions**. Incident/maintenance content is authored in **Markdown** under `roadmap/src/content/status/`.
 
-Legacy integration guides ([roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md), [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md), [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md)) describe the previous server + Elasticsearch architecture and are not required for the static build.
+See [roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md), [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md), and [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md) for the server + Elasticsearch operational reference. ([roadmap/INTEGRATION_STATIC.md](roadmap/INTEGRATION_STATIC.md) documents the fully-static variant, if you ever need to drop the server.)
 
 ## Overview
 
-- **Status page** — Active issues, scheduled maintenance, and recent incidents from Markdown collections; workspace and external-system drill-downs still use mock data.
-- **Product roadmap** — Planned features and community feature requests via content collections.
+- **Status page** — Live service health + 90-day uptime from Elasticsearch; active issues, scheduled maintenance, and recent incidents from Markdown collections; email incident subscriptions.
+- **Product roadmap** — Planned features and community feature requests (with voting) via content collections + Elasticsearch.
 
 ## Tech Stack
 
 | Layer | Stack |
 |-------|--------|
-| **Frontend** | Astro 5, Tailwind CSS (in `roadmap/`) |
-| **Status hub** | Markdown (`src/content/status/`) + helpers in `src/lib/status/status-content.ts` |
-| **Status drill-downs (workspaces / external systems)** | Mock data (`src/lib/status/mock-data.ts`) |
+| **Frontend** | Astro 5 + Node adapter (`@astrojs/node`), Tailwind CSS (in `roadmap/`) |
+| **Live telemetry** | Elasticsearch (`src/lib/status/elastic-status.ts`) via `fetch-status.ts`, with `mock-data.ts` fallback |
+| **Interactivity** | Astro Actions (`src/actions/`) — voting, subscribe, feedback |
+| **Incident content** | Markdown (`src/content/status/`) + helpers in `src/lib/status/status-content.ts` |
 | **Roadmap data** | Content collections |
 
 ## Project Structure
@@ -57,18 +58,27 @@ npm run dev
 
 The app runs at **http://localhost:4321**. The status page is at `/roadmap/status`. Edit status content in `roadmap/src/content/status/`. Feature requests live in `roadmap/src/content/feature-requests/`.
 
-### Build (static output)
+### Build & run (Node server)
 
 ```bash
 cd roadmap
-npm run build
+npm run build          # emits dist/client (static assets) + dist/server (Node entry)
+npm run check          # type-check (astro check)
+node ./dist/server/entry.mjs   # serves on-demand routes + static assets
 ```
 
-Deploy the `roadmap/dist/` directory to any static host (no Node server required).
+The build produces a standalone Node server (`@astrojs/node`). Prerendered pages are emitted as static HTML in `dist/client`; interactive routes (roadmap voting, status hub, Actions, `/api/*`) are served on demand by `dist/server`.
 
 ## Environment Variables
 
-Optional: set `SITE_URL` at build time for canonical URLs in the sitemap (see `roadmap/astro.config.mjs`).
+Set Elasticsearch and email/notification variables at runtime (see [`roadmap/.env.example`](roadmap/.env.example) and the guides). Key ones:
+
+- `ELASTICSEARCH_URL`, `ELASTICSEARCH_API_KEY`, and the `ELASTICSEARCH_INDEX_*` names — live status/telemetry, votes, subscribers, feedback.
+- `EMAIL_SERVICE_URL` / `EMAIL_SERVICE_API_KEY` — incident notification email delivery.
+- `SITE_URL` — canonical URLs in the sitemap (see `roadmap/astro.config.mjs`).
+- `PUBLIC_USE_MOCK_STATUS=true` — force the mock-data fallback without an Elasticsearch cluster.
+
+When Elasticsearch is unreachable, status/telemetry reads fall back to bundled mock data so the app still renders.
 
 ## Content Collections (Roadmap Items)
 

@@ -1,24 +1,28 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import StatusBadge from '../../../../components/status/StatusBadge.astro';
 import { getFeatureDisplayName } from 'shared/status-labels';
 import {
-  MOCK_WORKSPACES,
-  MOCK_EXTERNAL_SYSTEMS,
-  getMockWorkspaceFeatures,
-} from '../../../../lib/status/mock-data';
+  fetchWorkspaceFeatures,
+  fetchExternalSystems,
+  fetchWorkspaces,
+} from '../../../../lib/status/fetch-status';
 import { withBase } from '../../../../lib/site-url';
 
-export function getStaticPaths() {
-  return MOCK_WORKSPACES.workspaces.map((w) => ({ params: { id: w.id } }));
-}
-
 const { id } = Astro.params;
-if (!id) throw new Error('Missing workspace id');
+if (!id) return Astro.redirect(withBase('roadmap/status'));
 
-const { features } = getMockWorkspaceFeatures(id);
-const externalSystems = MOCK_EXTERNAL_SYSTEMS.systems;
-const workspace = MOCK_WORKSPACES.workspaces.find((w) => w.id === id);
+const [featuresRes, externalRes, workspacesRes] = await Promise.all([
+  fetchWorkspaceFeatures(id),
+  fetchExternalSystems(),
+  fetchWorkspaces(),
+]);
+
+const features = featuresRes.features;
+const externalSystems = externalRes.systems;
+const workspace = workspacesRes.workspaces.find((w) => w.id === id);
 const workspaceName = workspace?.name ?? `Workspace ${id}`;
 ---
 
