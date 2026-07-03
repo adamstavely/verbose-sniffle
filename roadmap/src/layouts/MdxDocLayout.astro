@@ -7,6 +7,8 @@ interface Props {
     description?: string;
     /** Wrap content in prose typography styles. Set false for hand-styled MDX (e.g. the style guide). */
     prose?: boolean;
+    /** Estimated reading time (e.g. "3 min read"), injected by the reading-time remark plugin. */
+    minutesRead?: string;
   };
 }
 
@@ -15,10 +17,14 @@ const {
   title,
   description = 'Product roadmap - documentation and guides',
   prose = true,
+  minutesRead,
 } = frontmatter;
 ---
 
 <BaseLayout title={title} description={description}>
+  {minutesRead && (
+    <p class="mb-6 text-xs font-medium uppercase tracking-wide text-slate-400">{minutesRead}</p>
+  )}
   {prose ? (
     <article class="doc-prose">
       <slot />
