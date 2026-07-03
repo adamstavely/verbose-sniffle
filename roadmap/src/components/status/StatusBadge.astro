@@ -1,10 +1,6 @@
 ---
 import type { StatusLevel } from 'shared/status-models';
-import {
-  getStatusDotClass,
-  getStatusTextClass,
-  getStatusPillCompactClass,
-} from 'shared/status-utils';
+import { getStatusDotClass, getStatusTextClass } from 'shared/status-utils';
 
 interface Props {
   level: StatusLevel | null | undefined;
@@ -30,7 +26,7 @@ const label = level ? (SHORT_LABELS[level] ?? level) : 'Unknown';
   <span class={getStatusTextClass(level)}>{label}</span>
 ) : (
   <span
-    class={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium ${variant === 'pillCompact' ? getStatusPillCompactClass(level) : 'bg-slate-100 text-slate-700 border border-slate-200'}`}
+    class="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"
     aria-label={label}
   >
     <span class={`w-1.5 h-1.5 rounded-full shrink-0 ${getStatusDotClass(level)}`} />

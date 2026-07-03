@@ -24,7 +24,6 @@ export function buildCapabilityGroups(
           level: get('messaging-service'),
           impact:
             'Responses may be slower. Falling back to secondary model routing.',
-          aiNote: true,
         },
         {
           id: 'search',
@@ -55,7 +54,6 @@ export function buildCapabilityGroups(
           level: get('billing-service'),
           impact:
             'Confidence scores may reflect reduced model quality during degradation.',
-          aiNote: true,
         },
         {
           id: 'alerts',

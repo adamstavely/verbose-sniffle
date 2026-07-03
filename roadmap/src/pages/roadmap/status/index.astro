@@ -41,7 +41,7 @@ const recent = recentIncidents.slice(0, 10);
 ---
 
 <BaseLayout
-  title="Status - Product Roadmap"
+  title="Status - Help Center"
   description="Platform status: live service health, active issues, scheduled maintenance, and recent incidents."
 >
   <div class="max-w-4xl mx-auto space-y-12">
@@ -73,7 +73,7 @@ const recent = recentIncidents.slice(0, 10);
     </section>
 
     <section aria-labelledby="incidents-heading">
-      <h2 id="incidents-heading" class="text-lg font-semibold text-slate-900 mb-3">Active issues</h2>
+      <h2 id="incidents-heading" class="text-lg font-semibold text-slate-900 mb-3">Known Issues</h2>
       {incidents.length > 0 ? (
         <>
           <p class="text-sm text-slate-600 mb-4">
@@ -159,7 +159,7 @@ const recent = recentIncidents.slice(0, 10);
               <span class="text-slate-500">{inc.date}</span>
               <span class="ml-2 font-medium text-slate-900">{inc.title}</span>
             </div>
-            <StatusBadge level={inc.severity} variant="text" />
+            <StatusBadge level={inc.severity} variant="pillCompact" />
           </li>
         ))}
       </ul>

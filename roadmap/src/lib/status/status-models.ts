@@ -31,8 +31,6 @@ export interface CapabilityItem {
   level: StatusLevel;
   /** Impact/degradation description, shown when expanded */
   impact?: string;
-  /** Show AI NOTE badge when degraded */
-  aiNote?: boolean;
 }
 
 /** Capability group with colored bar and items */

@@ -8,7 +8,7 @@ interface Props {
   description?: string;
 }
 
-const { title, description = 'Product roadmap - planned features and release information' } = Astro.props;
+const { title, description = 'Help Center - planned features and release information' } = Astro.props;
 
 // Show the "was this helpful?" widget only on the about and guide pages.
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
@@ -35,7 +35,7 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
     <header class="border-b border-slate-200 bg-white">
       <nav class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6" aria-label="Main navigation">
         <a href={withBase('')} class="text-lg font-semibold text-slate-800 hover:text-slate-600">
-          Product Roadmap
+          Help Center
         </a>
         <ul class="flex flex-wrap gap-4 sm:gap-6">
           <li>
