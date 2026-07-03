@@ -1,32 +1,169 @@
 ---
+export const prerender = false;
+
+import { actions } from 'astro:actions';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { renderStatusContent } from '../../../lib/status/render-status-html';
+import StatusBadge from '../../../components/status/StatusBadge.astro';
+import Capabilities from '../../../components/status/Capabilities.astro';
+import UptimeBar from '../../../components/status/UptimeBar.astro';
+import SubscribeNotifications from '../../../components/status/SubscribeNotifications.astro';
 import {
   getActiveIncidentsFromContent,
   getMaintenanceFromContent,
   getRecentIncidentsFromContent,
 } from '../../../lib/status/status-content';
+import { buildCapabilityGroups } from '../../../lib/status/capability-groups';
+import { fetchSummary, fetchUptime, fetchExternalSystems } from '../../../lib/status/fetch-status';
+import { getExternalSystemTypeLabel } from '../../../lib/status/status-labels';
 import { withBase } from '../../../lib/site-url';
 
-const [incidents, maintenanceList, recentIncidents] = await Promise.all([
-  getActiveIncidentsFromContent(),
-  getMaintenanceFromContent(),
-  getRecentIncidentsFromContent(),
-]);
+const subscribeResult = Astro.getActionResult(actions.subscribe);
 
-const statusHtml = renderStatusContent({
-  incidents,
-  maintenance: maintenanceList,
-  recentIncidents,
-  incidentDetailPath: (id) => withBase(`roadmap/status/incidents/${id}`),
-});
+// Incident/maintenance/recent sections are Markdown-driven; the live telemetry
+// (summary, capabilities, uptime, external systems) comes from Elasticsearch via
+// fetch-status, which transparently falls back to mock data when ES is unavailable.
+const [incidents, maintenanceList, recentIncidents, summaryDto, uptime, externalDto] =
+  await Promise.all([
+    getActiveIncidentsFromContent(),
+    getMaintenanceFromContent(),
+    getRecentIncidentsFromContent(),
+    fetchSummary(),
+    fetchUptime(),
+    fetchExternalSystems(),
+  ]);
+
+const { summary, coreServices } = summaryDto;
+const capabilityGroups = buildCapabilityGroups(coreServices);
+const externalSystems = externalDto.systems;
+const activeMaintenance = maintenanceList.filter((m) => m.status !== 'COMPLETED');
+const recent = recentIncidents.slice(0, 10);
 ---
 
 <BaseLayout
   title="Status - Product Roadmap"
-  description="Platform status: active issues, scheduled maintenance, and recent incidents (edit Markdown under src/content/status/)."
+  description="Platform status: live service health, active issues, scheduled maintenance, and recent incidents."
 >
-  <div id="status-root" set:html={statusHtml} />
+  <div class="max-w-4xl mx-auto space-y-12">
+    <section class="rounded-xl border border-slate-200 bg-white p-6" aria-labelledby="status-heading">
+      <div class="flex items-center justify-between gap-4">
+        <h1 id="status-heading" class="text-2xl font-semibold text-slate-900">Platform status</h1>
+        <StatusBadge level={summary.level} variant="pillCompact" />
+      </div>
+      <p class="mt-2 text-sm text-slate-600">{summary.overallMessage}</p>
+      <p class="mt-1 text-xs text-slate-400">
+        {summary.environment} · updated {new Date(summary.lastUpdated).toLocaleString()}
+      </p>
+    </section>
+
+    <section aria-labelledby="capabilities-heading">
+      <h2 id="capabilities-heading" class="text-lg font-semibold text-slate-900 mb-3">Service health</h2>
+      <Capabilities groups={capabilityGroups} />
+    </section>
+
+    <section aria-labelledby="uptime-heading">
+      <h2 id="uptime-heading" class="text-lg font-semibold text-slate-900 mb-3">90-day uptime</h2>
+      <UptimeBar data={uptime} />
+    </section>
+
+    <section aria-labelledby="incidents-heading">
+      <h2 id="incidents-heading" class="text-lg font-semibold text-slate-900 mb-3">Active issues</h2>
+      {incidents.length > 0 ? (
+        <>
+          <p class="text-sm text-slate-600 mb-4">
+            Active incidents we're investigating. Workarounds and updates appear below.
+          </p>
+          <ul class="space-y-4">
+            {incidents.map((inc) => (
+              <li class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="flex items-center justify-between gap-4">
+                  <a
+                    href={withBase(`roadmap/status/incidents/${inc.id}`)}
+                    class="font-medium text-slate-900 hover:text-indigo-600"
+                  >
+                    {inc.title}
+                  </a>
+                  <StatusBadge level={inc.level} variant="pillCompact" />
+                </div>
+                {inc.description && (
+                  <p class="mt-2 text-sm text-slate-600">{inc.description}</p>
+                )}
+                {inc.workaround && (
+                  <p class="mt-2 text-sm text-amber-700 bg-amber-50 rounded p-2">
+                    <strong>Workaround:</strong> {inc.workaround}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p class="text-sm text-slate-600">No active incidents.</p>
+      )}
+    </section>
+
+    {activeMaintenance.length > 0 && (
+      <section aria-labelledby="maintenance-heading">
+        <h2 id="maintenance-heading" class="text-lg font-semibold text-slate-900 mb-3">
+          Scheduled maintenance
+        </h2>
+        <ul class="space-y-3">
+          {activeMaintenance.map((m) => (
+            <li class="rounded-lg border border-slate-200 bg-sky-50/50 p-4">
+              <div class="font-medium text-slate-900">{m.title}</div>
+              {m.description && (
+                <p class="mt-1 text-sm text-slate-600">{m.description}</p>
+              )}
+              <p class="mt-2 text-xs text-slate-500">
+                {new Date(m.scheduledStart).toLocaleString()} – {new Date(m.scheduledEnd).toLocaleString()}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <section aria-labelledby="external-heading">
+      <div class="flex items-center justify-between mb-3">
+        <h2 id="external-heading" class="text-lg font-semibold text-slate-900">Connected services</h2>
+        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-indigo-600 hover:text-indigo-700">
+          View all →
+        </a>
+      </div>
+      <ul class="space-y-2">
+        {externalSystems.map((sys) => (
+          <li class="flex items-center justify-between rounded border border-slate-200 bg-white px-4 py-2 text-sm">
+            <div>
+              <span class="font-medium text-slate-900">{sys.name}</span>
+              <span class="ml-2 text-slate-500">{getExternalSystemTypeLabel(sys.type)}</span>
+            </div>
+            <StatusBadge level={sys.level} variant="pillCompact" />
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section aria-labelledby="recent-heading">
+      <h2 id="recent-heading" class="text-lg font-semibold text-slate-900 mb-3">Recent incidents</h2>
+      <p class="text-sm text-slate-600 mb-4">Resolved incidents from the last 90 days.</p>
+      <ul class="space-y-2">
+        {recent.map((inc) => (
+          <li class="flex items-center justify-between rounded border border-slate-200 bg-white px-4 py-2 text-sm">
+            <div>
+              <span class="text-slate-500">{inc.date}</span>
+              <span class="ml-2 font-medium text-slate-900">{inc.title}</span>
+            </div>
+            <StatusBadge level={inc.severity} variant="text" />
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section id="status-subscribe" aria-labelledby="subscribe-heading">
+      <h2 id="subscribe-heading" class="text-lg font-semibold text-slate-900 mb-3">Get incident notifications</h2>
+      <p class="text-sm text-slate-600 mb-4">Enter your email to receive incident and maintenance notifications.</p>
+      <SubscribeNotifications result={subscribeResult?.data} />
+    </section>
+  </div>
 
   <footer class="max-w-4xl mx-auto pt-8 mt-12 border-t border-slate-200 text-sm text-slate-500">
     <p>Questions? Contact the Platform team via the #platform-support channel.</p>

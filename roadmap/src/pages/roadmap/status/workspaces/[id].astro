@@ -1,24 +1,28 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import StatusBadge from '../../../../components/status/StatusBadge.astro';
 import { getFeatureDisplayName } from 'shared/status-labels';
 import {
-  MOCK_WORKSPACES,
-  MOCK_EXTERNAL_SYSTEMS,
-  getMockWorkspaceFeatures,
-} from '../../../../lib/status/mock-data';
+  fetchWorkspaceFeatures,
+  fetchExternalSystems,
+  fetchWorkspaces,
+} from '../../../../lib/status/fetch-status';
 import { withBase } from '../../../../lib/site-url';
 
-export function getStaticPaths() {
-  return MOCK_WORKSPACES.workspaces.map((w) => ({ params: { id: w.id } }));
-}
-
 const { id } = Astro.params;
-if (!id) throw new Error('Missing workspace id');
+if (!id) return Astro.redirect(withBase('roadmap/status'));
 
-const { features } = getMockWorkspaceFeatures(id);
-const externalSystems = MOCK_EXTERNAL_SYSTEMS.systems;
-const workspace = MOCK_WORKSPACES.workspaces.find((w) => w.id === id);
+const [featuresRes, externalRes, workspacesRes] = await Promise.all([
+  fetchWorkspaceFeatures(id),
+  fetchExternalSystems(),
+  fetchWorkspaces(),
+]);
+
+const features = featuresRes.features;
+const externalSystems = externalRes.systems;
+const workspace = workspacesRes.workspaces.find((w) => w.id === id);
 const workspaceName = workspace?.name ?? `Workspace ${id}`;
 ---
 
@@ -38,14 +42,14 @@ const workspaceName = workspace?.name ?? `Workspace ${id}`;
       </h2>
       <div class="overflow-x-auto rounded-lg border border-slate-200">
         <table class="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
+          <thead class="bg-slate-50">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-medium text-slate-600">Feature</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-slate-600">Status</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-slate-600">Last seen</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 bg-white">
+          <tbody class="divide-y divide-slate-200 bg-white">
             {features.map((f) => (
               <tr>
                 <td class="px-4 py-3 text-sm text-slate-900">

@@ -1,10 +1,27 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import DocList from '../components/DocList.astro';
+
+const modules = import.meta.glob<{
+  frontmatter: { title: string; description?: string; order?: number };
+  url?: string;
+}>('./user-guide/*.mdx', { eager: true });
+
+const pages = Object.values(modules)
+  .filter((m) => m.url)
+  .map((m) => ({
+    title: m.frontmatter.title,
+    description: m.frontmatter.description,
+    url: m.url as string,
+    order: m.frontmatter.order ?? 99,
+  }))
+  .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
 ---
 
 <BaseLayout title="User Guide - Product Roadmap" description="How to use the product">
   <h1 class="mb-6 text-2xl font-bold text-slate-900">User Guide</h1>
-  <p class="text-slate-600">
+  <p class="mb-8 text-slate-600">
     Step-by-step guides for using the product and its features.
   </p>
+  <DocList pages={pages} />
 </BaseLayout>

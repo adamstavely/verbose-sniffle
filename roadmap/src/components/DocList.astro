@@ -1,0 +1,36 @@
+---
+export interface DocPage {
+  title: string;
+  description?: string;
+  url: string;
+}
+
+interface Props {
+  pages: DocPage[];
+  emptyText?: string;
+}
+
+const { pages, emptyText = 'No pages yet — add an .mdx file to this section.' } = Astro.props;
+---
+
+{pages.length === 0 ? (
+  <p class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-slate-600">
+    {emptyText}
+  </p>
+) : (
+  <ul class="space-y-3" role="list">
+    {pages.map((page) => (
+      <li>
+        <a
+          href={page.url}
+          class="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+        >
+          <span class="font-medium text-slate-900">{page.title}</span>
+          {page.description && (
+            <p class="mt-1 text-sm text-slate-600">{page.description}</p>
+          )}
+        </a>
+      </li>
+    ))}
+  </ul>
+)}

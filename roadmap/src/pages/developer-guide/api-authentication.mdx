@@ -1,0 +1,31 @@
+---
+layout: ../../layouts/MdxDocLayout.astro
+title: API authentication
+description: How to authenticate requests to the platform API.
+order: 2
+---
+
+# API authentication
+
+All API requests authenticate with a bearer token. This page is Markdown —
+edit `src/pages/developer-guide/api-authentication.mdx`.
+
+## Request a token
+
+Tokens are issued per service account. Contact the Platform team via the
+`#platform-support` channel to provision one.
+
+## Use the token
+
+Send it in the `Authorization` header:
+
+```http
+GET /api/v1/status HTTP/1.1
+Host: api.example.gov
+Authorization: Bearer <your-token>
+```
+
+## Rotating tokens
+
+Rotate tokens at least every 90 days. Revoked tokens stop working immediately;
+issue the replacement before revoking the old one to avoid downtime.

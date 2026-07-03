@@ -1,11 +1,13 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import StatusBadge from '../../../components/status/StatusBadge.astro';
-import { MOCK_EXTERNAL_SYSTEMS } from '../../../lib/status/mock-data';
+import { fetchExternalSystems } from '../../../lib/status/fetch-status';
 import { getExternalSystemTypeLabel } from 'shared/status-labels';
 import { withBase } from '../../../lib/site-url';
 
-const systems = MOCK_EXTERNAL_SYSTEMS.systems;
+const { systems } = await fetchExternalSystems();
 ---
 
 <BaseLayout

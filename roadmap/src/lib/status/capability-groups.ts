@@ -1,4 +1,4 @@
-import type { CapabilityGroup, CapabilityItem, CoreServiceStatus } from './status-models';
+import type { CapabilityGroup, CoreServiceStatus } from './status-models';
 
 /** Maps core service id to capability item. Builds groups from core services. */
 export function buildCapabilityGroups(

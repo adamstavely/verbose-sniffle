@@ -1,10 +1,12 @@
 ---
-layout: ../layouts/MdxDocLayout.astro
-title: Style Guide - Developer Guide
+layout: ../../layouts/MdxDocLayout.astro
+title: Style Guide
 description: Brand colors, typography, spacing, and UI patterns for the Product Roadmap app.
+order: 1
+prose: false
 ---
 
-import { withBase } from '../lib/site-url';
+import { withBase } from '../../lib/site-url';
 
   <h1 class="mb-2 text-2xl font-bold text-slate-900">Style guide</h1>
   <p class="mb-8 text-slate-600">
@@ -188,10 +190,7 @@ import { withBase } from '../lib/site-url';
   <section id="icons" class="mb-12 scroll-mt-8">
     <h2 class="mb-4 text-xl font-semibold text-slate-900">Icons</h2>
     <p class="mb-4 text-slate-600">
-      The project includes <strong class="font-medium text-slate-800">lucide-react</strong> for icons. Import named icons and size them with Tailwind (<code class="rounded bg-slate-100 px-1 font-mono text-sm">h-4 w-4</code>, <code class="rounded bg-slate-100 px-1 font-mono text-sm">h-5 w-5</code>, etc.). Prefer <code class="rounded bg-slate-100 px-1 font-mono text-sm">stroke-[1.5]</code> or default stroke for consistency.
-    </p>
-    <p class="mb-4 text-slate-600">
-      For interactive or animated icon demos in MDX, wrap React icon components with a <code class="rounded bg-slate-100 px-1 font-mono text-sm">client:*</code> directive as needed.
+      Icons are inline <code class="rounded bg-slate-100 px-1 font-mono text-sm">&lt;svg&gt;</code> elements rendered directly in Astro components (see <code class="rounded bg-slate-100 px-1 font-mono text-sm">src/components/illustrations/</code>). Size them with Tailwind (<code class="rounded bg-slate-100 px-1 font-mono text-sm">h-4 w-4</code>, <code class="rounded bg-slate-100 px-1 font-mono text-sm">h-5 w-5</code>, etc.) and set color via <code class="rounded bg-slate-100 px-1 font-mono text-sm">currentColor</code>. Prefer <code class="rounded bg-slate-100 px-1 font-mono text-sm">stroke-[1.5]</code> or default stroke for consistency.
     </p>
     <div class="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-6 text-slate-700 shadow-sm" aria-hidden="true">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
