@@ -2,91 +2,106 @@
 
 This document explains what data appears on the status page, where it comes from, and how to update it.
 
+The status hub is a **hybrid**: live service telemetry is pulled from Elasticsearch (with a mock-data fallback when the cluster is unreachable), while incident and maintenance **content** is authored in Markdown. Data fetching goes through [`src/lib/status/fetch-status.ts`](src/lib/status/fetch-status.ts) (Elasticsearch, `fetch-status`/`elastic-status`) and [`src/lib/status/status-content.ts`](src/lib/status/status-content.ts) (Markdown collections).
+
 ---
 
 ## Automatically from Elasticsearch
 
-The following data is **pulled automatically** from Elasticsearch via the Astro server's Elasticsearch client. No manual edits are required—it updates when the status page fetches fresh data (on each page load).
+The following data is **pulled automatically** from Elasticsearch on each request by the on-demand (`prerender = false`) status routes. No manual edits are required. If Elasticsearch is unreachable (or `PUBLIC_USE_MOCK_STATUS=true`), these fall back to `src/lib/status/mock-data.ts`.
 
 | Section | Source | Elasticsearch Index | Description |
 |---------|--------|---------------------|-------------|
-| **Global status header** | API `/summary` | `status-core-services` | Overall platform level and message derived from core service status |
-| **Core services** | API `/summary` | `status-core-services` | Service name, status, error rate, latency, last updated |
-| **Capabilities** | API `/summary` | `status-core-services` | Mapped from core services (Analyst Workspace, Operations, Shared Platform) |
-| **Workspaces** | API `/workspaces` | `status-workspaces` | Workspace list with derived status |
-| **Workspace feature status** | API `/workspaces/:id/features` | `status-workspaces` | Per-workspace feature health |
-| **Connected services** | API `/external-systems` | `status-external-systems` | External systems and dependencies |
-| **Active incidents** | API `/incidents` | `status-incidents` | Current incidents (title, description, workaround, updates) |
-| **Incident detail** | API `/incidents/:id` | `status-incidents` | Single incident with full history |
-| **Recent incidents** | API `/incidents/recent` | `status-incidents` | Resolved incidents from last 90 days |
-| **Scheduled maintenance** | API `/scheduled-maintenance` | `status-scheduled-maintenance` | Upcoming maintenance windows |
-| **90-day uptime** | API `/uptime` | `status-core-services`, `status-incidents` | Daily status derived from core services and incidents |
+| **Global status header** | `getStatusSummary()` | `status-core-services` | Overall platform level and message derived from core service status |
+| **Service health / capabilities** | `getStatusSummary()` → `buildCapabilityGroups()` | `status-core-services` | Core services mapped into capability groups (Analyst Workspace, Operations, Shared Platform) |
+| **90-day uptime** | `getUptime90Days()` | `status-core-services`, `status-incidents` | Daily status derived from core services and incidents |
+| **Connected services** | `getExternalSystemStatuses()` | `status-external-systems` | External systems and dependencies (`/roadmap/status/external-systems`) |
+| **Workspaces** | `getWorkspaceStatuses()` | `status-workspaces` | Workspace list with derived status |
+| **Workspace feature status** | `getWorkspaceFeatureStatuses()` | `status-workspaces` | Per-workspace feature health (`/roadmap/status/workspaces/:id`) |
 
-**Roadmap configuration:** Index names and time windows are set via environment variables (see `roadmap/.env.example`). The Astro server queries Elasticsearch using `@timestamp` and other fields; ensure your observability pipeline writes to these indices.
+**Configuration:** Index names and time windows are set via environment variables (see [`.env.example`](.env.example)). The Astro server queries Elasticsearch using `@timestamp` and other fields; ensure your observability pipeline writes to these indices.
 
 ---
 
-## Manually Updated Content
+## From Markdown content collections
 
-The following can be **updated manually** without changing Elasticsearch or the API.
+Incident and maintenance **content** is authored as Markdown under `src/content/status/` and read via [`status-content.ts`](src/lib/status/status-content.ts). Schemas live in [`src/content.config.ts`](src/content.config.ts). Field reference is also in the root [`README.md`](../README.md) (section **Status page (Markdown)**).
 
-### 1. Incident workarounds and updates (Markdown)
+### 1. Active incidents
 
-**Purpose:** Add or override human-authored workarounds and status updates during an outage. Useful when you need to publish a quick message before the incident is fully logged in Elasticsearch.
+**Purpose:** The active-issues list on the hub and the detail page at `/roadmap/status/incidents/:id`.
 
-**Location:** `roadmap/src/content/status/incidents/`
+**Location:** `src/content/status/active-incidents/`
 
-**How to update:**
-
-1. Create or edit a `.md` file in `roadmap/src/content/status/incidents/`
-2. Use this frontmatter and body:
+**How to update:** create or edit a `.md` file (body is optional extra copy):
 
 ```yaml
 ---
-incidentId: "inc-001"        # Optional: links to API incident by ID
+id: "inc-001"
 title: "Storage service and S3 gateway outage"
-severity: "OUTAGE"           # HEALTHY | DEGRADED | OUTAGE | MAINTENANCE | UNKNOWN
-workaround: "Existing files remain accessible. For urgent uploads, use the legacy endpoint or contact support."
+level: "OUTAGE"              # HEALTHY | DEGRADED | OUTAGE | MAINTENANCE | UNKNOWN
+startedAt: "2026-04-10T14:30:00Z"
+workaround: "Existing files remain accessible for download. For urgent uploads, use the legacy endpoint or contact support."
+aiNote: "Document analysis features that depend on new uploads show reduced confidence until storage is restored."
+updates:
+  - timestamp: "2026-04-10T14:30:00Z"
+    message: "Identified cause: S3 gateway connectivity."
+    status: "Identified"
+  - timestamp: "2026-04-10T15:00:00Z"
+    message: "Fix deployed, monitoring."
+    status: "Monitoring"
 ---
-## Updates
-- 14:30 — Identified cause, deploying fix
-- 15:00 — Fix deployed, monitoring
+Optional Markdown body rendered on the incident detail page.
 ```
 
-3. Commit and deploy. The Markdown body is rendered as the incident updates section.
+### 2. Scheduled maintenance
 
-**Note:** The Markdown collections are set up for quick edits. Merge logic (combining API incident data with Markdown overrides) may need to be implemented in the status page components if you want Markdown to augment or override API data.
+**Purpose:** Upcoming/active maintenance windows on the hub.
 
-### 2. Maintenance announcements (Markdown)
-
-**Purpose:** Add or override maintenance announcements. Useful for ad-hoc or urgent maintenance notices.
-
-**Location:** `roadmap/src/content/status/announcements/`
-
-**How to update:**
-
-1. Create or edit a `.md` file in `roadmap/src/content/status/announcements/`
-2. Use this frontmatter:
+**Location:** `src/content/status/maintenance/`
 
 ```yaml
 ---
+id: "maint-001"
 title: "Search index rebuild"
-scheduledStart: "2025-03-10T02:00:00Z"
-scheduledEnd: "2025-03-10T02:30:00Z"
-status: "scheduled"          # scheduled | in_progress | completed
+scheduledStart: "2026-04-11T02:00:00Z"
+scheduledEnd: "2026-04-11T02:30:00Z"
+status: "SCHEDULED"          # SCHEDULED | IN_PROGRESS | COMPLETED
+description: "Search may be briefly unavailable during this window."
 ---
-Search may be briefly unavailable during this window.
 ```
 
-3. Commit and deploy.
+Completed windows (`status: COMPLETED`) are filtered out of the hub automatically.
 
-**Note:** As with incidents, merge logic may be needed to combine these with API maintenance data on the status page.
+### 3. Recent incidents
 
-### 3. Subscribe form
+**Purpose:** The resolved-incident history table (last 90 days).
 
-**Purpose:** Users enter an email to receive incident and scheduled maintenance notifications.
+**Location:** `src/content/status/recent-incidents/`
 
-**Implementation:** Subscribers are stored in Elasticsearch (`status-subscribers` index). On subscribe, a confirmation email is sent. When incidents occur or new scheduled maintenance appears, the notification delivery job sends emails via your internal email service. Configure `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY` in `.env`. Trigger delivery via cron (`GET /api/notify/run`) or webhook (`POST /api/notify/run` with optional `Authorization: Bearer NOTIFY_WEBHOOK_SECRET`). See `.env.example` for all notification-related variables. Maintenance notifications use `ELASTICSEARCH_INDEX_STATUS_MAINTENANCE_NOTIFICATION_SENT` to track what has been sent.
+```yaml
+---
+id: "INC-2831"
+date: "Mar 4"
+title: "Elevated search latency"
+duration: "38 min"
+severity: "DEGRADED"         # HEALTHY | DEGRADED | OUTAGE | MAINTENANCE | UNKNOWN
+cause: "Elastic index rebalancing during peak hours."
+sortOrder: 3                 # optional; higher sorts first
+---
+```
+
+---
+
+## Forms (Astro Actions → Elasticsearch)
+
+### Subscribe
+
+Users enter an email to receive incident and scheduled-maintenance notifications. Subscribers are stored in Elasticsearch (`status-subscribers` index) via the `subscribe` Action. On subscribe, a confirmation email is sent when the email service is configured. When incidents occur or new scheduled maintenance appears, the notification job sends emails via your internal email service. Configure `EMAIL_SERVICE_URL` and `EMAIL_SERVICE_API_KEY` in `.env`, and trigger delivery via cron (`GET /api/notify/run`) or webhook (`POST /api/notify/run` with `Authorization: Bearer NOTIFY_WEBHOOK_SECRET`). See [`.env.example`](.env.example) and [`EMAIL_NOTIFICATIONS_GUIDE.md`](EMAIL_NOTIFICATIONS_GUIDE.md).
+
+### Voting & page feedback
+
+Feature-request votes (`roadmap-votes`) and page feedback (`page-feedback`) are also stored in Elasticsearch via the `vote` and `feedback` Actions.
 
 ---
 
@@ -94,10 +109,9 @@ Search may be briefly unavailable during this window.
 
 | Data | Source | How to update |
 |------|--------|---------------|
-| Core services, workspaces, external systems | Elasticsearch | Update your observability pipeline / telemetry to write to the status indices |
-| Incidents (active, recent, detail) | Elasticsearch | Create/update incident records in `status-incidents` index |
-| Scheduled maintenance | Elasticsearch | Create/update records in `status-scheduled-maintenance` index |
-| 90-day uptime | Elasticsearch | Derived from core services and incidents; no direct edit |
-| Incident workarounds/updates (override) | Markdown | Edit `.md` in `roadmap/src/content/status/incidents/` |
-| Maintenance announcements (override) | Markdown | Edit `.md` in `roadmap/src/content/status/announcements/` |
-| Subscribers | Elasticsearch | Form on status page; stored in `status-subscribers` index |
+| Status header, service health, 90-day uptime | Elasticsearch | Update your observability pipeline to write to `status-core-services` / `status-incidents` |
+| Workspaces, workspace features, connected services | Elasticsearch | Write to `status-workspaces` / `status-external-systems` |
+| Active incidents (list + detail) | Markdown | Edit `.md` in `src/content/status/active-incidents/` |
+| Scheduled maintenance | Markdown | Edit `.md` in `src/content/status/maintenance/` |
+| Recent incidents | Markdown | Edit `.md` in `src/content/status/recent-incidents/` |
+| Subscribers, votes, feedback | Elasticsearch | Forms on the site (Astro Actions) |
