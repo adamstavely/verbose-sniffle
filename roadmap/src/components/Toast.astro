@@ -13,8 +13,8 @@ const { message, variant = 'success' } = Astro.props;
   aria-live="polite"
   class={`fixed bottom-6 right-6 z-50 max-w-sm animate-toast-in rounded-lg border px-4 py-3 shadow-lg ${
     variant === 'success'
-      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-      : 'border-red-200 bg-red-50 text-red-800'
+      ? 'border-success/30 bg-success-subtle text-success'
+      : 'border-danger/30 bg-danger-subtle text-danger'
   }`}
 >
   {message}

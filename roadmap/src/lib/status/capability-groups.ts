@@ -16,7 +16,7 @@ export function buildCapabilityGroups(
     {
       id: 'analyst',
       group: 'Analyst Workspace',
-      barColor: 'violet-500',
+      barColor: 'primary',
       items: [
         {
           id: 'ai-assist',
@@ -45,7 +45,7 @@ export function buildCapabilityGroups(
     {
       id: 'operations',
       group: 'Operations Workspace',
-      barColor: 'amber-500',
+      barColor: 'primary',
       items: [
         { id: 'ops-workspace', label: 'Operations Workspace', level: 'HEALTHY' },
         {
@@ -72,7 +72,7 @@ export function buildCapabilityGroups(
     {
       id: 'shared',
       group: 'Shared Platform',
-      barColor: 'sky-500',
+      barColor: 'primary',
       items: [
         {
           id: 'auth',

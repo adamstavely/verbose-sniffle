@@ -1,1 +1,45 @@
 @import "tailwindcss";
+/* Self-hosted Inter (variable) — same-origin, CSP-safe. */
+@import "@fontsource-variable/inter";
+
+/* Design System v2.1 tokens — brand, semantic, radius, typography.
+   Neutrals use Tailwind's `slate` scale, which equals the DS neutral scale. */
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Fira Code', monospace;
+
+  /* Brand */
+  --color-primary: #1D3557;
+  --color-primary-hover: #162840;
+  --color-accent: #0073E6;
+  --color-accent-hover: #005DC0;
+  --color-accent-subtle: #EBF4FF;
+
+  /* Semantic */
+  --color-success: #16A34A;
+  --color-success-subtle: #F0FDF4;
+  --color-warning: #EABA1C;
+  --color-warning-strong: #92600A; /* dark text for legibility on the subtle fill */
+  --color-warning-subtle: #FFFBEB;
+  --color-info: #0EA5E9;
+  --color-info-subtle: #F0F9FF;
+  --color-danger: #DC2626;
+  --color-danger-subtle: #FEF2F2;
+
+  /* Radius (DS: sm 4 · md 6 · lg 9 · xl 12) */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 9px;
+  --radius-xl: 12px;
+}
+
+/* DS §2.6 — required in all stylesheets. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

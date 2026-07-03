@@ -15,10 +15,10 @@ function getBarClasses(day: UptimeData['days'][number]): string {
     day === 'unavailable' ? 'h-7' : day === 'degraded' ? 'h-5' : 'h-3.5';
   const color =
     day === 'unavailable'
-      ? 'bg-red-500'
+      ? 'bg-danger'
       : day === 'degraded'
-        ? 'bg-amber-500'
-        : 'bg-emerald-500/80';
+        ? 'bg-warning'
+        : 'bg-success/80';
   return `${base} ${height} ${color}`;
 }
 ---
@@ -29,7 +29,7 @@ function getBarClasses(day: UptimeData['days'][number]): string {
 >
   <div class="flex items-center mb-3">
     <span class="flex-1"></span>
-    <span class="font-mono text-sm font-semibold text-emerald-600">
+    <span class="font-mono text-sm font-semibold text-success">
       {uptime.percentage}%
     </span>
   </div>

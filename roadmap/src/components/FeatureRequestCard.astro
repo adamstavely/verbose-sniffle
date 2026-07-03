@@ -29,7 +29,7 @@ const { id, title, description, voteCount, status, hasVoted = false } = Astro.pr
         disabled={hasVoted}
         class={`flex flex-col items-center rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
           hasVoted
-            ? 'cursor-not-allowed border-indigo-200 bg-indigo-50 text-indigo-600'
+            ? 'cursor-not-allowed border-accent bg-accent-subtle text-accent'
             : 'border-slate-200 text-slate-700 hover:bg-slate-50'
         }`}
         aria-label={hasVoted ? `You voted for ${title} (${voteCount} votes)` : `Vote for ${title} (${voteCount} votes)`}

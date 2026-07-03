@@ -17,22 +17,22 @@ const { result } = Astro.props;
       name="email"
       placeholder="your@email.gov"
       required
-      class="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-400 text-[14px] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+      class="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-400 text-[14px] focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
     />
     <button
       type="submit"
-      class="px-5 py-2.5 rounded-lg border-2 border-indigo-500 text-indigo-600 bg-transparent font-semibold text-[12px] uppercase tracking-wider hover:bg-indigo-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+      class="px-5 py-2.5 rounded-lg border-2 border-accent text-accent bg-transparent font-semibold text-[12px] uppercase tracking-wider hover:bg-accent-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
     >
       Subscribe
     </button>
   </form>
   {result?.success && (
-    <p class="mt-3 text-[13px] text-indigo-600">
+    <p class="mt-3 text-[13px] text-success">
       Thanks! We'll send notifications to that address.
     </p>
   )}
   {result && !result.success && result.error && (
-    <p class="mt-3 text-[13px] text-red-600">
+    <p class="mt-3 text-[13px] text-danger">
       {result.error}
     </p>
   )}

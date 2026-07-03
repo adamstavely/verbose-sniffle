@@ -1,16 +1,20 @@
 import type { StatusLevel } from './status-models';
 
-/** Tailwind classes for status dots (small colored circles). */
+// Status levels map to the design-system semantic roles (DS v2.1 §4.2):
+//   HEALTHY → success · DEGRADED → warning · OUTAGE → danger ·
+//   MAINTENANCE → info · unknown/other → neutral.
+
+/** Tailwind classes for status dots (small solid colored circles). */
 export function getStatusDotClass(level: StatusLevel | null | undefined): string {
   switch (level) {
     case 'HEALTHY':
-      return 'bg-emerald-500';
+      return 'bg-success';
     case 'DEGRADED':
-      return 'bg-amber-500';
+      return 'bg-warning';
     case 'OUTAGE':
-      return 'bg-red-500';
+      return 'bg-danger';
     case 'MAINTENANCE':
-      return 'bg-sky-500';
+      return 'bg-info';
     default:
       return 'bg-slate-400';
   }
@@ -22,14 +26,14 @@ export function getStatusTextClass(
 ): string {
   switch (level) {
     case 'HEALTHY':
-      return 'text-emerald-700 dark:text-emerald-400';
+      return 'text-success';
     case 'DEGRADED':
-      return 'text-amber-700 dark:text-amber-400';
+      return 'text-warning-strong';
     case 'OUTAGE':
-      return 'text-red-700 dark:text-red-400';
+      return 'text-danger';
     case 'MAINTENANCE':
-      return 'text-sky-700 dark:text-sky-400';
+      return 'text-info';
     default:
-      return 'text-slate-600 dark:text-slate-400';
+      return 'text-slate-600';
   }
 }
