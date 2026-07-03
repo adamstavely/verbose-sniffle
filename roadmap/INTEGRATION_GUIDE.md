@@ -48,7 +48,7 @@ If anything here conflicts with an older note elsewhere in the repo, **this file
 
 ## 2. Server-side surface area (complete inventory)
 
-Everything below requires an **adapter** and a hosting model where **on-demand rendering** and **endpoints** work. In Astro 5, with an adapter installed, most pages can still **prerender** while specific routes stay **server-rendered** (`prerender = false`) or implemented as **API routes**.
+Everything below requires an **adapter** and a hosting model where **on-demand rendering** and **endpoints** work. In Astro (5+), with an adapter installed, most pages can still **prerender** while specific routes stay **server-rendered** (`prerender = false`) or implemented as **API routes**.
 
 ### 2.1 Middleware (`src/middleware.ts`)
 

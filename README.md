@@ -15,7 +15,7 @@ See [roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md), [roadmap/ELAST
 
 | Layer | Stack |
 |-------|--------|
-| **Frontend** | Astro 5 + Node adapter (`@astrojs/node`), Tailwind CSS (in `roadmap/`) |
+| **Frontend** | Astro 7 + Node adapter (`@astrojs/node`), Tailwind CSS (in `roadmap/`) |
 | **Live telemetry** | Elasticsearch (`src/lib/status/elastic-status.ts`) via `fetch-status.ts`, with `mock-data.ts` fallback |
 | **Interactivity** | Astro Actions (`src/actions/`) — voting, subscribe, feedback |
 | **Incident content** | Markdown (`src/content/status/`) + helpers in `src/lib/status/status-content.ts` |
