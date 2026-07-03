@@ -15,13 +15,13 @@ import { withBase } from '../../lib/site-url';
   <nav class="mb-10 rounded-lg border border-slate-200 bg-white p-4 text-sm shadow-sm" aria-label="On this page">
     <p class="mb-2 font-semibold text-slate-800">On this page</p>
     <ul class="flex flex-wrap gap-x-4 gap-y-1 text-slate-600">
-      <li><a href="#brand-colors" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Brand colors</a></li>
-      <li><a href="#typography" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Typography</a></li>
-      <li><a href="#buttons" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Buttons</a></li>
-      <li><a href="#spacing" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Spacing</a></li>
-      <li><a href="#elevation" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Elevation</a></li>
-      <li><a href="#icons" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Icons</a></li>
-      <li><a href="#radius-focus-layout" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Radius, focus, layout</a></li>
+      <li><a href="#brand-colors" class="link">Brand colors</a></li>
+      <li><a href="#typography" class="link">Typography</a></li>
+      <li><a href="#buttons" class="link">Buttons</a></li>
+      <li><a href="#spacing" class="link">Spacing</a></li>
+      <li><a href="#elevation" class="link">Elevation</a></li>
+      <li><a href="#icons" class="link">Icons</a></li>
+      <li><a href="#radius-focus-layout" class="link">Radius, focus, layout</a></li>
     </ul>
   </nav>
 
@@ -157,6 +157,7 @@ import { withBase } from '../../lib/site-url';
           <tr><td class="px-4 py-2">Section heading</td><td class="px-4 py-2 font-mono text-xs">text-xl font-semibold text-slate-900</td></tr>
           <tr><td class="px-4 py-2">Body</td><td class="px-4 py-2 font-mono text-xs">text-base text-slate-900</td></tr>
           <tr><td class="px-4 py-2">Muted</td><td class="px-4 py-2 font-mono text-xs">text-slate-600</td></tr>
+          <tr><td class="px-4 py-2">Inline link</td><td class="px-4 py-2 font-mono text-xs">link · text-accent + underline</td></tr>
           <tr><td class="px-4 py-2">Inline code</td><td class="px-4 py-2 font-mono text-xs">font-mono text-sm + bg-slate-100</td></tr>
         </tbody>
       </table>
@@ -293,5 +294,5 @@ import { withBase } from '../../lib/site-url';
   </section>
 
 <p class="text-sm text-slate-500">
-  <a href={withBase('developer-guide')} class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Back to Developer Guide</a>
+  <a href={withBase('developer-guide')} class="link">Back to Developer Guide</a>
 </p>

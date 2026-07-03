@@ -85,7 +85,7 @@ const recent = recentIncidents.slice(0, 10);
                 <div class="flex items-center justify-between gap-4">
                   <a
                     href={withBase(`roadmap/status/incidents/${inc.id}`)}
-                    class="font-medium text-slate-900 hover:text-accent"
+                    class="link font-medium"
                   >
                     {inc.title}
                   </a>
@@ -132,7 +132,7 @@ const recent = recentIncidents.slice(0, 10);
     <section aria-labelledby="external-heading">
       <div class="flex items-center justify-between mb-3">
         <h2 id="external-heading" class="text-lg font-semibold text-slate-900">Connected services</h2>
-        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-accent hover:text-accent-hover">
+        <a href={withBase('roadmap/status/external-systems')} class="link text-sm">
           View all →
         </a>
       </div>

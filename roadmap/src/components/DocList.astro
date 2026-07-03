@@ -23,9 +23,9 @@ const { pages, emptyText = 'No pages yet — add an .mdx file to this section.' 
       <li>
         <a
           href={page.url}
-          class="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+          class="group block rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
-          <span class="font-medium text-slate-900">{page.title}</span>
+          <span class="font-medium text-accent hover:text-accent-hover">{page.title}</span>
           {page.description && (
             <p class="mt-1 text-sm text-slate-600">{page.description}</p>
           )}
