@@ -35,7 +35,13 @@ const formattedUpdated = lastUpdated
 
 <BaseLayout title={title} description={description}>
   {minutesRead && (
-    <p class="mb-6 text-xs font-medium uppercase tracking-wide text-slate-400">{minutesRead}</p>
+    <p class="mb-6 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+      {minutesRead}
+    </p>
   )}
   {prose ? (
     <article class="doc-prose">
