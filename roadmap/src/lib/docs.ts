@@ -38,9 +38,9 @@ const loaders = import.meta.glob<{
   url?: string;
 }>(
   [
-    '../pages/about/*.mdx',
-    '../pages/user-guide/*.mdx',
-    '../pages/developer-guide/*.mdx',
+    '../pages/about/**/*.mdx',
+    '../pages/user-guide/**/*.mdx',
+    '../pages/developer-guide/**/*.mdx',
   ],
   { eager: false }
 );
@@ -97,8 +97,38 @@ const SECTIONS: Record<string, string> = {
   'developer-guide': 'Developer Guide',
 };
 
-const stripSlash = (p: string) => p.replace(/\/+$/, '') || '/';
-const firstSegment = (url: string) => stripSlash(url).replace(/^\//, '').split('/')[0];
+/** The User Guide is organized with the Diátaxis framework. Slug = subfolder. */
+export const USER_GUIDE_CATEGORIES: Record<
+  string,
+  { name: string; description: string; order: number }
+> = {
+  tutorials: {
+    name: 'Tutorials',
+    order: 1,
+    description: 'Learning-oriented lessons that walk you through your first steps.',
+  },
+  'how-to': {
+    name: 'How-to guides',
+    order: 2,
+    description: 'Goal-oriented recipes for getting a specific task done.',
+  },
+  reference: {
+    name: 'Reference',
+    order: 3,
+    description: 'Information-oriented technical descriptions to look things up in.',
+  },
+  explanation: {
+    name: 'Explanation',
+    order: 4,
+    description: 'Understanding-oriented background on how and why things work.',
+  },
+};
+
+export const stripSlash = (p: string) => p.replace(/\/+$/, '') || '/';
+export const firstSegment = (url: string) =>
+  stripSlash(url).replace(/^\//, '').split('/')[0] ?? '';
+export const secondSegment = (url: string) =>
+  stripSlash(url).replace(/^\//, '').split('/')[1] ?? '';
 
 /** Resolve the guide section a doc URL belongs to (for breadcrumbs). */
 export function getSection(pathname: string): { slug: string; name: string; url: string } | null {
@@ -107,15 +137,35 @@ export function getSection(pathname: string): { slug: string; name: string; url:
   return null;
 }
 
-/** Previous/next doc within the same section, ordered by `order` then title. */
+/** Resolve the Diátaxis category of a /user-guide/<category>/… URL, if any. */
+export function getCategory(
+  pathname: string
+): { slug: string; name: string; url: string } | null {
+  if (firstSegment(pathname) !== 'user-guide') return null;
+  const slug = secondSegment(pathname);
+  const meta = USER_GUIDE_CATEGORIES[slug];
+  return meta ? { slug, name: meta.name, url: withBase(`user-guide#${slug}`) } : null;
+}
+
+/**
+ * Previous/next doc within the same group, ordered by `order` then title.
+ * Within the User Guide the group is the Diátaxis category, so prev/next stays
+ * inside e.g. Tutorials rather than spilling into Reference.
+ */
 export async function getSectionSiblings(
   pathname: string
 ): Promise<{ prev: RawDoc | null; next: RawDoc | null }> {
   const section = getSection(pathname);
   if (!section) return { prev: null, next: null };
   const here = stripSlash(pathname);
+  const inGroup =
+    section.slug === 'user-guide'
+      ? (d: RawDoc) =>
+          firstSegment(d.url) === 'user-guide' &&
+          secondSegment(d.url) === secondSegment(pathname)
+      : (d: RawDoc) => firstSegment(d.url) === section.slug;
   const siblings = (await getAllDocs())
-    .filter((d) => firstSegment(d.url) === section.slug)
+    .filter(inGroup)
     .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
   const idx = siblings.findIndex((d) => stripSlash(d.url) === here);
   return {

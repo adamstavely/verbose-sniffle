@@ -3,6 +3,11 @@ import '../styles/global.css';
 import { withBase } from '../lib/site-url';
 import PageFeedback from '../components/PageFeedback.astro';
 import SupportModal from '../components/SupportModal.astro';
+import SidebarNav from '../components/SidebarNav.astro';
+import { getNavTree } from '../lib/nav';
+
+// async + lazy → safe to build even on prerender=false pages (no init cycle).
+const tree = await getNavTree();
 
 const footerLinks = [
   { label: 'Roadmap', href: withBase('roadmap') },
@@ -48,35 +53,26 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
     >
       Skip to main content
     </a>
-    <header class="border-b border-border bg-card">
-      <nav class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6" aria-label="Main navigation">
-        <a href={withBase('')} class="text-lg font-semibold text-foreground hover:text-secondary-foreground">
-          Help Center
-        </a>
-        <div class="flex flex-wrap items-center gap-4 sm:gap-6">
-          <ul class="flex flex-wrap gap-4 sm:gap-6">
-            <li>
-              <a href={withBase('roadmap')} class="text-secondary-foreground hover:text-foreground">Roadmap</a>
-            </li>
-            <li>
-              <a href={withBase('roadmap/status')} class="text-secondary-foreground hover:text-foreground">Status</a>
-            </li>
-            <li>
-              <a href={withBase('about')} class="text-secondary-foreground hover:text-foreground">About</a>
-            </li>
-            <li>
-              <a href={withBase('user-guide')} class="text-secondary-foreground hover:text-foreground">User Guide</a>
-            </li>
-            <li>
-              <a href={withBase('developer-guide')} class="text-secondary-foreground hover:text-foreground">Developer Guide</a>
-            </li>
-            <li>
-              <a href={withBase('releases')} class="text-secondary-foreground hover:text-foreground">Releases</a>
-            </li>
-            <li>
-              <a href={withBase('tags')} class="text-secondary-foreground hover:text-foreground">Tags</a>
-            </li>
-          </ul>
+    <header class="sticky top-0 z-30 border-b border-border bg-card">
+      <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6" aria-label="Main navigation">
+        <div class="flex items-center gap-3">
+          <button
+            id="menu-toggle"
+            type="button"
+            aria-label="Open navigation"
+            aria-expanded="false"
+            aria-controls="app-sidebar"
+            class="inline-flex items-center justify-center rounded-md border border-border bg-card p-2 text-secondary-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:hidden"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 6h18M3 12h18M3 18h18" />
+            </svg>
+          </button>
+          <a href={withBase('')} class="text-lg font-semibold text-foreground hover:text-secondary-foreground">
+            Help Center
+          </a>
+        </div>
+        <div class="flex items-center gap-3">
           <a
             href={withBase('search')}
             aria-label="Search"
@@ -105,15 +101,27 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
             </svg>
           </button>
         </div>
-      </nav>
+      </div>
     </header>
-    <main id="main-content" class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-      <slot />
-      {showPageFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
-    </main>
+
+    <div class="mx-auto flex w-full max-w-7xl gap-10 px-4 sm:px-6">
+      <aside
+        id="app-sidebar"
+        class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full overflow-y-auto border-r border-border bg-card px-3 py-4 transition-transform duration-200 ease-out data-[open]:translate-x-0 lg:sticky lg:top-16 lg:z-auto lg:h-[calc(100vh-4rem)] lg:w-60 lg:shrink-0 lg:translate-x-0 lg:border-r-0 lg:bg-transparent lg:px-0 lg:py-8"
+        aria-label="Sidebar navigation"
+      >
+        <SidebarNav tree={tree} pathname={Astro.url.pathname} />
+      </aside>
+      <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-black/40 lg:hidden" aria-hidden="true"></div>
+
+      <main id="main-content" class="min-w-0 flex-1 py-8">
+        <slot />
+        {showPageFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
+      </main>
+    </div>
 
     <footer class="mt-16 border-t border-border bg-card">
-      <div class="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+      <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:flex-row sm:items-start sm:justify-between sm:px-6">
         <div>
           <p class="text-sm font-semibold text-foreground">Help Center</p>
           <p class="mt-1 text-sm text-muted-foreground">Guides, releases, and platform status.</p>
@@ -135,7 +143,7 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
           <a href={withBase('rss.xml')} class="text-sm text-secondary-foreground hover:text-foreground">RSS</a>
         </nav>
       </div>
-      <div class="mx-auto max-w-4xl px-4 pb-8 sm:px-6">
+      <div class="mx-auto max-w-7xl px-4 pb-8 sm:px-6">
         <p class="text-xs text-muted-foreground">© {year} Help Center. Incident history retained 90 days.</p>
       </div>
     </footer>
@@ -144,5 +152,9 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
 
     <!-- Toggle wiring. Kept is:inline + byte-stable so its sha256 is CSP-allowlisted. -->
     <script is:inline>(function(){var b=document.getElementById('theme-toggle'),r=document.documentElement;function s(){if(b)b.setAttribute('aria-pressed',r.classList.contains('dark')?'true':'false');}s();if(b)b.addEventListener('click',function(){var d=!r.classList.contains('dark');r.classList.toggle('dark',d);try{localStorage.setItem('theme',d?'dark':'light');}catch(e){}s();});})();</script>
+
+    <!-- Mobile sidebar drawer. Kept is:inline + byte-stable so its sha256 is
+         CSP-allowlisted (a bundled <script> gets inlined by Astro and blocked). -->
+    <script is:inline>(function(){var btn=document.getElementById('menu-toggle'),sb=document.getElementById('app-sidebar'),bd=document.getElementById('sidebar-backdrop');function op(){if(sb)sb.setAttribute('data-open','');if(bd)bd.classList.remove('hidden');if(btn)btn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}function cl(){if(sb)sb.removeAttribute('data-open');if(bd)bd.classList.add('hidden');if(btn)btn.setAttribute('aria-expanded','false');document.body.style.overflow='';}if(btn)btn.addEventListener('click',function(){sb&&sb.hasAttribute('data-open')?cl():op();});if(bd)bd.addEventListener('click',cl);document.addEventListener('keydown',function(e){if(e.key==='Escape')cl();});if(sb)sb.addEventListener('click',function(e){if(e.target.closest('a'))cl();});window.matchMedia('(min-width: 1024px)').addEventListener('change',function(m){if(m.matches)cl();});})();</script>
   </body>
 </html>
