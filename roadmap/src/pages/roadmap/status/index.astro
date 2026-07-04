@@ -3,16 +3,15 @@ export const prerender = false;
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageMetaFooter from '../../../components/PageMetaFooter.astro';
-import StatusBadge from '../../../components/status/StatusBadge.astro';
 import StatusBanner from '../../../components/status/StatusBanner.astro';
-import SystemStatus from '../../../components/status/SystemStatus.astro';
-import {
-  getActiveIncidentsFromContent,
-  getMaintenanceFromContent,
-  getRecentIncidentsFromContent,
-} from '../../../lib/status/status-content';
+import StatusCard from '../../../components/status/StatusCard.astro';
+import StatusLegend from '../../../components/status/StatusLegend.astro';
+import { getActiveIncidentsFromContent, getMaintenanceFromContent } from '../../../lib/status/status-content';
 import { fetchSummary, fetchServiceUptime } from '../../../lib/status/fetch-status';
-import { getConnectedSystems } from '../../../lib/status/connected-services';
+import {
+  getConnectedSystems,
+  getConnectedSystemUptime,
+} from '../../../lib/status/connected-services';
 import { getExternalSystemTypeLabel } from '../../../lib/status/status-labels';
 import { withBase } from '../../../lib/site-url';
 
@@ -21,25 +20,32 @@ import { withBase } from '../../../lib/site-url';
 //     → live Elasticsearch telemetry (fetch-status). In production an ES failure
 //     surfaces as an honest unknown/empty state; mock data is only used in the
 //     explicit PUBLIC_USE_MOCK_STATUS demo mode.
-//   • Active incidents / Maintenance / Recent incidents → Markdown (src/content/status/**).
+//   • Active incidents + Scheduled maintenance → Markdown (src/content/status/**).
 //   • Connected services → the curated list in lib/status/connected-services.ts.
-const [incidents, maintenanceList, recentIncidents, summaryDto, serviceUptime] =
-  await Promise.all([
-    getActiveIncidentsFromContent(),
-    getMaintenanceFromContent(),
-    getRecentIncidentsFromContent(),
-    fetchSummary(),
-    fetchServiceUptime(),
-  ]);
+const [incidents, maintenanceList, summaryDto, serviceUptime] = await Promise.all([
+  getActiveIncidentsFromContent(),
+  getMaintenanceFromContent(),
+  fetchSummary(),
+  fetchServiceUptime(),
+]);
 
 const { summary, coreServices } = summaryDto;
-const servicesWithUptime = coreServices.map((s) => ({
-  ...s,
-  uptime: serviceUptime[s.id],
-}));
-const externalSystems = getConnectedSystems();
 const activeMaintenance = maintenanceList.filter((m) => m.status !== 'COMPLETED');
-const recent = recentIncidents.slice(0, 10);
+
+const serviceRows = coreServices.map((s) => ({
+  name: s.name,
+  level: s.level,
+  uptime: serviceUptime[s.id],
+  info: s.impact,
+}));
+
+const connectedUptime = getConnectedSystemUptime();
+const connectedRows = getConnectedSystems().map((sys) => ({
+  name: sys.name,
+  level: sys.level,
+  meta: getExternalSystemTypeLabel(sys.type),
+  uptime: connectedUptime[sys.id],
+}));
 
 const monthYear = (d: Date) =>
   d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
@@ -48,27 +54,28 @@ const rangeLabel = `${monthYear(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000))
 
 <BaseLayout
   title="Status - Help Center"
-  description="Platform status: live service health, active issues, scheduled maintenance, and recent incidents."
+  description="Platform status: live service health, active issues, scheduled maintenance, and incident history."
 >
   <h1 class="sr-only">System status</h1>
-  <div class="space-y-10">
+  <div class="space-y-8">
     <StatusBanner level={summary.level} incidents={incidents} />
 
-    <SystemStatus services={servicesWithUptime} rangeLabel={rangeLabel} />
-
     {activeMaintenance.length > 0 && (
-      <section aria-labelledby="maintenance-heading">
-        <h2 id="maintenance-heading" class="text-lg font-semibold text-foreground mb-3">
-          Scheduled maintenance
-        </h2>
-        <ul class="space-y-3">
+      <section aria-labelledby="maintenance-heading" class="overflow-hidden rounded-xl border border-info/40">
+        <div class="flex items-center gap-2.5 bg-info-subtle px-5 py-4">
+          <svg class="h-5 w-5 shrink-0 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+          <h2 id="maintenance-heading" class="text-lg font-semibold text-foreground">Scheduled maintenance</h2>
+        </div>
+        <ul class="divide-y divide-border bg-card">
           {activeMaintenance.map((m) => (
-            <li class="rounded-lg border border-border bg-info-subtle p-4">
+            <li class="px-5 py-4">
               <div class="font-medium text-foreground">{m.title}</div>
               {m.description && (
                 <p class="mt-1 text-sm text-secondary-foreground">{m.description}</p>
               )}
-              <p class="mt-2 text-xs text-secondary-foreground">
+              <p class="mt-2 text-xs text-muted-foreground">
                 {new Date(m.scheduledStart).toLocaleString()} – {new Date(m.scheduledEnd).toLocaleString()}
               </p>
             </li>
@@ -77,42 +84,25 @@ const rangeLabel = `${monthYear(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000))
       </section>
     )}
 
-    <section aria-labelledby="external-heading">
-      <div class="flex items-center justify-between mb-3">
-        <h2 id="external-heading" class="text-lg font-semibold text-foreground">Connected services</h2>
-        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-accent-hover hover:text-accent">
-          View all →
-        </a>
-      </div>
-      <ul class="space-y-2">
-        {externalSystems.map((sys) => (
-          <li class="flex items-center justify-between rounded border border-border bg-card px-4 py-2 text-sm">
-            <div>
-              <span class="font-medium text-foreground">{sys.name}</span>
-              <span class="ml-2 text-muted-foreground">{getExternalSystemTypeLabel(sys.type)}</span>
-            </div>
-            <StatusBadge level={sys.level} variant="pillCompact" />
-          </li>
-        ))}
-      </ul>
-    </section>
+    <StatusCard title="System status" rangeLabel={rangeLabel} rows={serviceRows} />
 
-    <section aria-labelledby="recent-heading">
-      <h2 id="recent-heading" class="text-lg font-semibold text-foreground mb-3">Recent incidents</h2>
-      <p class="text-sm text-secondary-foreground mb-4">Resolved incidents from the last 90 days.</p>
-      <ul class="space-y-2">
-        {recent.map((inc) => (
-          <li class="flex items-center justify-between rounded border border-border bg-card px-4 py-2 text-sm">
-            <div>
-              <span class="text-muted-foreground">{inc.date}</span>
-              <span class="ml-2 font-medium text-foreground">{inc.title}</span>
-            </div>
-            <StatusBadge level={inc.severity} variant="pillCompact" />
-          </li>
-        ))}
-      </ul>
-    </section>
+    <StatusLegend />
 
+    <StatusCard
+      title="Connected services"
+      rangeLabel={rangeLabel}
+      rows={connectedRows}
+      link={{ href: withBase('roadmap/status/external-systems'), label: 'View all →' }}
+    />
+
+    <div>
+      <a
+        href={withBase('roadmap/status/history')}
+        class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+      >
+        View incident history →
+      </a>
+    </div>
   </div>
 
   <PageMetaFooter lastUpdated={summary.lastUpdated} />

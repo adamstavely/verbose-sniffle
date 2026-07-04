@@ -38,6 +38,7 @@ The entire application lives in the **`roadmap/`** subdirectory of the repo
 | `/roadmap` | Product Roadmap + feature-request **voting** | **on-demand** |
 | `/roadmap/status` | System Status hub | **on-demand** |
 | `/roadmap/status/incidents/<id>` | Incident detail | static (SSG) |
+| `/roadmap/status/history` | Incident history (resolved incidents) | static |
 | `/roadmap/status/external-systems`, `/roadmap/status/workspaces/<id>` | Status detail | **on-demand** |
 | `/tags`, `/tags/<slug>` | Doc tag browser | static |
 | `/search` | Pagefind full-text search | static (index is a build artifact) |

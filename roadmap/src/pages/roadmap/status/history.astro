@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import StatusBadge from '../../../components/status/StatusBadge.astro';
+import { getRecentIncidentsFromContent } from '../../../lib/status/status-content';
+import { withBase } from '../../../lib/site-url';
+
+const incidents = await getRecentIncidentsFromContent();
+---
+
+<BaseLayout
+  title="Incident history - Status"
+  description="Previously resolved incidents and outages."
+>
+  <div>
+    <a href={withBase('roadmap/status')} class="link mb-4 inline-block text-sm">
+      ← Back to Status
+    </a>
+    <h1 class="mt-2 text-2xl font-semibold text-foreground">Incident history</h1>
+    <p class="mt-2 text-secondary-foreground">
+      Previously resolved incidents and outages.
+    </p>
+
+    {incidents.length > 0 ? (
+      <ul class="mt-8 space-y-3">
+        {incidents.map((inc) => (
+          <li class="rounded-lg border border-border bg-card p-4">
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span class="text-sm text-muted-foreground">{inc.date}</span>
+                  <span class="font-medium text-foreground">{inc.title}</span>
+                </div>
+                {inc.cause && (
+                  <p class="mt-1.5 text-sm text-secondary-foreground">{inc.cause}</p>
+                )}
+                <p class="mt-1.5 text-xs text-muted-foreground">Duration: {inc.duration}</p>
+              </div>
+              <StatusBadge level={inc.severity} variant="pillCompact" />
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="mt-8 text-secondary-foreground">No past incidents to show.</p>
+    )}
+  </div>
+</BaseLayout>
