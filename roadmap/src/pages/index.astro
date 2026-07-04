@@ -40,7 +40,7 @@ const cards = [
   {
     Illustration: StatusIllustration,
     title: 'System Status',
-    description: 'System status, incidents, and maintenance (sample data).',
+    description: 'System status, incidents, and maintenance.',
     cta: 'View status',
     href: withBase('roadmap/status'),
   },
@@ -82,15 +82,15 @@ const cards = [
     </form>
   </section>
 
-  <section class="mt-11 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="Help Center sections">
+  <section class="mt-11 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-label="Help Center sections">
     {cards.map(({ Illustration, title, description, cta, href }) => (
       <a
         href={href}
-        class="group flex flex-col items-center rounded-xl border border-border bg-card px-7 pt-9 pb-8 text-center shadow-sm transition duration-200 hover:-translate-y-1 hover:border-border-strong hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        class="group flex flex-col items-center rounded-xl border border-border bg-card px-6 pt-7 pb-6 text-center shadow-sm transition duration-200 hover:-translate-y-1 hover:border-border-strong hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
       >
-        <Illustration class="h-28 w-28" />
-        <h2 class="mt-6 mb-2.5 text-xl font-bold text-foreground">{title}</h2>
-        <p class="mb-4 line-clamp-2 min-h-[2.85rem] text-sm leading-relaxed text-secondary-foreground">{description}</p>
+        <Illustration class="h-24 w-24" />
+        <h2 class="mt-5 mb-2 text-lg font-bold text-foreground">{title}</h2>
+        <p class="mb-3 line-clamp-2 min-h-[2.5rem] text-sm leading-relaxed text-secondary-foreground">{description}</p>
         <span class="text-sm font-semibold text-accent group-hover:text-accent-hover">
           {cta}&nbsp;&rarr;
         </span>
