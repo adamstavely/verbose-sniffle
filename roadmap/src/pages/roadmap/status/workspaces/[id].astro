@@ -6,22 +6,21 @@ import StatusBadge from '../../../../components/status/StatusBadge.astro';
 import { getFeatureDisplayName } from 'shared/status-labels';
 import {
   fetchWorkspaceFeatures,
-  fetchExternalSystems,
   fetchWorkspaces,
 } from '../../../../lib/status/fetch-status';
+import { getConnectedSystems } from '../../../../lib/status/connected-services';
 import { withBase } from '../../../../lib/site-url';
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect(withBase('roadmap/status'));
 
-const [featuresRes, externalRes, workspacesRes] = await Promise.all([
+const [featuresRes, workspacesRes] = await Promise.all([
   fetchWorkspaceFeatures(id),
-  fetchExternalSystems(),
   fetchWorkspaces(),
 ]);
 
 const features = featuresRes.features;
-const externalSystems = externalRes.systems;
+const externalSystems = getConnectedSystems();
 const workspace = workspacesRes.workspaces.find((w) => w.id === id);
 const workspaceName = workspace?.name ?? `Workspace ${id}`;
 ---

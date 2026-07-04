@@ -3,11 +3,11 @@ export const prerender = false;
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import StatusBadge from '../../../components/status/StatusBadge.astro';
-import { fetchExternalSystems } from '../../../lib/status/fetch-status';
+import { getConnectedSystems } from '../../../lib/status/connected-services';
 import { getExternalSystemTypeLabel } from 'shared/status-labels';
 import { withBase } from '../../../lib/site-url';
 
-const { systems } = await fetchExternalSystems();
+const systems = getConnectedSystems();
 ---
 
 <BaseLayout
@@ -30,7 +30,7 @@ const { systems } = await fetchExternalSystems();
             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-secondary-foreground">Service</th>
             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-secondary-foreground">Type</th>
             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-secondary-foreground">Status</th>
-            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-secondary-foreground">Last updated</th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-secondary-foreground">Notes</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-border bg-card">
@@ -43,9 +43,7 @@ const { systems } = await fetchExternalSystems();
               <td class="px-4 py-3">
                 <StatusBadge level={sys.level} variant="pillCompact" />
               </td>
-              <td class="px-4 py-3 text-sm text-muted-foreground">
-                {new Date(sys.lastUpdated).toLocaleString()}
-              </td>
+              <td class="px-4 py-3 text-sm text-muted-foreground">{sys.note}</td>
             </tr>
           ))}
         </tbody>
