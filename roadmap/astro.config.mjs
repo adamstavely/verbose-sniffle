@@ -45,6 +45,10 @@ export default defineConfig({
     '/requests': '/roadmap',
     '/style-guide': '/developer-guide/style-guide',
     '/user-guide/getting-started': '/user-guide/tutorials/getting-started',
+    // The Diátaxis "Explanation" category was retired — that understanding-oriented
+    // material lives in the About section now.
+    '/user-guide/explanation/architecture-overview': '/about/overview',
+    '/user-guide/explanation/permissions-model': '/about/overview',
   },
 
   vite: {

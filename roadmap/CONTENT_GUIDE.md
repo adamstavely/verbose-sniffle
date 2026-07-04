@@ -42,8 +42,9 @@ These are **MDX files that are themselves pages**. Sidebar nav, breadcrumbs,
 | User Guide (Diátaxis) | `src/pages/user-guide/<category>/*.mdx` | `/user-guide/<category>/<slug>` |
 
 The **User Guide** is organized with the [Diátaxis](https://diataxis.fr/)
-framework into four categories: `tutorials`, `how-to`, `reference`,
-`explanation`. Put each page in the right subfolder.
+framework into three categories: `tutorials`, `how-to`, and `reference`. Put
+each page in the right subfolder. (Diátaxis's fourth mode, *Explanation*, is
+covered by the **About** section rather than a User Guide category.)
 
 ### Frontmatter
 ```mdx
@@ -84,7 +85,7 @@ Your Markdown/MDX content here. Use `##` for section headings.
    tag — the `/tags/<slug>` and `/tags` pages. No registration needed.
 
 ### Add a new User Guide category
-The four Diátaxis categories are defined in `src/lib/docs.ts`
+The three Diátaxis categories are defined in `src/lib/docs.ts`
 (`USER_GUIDE_CATEGORIES`). To add another, add an entry there (slug → name,
 order, description) and create the matching subfolder under
 `src/pages/user-guide/`.
@@ -93,10 +94,10 @@ order, description) and create the matching subfolder under
 
 ## 2. Role "journeys"
 
-The User Guide landing shows a **role picker** (Analyst / Operations). Each role
-has **workflows**, and each workflow is a short, ordered "journey" of links into
-existing doc pages. Journey pages (`/user-guide/journeys/<id>`) are generated
-automatically.
+The **Tutorials** landing (`/user-guide/tutorials`) shows a **role picker**
+(Analyst / Operations). Each role has **workflows**, and each workflow is a
+short, ordered "journey" of links into existing doc pages. Journey pages
+(`/user-guide/journeys/<id>`) are generated automatically.
 
 ### Edit roles/workflows
 All data is in **`src/lib/role-guides.ts`**:

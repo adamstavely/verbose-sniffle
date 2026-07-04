@@ -28,8 +28,9 @@ The entire application lives in the **`roadmap/`** subdirectory of the repo
 | Route | What it is | Rendering |
 |-------|------------|-----------|
 | `/` | Homepage (hero + 6 section cards + contact CTA) | static |
-| `/user-guide` | User Guide landing: role "journeys" + Diátaxis browse | static |
-| `/user-guide/<category>/<page>` | Diátaxis doc pages (tutorials / how-to / reference / explanation) | static (MDX) |
+| `/user-guide` | User Guide landing: Diátaxis category browse | static |
+| `/user-guide/tutorials` | Tutorials landing: role "journeys" picker + tutorials list | static |
+| `/user-guide/<category>/<page>` | Diátaxis doc pages (tutorials / how-to / reference) | static (MDX) |
 | `/user-guide/journeys/<id>` | Generated role-workflow "journey" step pages | static |
 | `/developer-guide`, `/developer-guide/*` | Developer docs (API auth, style guide) | static (MDX) |
 | `/about`, `/about/*` | About pages | static (MDX) |
