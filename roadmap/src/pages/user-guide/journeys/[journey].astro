@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import { withBase } from '../../../lib/site-url';
+import { getJourneys, type Journey } from '../../../lib/role-guides';
+
+export function getStaticPaths() {
+  return getJourneys().map((j) => ({
+    params: { journey: j.id },
+    props: { journey: j },
+  }));
+}
+
+interface Props {
+  journey: Journey;
+}
+const { journey } = Astro.props;
+const total = journey.links.length;
+---
+
+<BaseLayout
+  title={`${journey.title} - User Guide`}
+  description={journey.summary}
+>
+  <nav aria-label="Breadcrumb" class="mb-4 text-sm text-muted-foreground">
+    <a href={withBase('user-guide')} class="hover:text-foreground">User Guide</a>
+    <span class="px-1.5" aria-hidden="true">›</span>
+    <span class="text-secondary-foreground">{journey.title}</span>
+  </nav>
+
+  <PageHeader title={journey.title}>
+    <span slot="actions" class="rounded-full bg-accent-subtle px-3 py-1 text-xs font-semibold text-accent">
+      {journey.roleName}
+    </span>
+    {journey.summary}
+  </PageHeader>
+
+  <p class="mb-6 text-sm text-secondary-foreground">
+    Follow these {total} steps in order — each opens a guide, then come back to continue.
+  </p>
+
+  <ol class="space-y-3">
+    {journey.links.map((link, i) => (
+      <li>
+        <a
+          href={withBase(link.to)}
+          class="group flex items-center gap-4 rounded-lg border border-border bg-card p-4 shadow-sm transition hover:border-border-strong hover:shadow-md"
+        >
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-sm font-semibold text-accent">
+            {i + 1}
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block font-medium text-foreground group-hover:text-accent">{link.label}</span>
+            <span class="mt-0.5 block text-xs text-muted-foreground">Step {i + 1} of {total}</span>
+          </span>
+          <span class="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-accent" aria-hidden="true">→</span>
+        </a>
+      </li>
+    ))}
+  </ol>
+
+  <div class="mt-8 border-t border-border pt-6">
+    <a href={withBase('user-guide')} class="text-sm text-accent hover:text-accent-hover">← Back to the User Guide</a>
+  </div>
+</BaseLayout>

@@ -9,6 +9,7 @@ export interface WorkflowLink {
 }
 
 export interface Workflow {
+  slug: string;
   title: string;
   summary: string;
   links: WorkflowLink[];
@@ -21,6 +22,16 @@ export interface RoleGuide {
   workflows: Workflow[];
 }
 
+/** A workflow flattened with its role context and a stable journey id. */
+export interface Journey {
+  id: string;
+  roleSlug: string;
+  roleName: string;
+  title: string;
+  summary: string;
+  links: WorkflowLink[];
+}
+
 export const ROLE_GUIDES: RoleGuide[] = [
   {
     slug: 'analyst',
@@ -28,6 +39,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
     tagline: 'Search, analyze, and annotate in the Analyst Workspace.',
     workflows: [
       {
+        slug: 'get-set-up',
         title: 'Get set up',
         summary: 'Sign in, find your workspace, and learn the essentials.',
         links: [
@@ -37,6 +49,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
         ],
       },
       {
+        slug: 'analyze-annotate',
         title: 'Analyze & annotate',
         summary: 'Work through documents and capture your findings.',
         links: [
@@ -46,6 +59,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
         ],
       },
       {
+        slug: 'work-with-team',
         title: 'Work with your team',
         summary: 'Bring teammates in and stay in the loop.',
         links: [
@@ -61,6 +75,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
     tagline: 'Coordinate workflows, alerts, and reporting in the Operations Workspace.',
     workflows: [
       {
+        slug: 'onboard-team',
         title: 'Onboard your team',
         summary: 'Set up people and the access they need.',
         links: [
@@ -70,6 +85,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
         ],
       },
       {
+        slug: 'alerts-notifications',
         title: 'Set up alerts & notifications',
         summary: 'Stay ahead of incidents and platform updates.',
         links: [
@@ -78,6 +94,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
         ],
       },
       {
+        slug: 'understand-platform',
         title: 'Understand how it fits together',
         summary: 'Background on the architecture and access model.',
         links: [
@@ -89,3 +106,22 @@ export const ROLE_GUIDES: RoleGuide[] = [
     ],
   },
 ];
+
+/** Flatten every role's workflows into standalone journeys with stable ids. */
+export function getJourneys(): Journey[] {
+  return ROLE_GUIDES.flatMap((role) =>
+    role.workflows.map((wf) => ({
+      id: `${role.slug}-${wf.slug}`,
+      roleSlug: role.slug,
+      roleName: role.name,
+      title: wf.title,
+      summary: wf.summary,
+      links: wf.links,
+    }))
+  );
+}
+
+/** Look up a single journey by its `${roleSlug}-${workflowSlug}` id. */
+export function getJourney(id: string): Journey | undefined {
+  return getJourneys().find((j) => j.id === id);
+}

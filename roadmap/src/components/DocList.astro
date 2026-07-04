@@ -8,9 +8,20 @@ export interface DocPage {
 interface Props {
   pages: DocPage[];
   emptyText?: string;
+  /** 'list' = full-width stacked rows (default); 'grid' = compact cards, 3–4 per row. */
+  layout?: 'list' | 'grid';
 }
 
-const { pages, emptyText = 'No pages yet — add an .mdx file to this section.' } = Astro.props;
+const {
+  pages,
+  emptyText = 'No pages yet — add an .mdx file to this section.',
+  layout = 'list',
+} = Astro.props;
+
+const listClass =
+  layout === 'grid'
+    ? 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+    : 'space-y-3';
 ---
 
 {pages.length === 0 ? (
@@ -18,16 +29,18 @@ const { pages, emptyText = 'No pages yet — add an .mdx file to this section.' 
     {emptyText}
   </p>
 ) : (
-  <ul class="space-y-3" role="list">
+  <ul class={listClass} role="list">
     {pages.map((page) => (
       <li>
         <a
           href={page.url}
-          class="block rounded-lg border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
+          class="flex h-full flex-col rounded-lg border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
         >
           <span class="font-medium text-foreground">{page.title}</span>
           {page.description && (
-            <p class="mt-1 text-sm text-secondary-foreground">{page.description}</p>
+            <p class={`mt-1 text-sm text-secondary-foreground${layout === 'grid' ? ' line-clamp-2' : ''}`}>
+              {page.description}
+            </p>
           )}
         </a>
       </li>
