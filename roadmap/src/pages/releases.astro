@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
 import TagList from '../components/TagList.astro';
 import { withBase } from '../lib/site-url';
 
@@ -16,9 +17,9 @@ const fmtDate = (d: Date) =>
 ---
 
 <BaseLayout title="Releases - Help Center" description="Release notes and version history.">
-  <div class="mb-2 flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-bold text-foreground">Releases</h1>
+  <PageHeader title="Releases">
     <a
+      slot="actions"
       href={withBase('rss.xml')}
       class="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent-hover"
     >
@@ -29,8 +30,8 @@ const fmtDate = (d: Date) =>
       </svg>
       RSS
     </a>
-  </div>
-  <p class="mb-10 text-secondary-foreground">Version history, release notes, and what's new.</p>
+    Version history, release notes, and what's new.
+  </PageHeader>
 
   {rendered.length === 0 ? (
     <p class="rounded-lg border border-dashed border-border-strong bg-muted p-6 text-secondary-foreground">

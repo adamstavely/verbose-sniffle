@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocList from '../components/DocList.astro';
+import PageHeader from '../components/PageHeader.astro';
 import { getNavTree } from '../lib/nav';
 
 const ug = (await getNavTree()).items.find(
@@ -10,11 +11,10 @@ const categories = ug && ug.kind === 'group' ? ug.categories ?? [] : [];
 ---
 
 <BaseLayout title="User Guide - Help Center" description="How to use the product, organized the Diátaxis way.">
-  <h1 class="mb-2 text-2xl font-bold text-foreground">User Guide</h1>
-  <p class="mb-8 text-secondary-foreground">
+  <PageHeader title="User Guide">
     Organized with <a href="https://diataxis.fr/" class="text-accent hover:text-accent-hover">Diátaxis</a> —
     learning, tasks, lookup, and understanding, each in its own place.
-  </p>
+  </PageHeader>
 
   <div class="space-y-10">
     {categories.map((c) => (
