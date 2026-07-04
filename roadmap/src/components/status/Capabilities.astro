@@ -19,9 +19,10 @@ function groupWorstStatus(group: CapabilityGroup): StatusLevel {
 }
 
 // Group accent bars are decorative brand markers, not status — they use the
-// primary brand color so they never read as a semantic (success/warning) signal.
+// accent color so they never read as a semantic (success/warning) signal and
+// match the accent workspace subheading beside them.
 function barColorClass(_color: string): string {
-  return 'bg-primary';
+  return 'bg-accent';
 }
 ---
 
