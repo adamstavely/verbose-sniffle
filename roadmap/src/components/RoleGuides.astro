@@ -1,0 +1,100 @@
+---
+import { withBase } from '../lib/site-url';
+import { ROLE_GUIDES } from '../lib/role-guides';
+
+// Zero-JS role picker: hidden radios drive tab + panel state via CSS
+// `:checked ~` sibling selectors (scoped under #role-guides), so there's no
+// inline script and nothing to allowlist in the CSP.
+---
+
+<section id="role-guides" aria-labelledby="role-guides-heading" class="mb-12">
+  <h2 id="role-guides-heading" class="text-lg font-semibold text-foreground">Find help for your role</h2>
+  <p class="mt-1 text-sm text-secondary-foreground">
+    Pick your role, then choose the workflow you want to get done.
+  </p>
+
+  <div class="rg-picker mt-5">
+    {ROLE_GUIDES.map((role, i) => (
+      <input
+        type="radio"
+        name="rg-role"
+        id={`rg-${role.slug}`}
+        class="rg-radio"
+        checked={i === 0}
+      />
+    ))}
+
+    <div class="rg-tabs flex flex-wrap gap-2" role="tablist" aria-label="Roles">
+      {ROLE_GUIDES.map((role) => (
+        <label
+          for={`rg-${role.slug}`}
+          class="rg-tab cursor-pointer rounded-md border border-border px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          {role.name}
+        </label>
+      ))}
+    </div>
+
+    {ROLE_GUIDES.map((role) => (
+      <div class="rg-panel mt-5" id={`rg-panel-${role.slug}`} role="tabpanel" aria-label={role.name}>
+        <p class="mb-4 text-sm text-muted-foreground">{role.tagline}</p>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {role.workflows.map((wf) => (
+            <div class="flex flex-col rounded-lg border border-border bg-card p-5 shadow-sm">
+              <h3 class="font-semibold text-foreground">{wf.title}</h3>
+              <p class="mt-1 text-sm text-muted-foreground">{wf.summary}</p>
+              <ol class="mt-3 space-y-1.5">
+                {wf.links.map((link, idx) => (
+                  <li>
+                    <a
+                      href={withBase(link.to)}
+                      class="group flex items-center gap-2.5 rounded-md py-1 text-sm text-secondary-foreground transition-colors hover:text-accent"
+                    >
+                      <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-xs font-semibold text-accent">
+                        {idx + 1}
+                      </span>
+                      <span class="min-w-0 flex-1">{link.label}</span>
+                      <span class="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-accent" aria-hidden="true">→</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style is:global>
+  /* Visually hide the radios but keep them focusable for keyboard users. */
+  #role-guides .rg-radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #role-guides .rg-panel {
+    display: none;
+  }
+  /* Show the panel whose radio is checked (radios precede tabs + panels). */
+  #role-guides #rg-analyst:checked ~ #rg-panel-analyst,
+  #role-guides #rg-operations:checked ~ #rg-panel-operations {
+    display: block;
+  }
+  /* Active tab styling. */
+  #role-guides #rg-analyst:checked ~ .rg-tabs label[for='rg-analyst'],
+  #role-guides #rg-operations:checked ~ .rg-tabs label[for='rg-operations'] {
+    background: var(--color-accent-subtle);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  /* Keyboard focus ring on the active-ish tab when its radio is focused. */
+  #role-guides #rg-analyst:focus-visible ~ .rg-tabs label[for='rg-analyst'],
+  #role-guides #rg-operations:focus-visible ~ .rg-tabs label[for='rg-operations'] {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+</style>
