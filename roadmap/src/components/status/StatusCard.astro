@@ -1,5 +1,6 @@
 ---
 import type { StatusLevel, UptimeData } from 'shared/status-models';
+import { getDailyStatusBarClass } from 'shared/status-utils';
 
 export interface StatusRow {
   name: string;
@@ -27,19 +28,12 @@ function statusIcon(level: StatusLevel): { kind: 'check' | 'alert'; color: strin
     case 'OUTAGE':
       return { kind: 'alert', color: 'text-danger' };
     case 'DEGRADED':
-    case 'MAINTENANCE':
       return { kind: 'alert', color: 'text-warning' };
+    case 'MAINTENANCE':
+      return { kind: 'alert', color: 'text-info' };
     default:
       return { kind: 'alert', color: 'text-muted-foreground' };
   }
-}
-
-function barColor(day: UptimeData['days'][number]): string {
-  return day === 'unavailable'
-    ? 'bg-danger'
-    : day === 'degraded'
-      ? 'bg-warning'
-      : 'bg-success/70';
 }
 ---
 
@@ -90,7 +84,7 @@ function barColor(day: UptimeData['days'][number]): string {
           {uptime && uptime.days.length > 0 ? (
             <div class="flex h-8 items-stretch gap-px" role="img" aria-label={`${uptime.percentage}% uptime over the last 90 days`}>
               {uptime.days.map((day) => (
-                <span class={`min-w-[2px] flex-1 rounded-[1px] ${barColor(day)}`} />
+                <span class={`min-w-[2px] flex-1 rounded-[1px] ${getDailyStatusBarClass(day)}`} />
               ))}
             </div>
           ) : (

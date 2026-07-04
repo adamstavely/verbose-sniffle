@@ -1,16 +1,39 @@
 ---
-import type { IncidentSummary, StatusLevel } from 'shared/status-models';
+import type {
+  IncidentSummary,
+  ScheduledMaintenance,
+  StatusLevel,
+} from 'shared/status-models';
 import { withBase } from '../../lib/site-url';
 
 interface Props {
   level: StatusLevel;
   incidents: IncidentSummary[];
+  maintenance?: ScheduledMaintenance[];
 }
 
-const { level, incidents } = Astro.props;
+const { level, incidents, maintenance = [] } = Astro.props;
 
-const hasIssues =
+const hasIncidents =
   incidents.length > 0 || level === 'OUTAGE' || level === 'DEGRADED';
+const hasMaintenance = maintenance.length > 0;
+
+// Maintenance is just another kind of status update, so it lives in this same
+// banner rather than a separate section. Header colour reflects the most
+// significant state: an incident (danger) outranks maintenance (info), which
+// outranks all-clear (success).
+const variant: 'issues' | 'maintenance' | 'operational' = hasIncidents
+  ? 'issues'
+  : hasMaintenance
+    ? 'maintenance'
+    : 'operational';
+
+const HEADERS = {
+  issues: { border: 'border-danger', bg: 'bg-danger-subtle', icon: 'text-danger', title: "We're currently experiencing issues" },
+  maintenance: { border: 'border-info/40', bg: 'bg-info-subtle', icon: 'text-info', title: 'Scheduled maintenance' },
+  operational: { border: 'border-success', bg: 'bg-success-subtle', icon: 'text-success', title: "We're fully operational" },
+} as const;
+const header = HEADERS[variant];
 
 function ongoingFor(startedAt: string): string {
   const ms = Date.now() - new Date(startedAt).getTime();
@@ -32,74 +55,91 @@ function formatList(items: string[]): string {
   return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
 }
 
-// Union of affected areas across all active incidents, for the pill row.
-const affectedAreas = [
-  ...new Set(incidents.flatMap((inc) => inc.affects ?? [])),
-];
-
 function incidentMeta(inc: IncidentSummary): string {
   const parts = [latestStatus(inc), `Ongoing for ${ongoingFor(inc.startedAt)}`];
   if (inc.affects?.length) parts.push(`Affects ${formatList(inc.affects)}`);
   return parts.join(' · ');
 }
+
+const MAINTENANCE_STATUS: Record<string, string> = {
+  SCHEDULED: 'Scheduled',
+  IN_PROGRESS: 'In progress',
+  COMPLETED: 'Completed',
+};
+function maintenanceMeta(m: ScheduledMaintenance): string {
+  const when = `${new Date(m.scheduledStart).toLocaleString()} – ${new Date(m.scheduledEnd).toLocaleString()}`;
+  return `${MAINTENANCE_STATUS[m.status] ?? m.status} · ${when}`;
+}
+
+const affectedAreas = [...new Set(incidents.flatMap((inc) => inc.affects ?? []))];
+
+const alertIcon =
+  'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z';
 ---
 
-{hasIssues ? (
-  <section aria-labelledby="status-banner-title" class="overflow-hidden rounded-xl border border-danger">
-    <div class="flex items-center gap-2.5 bg-danger-subtle px-5 py-4">
-      <svg class="h-5 w-5 shrink-0 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><path d="M12 9v4" /><path d="M12 17h.01" />
+<section aria-labelledby="status-banner-title" class={`overflow-hidden rounded-xl border ${header.border}`}>
+  <div class={`flex items-center gap-2.5 px-5 py-4 ${header.bg}`}>
+    {variant === 'operational' ? (
+      <svg class={`h-5 w-5 shrink-0 ${header.icon}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m9 11 3 3L22 4" />
       </svg>
-      <h1 id="status-banner-title" class="text-lg font-semibold text-foreground">We're currently experiencing issues</h1>
-    </div>
+    ) : variant === 'maintenance' ? (
+      <svg class={`h-5 w-5 shrink-0 ${header.icon}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+      </svg>
+    ) : (
+      <svg class={`h-5 w-5 shrink-0 ${header.icon}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d={alertIcon} /><path d="M12 9v4" /><path d="M12 17h.01" />
+      </svg>
+    )}
+    <h1 id="status-banner-title" class="text-lg font-semibold text-foreground">{header.title}</h1>
+  </div>
 
-    <div class="bg-card px-5 py-4">
-      {affectedAreas.length > 0 && (
-        <div class="mb-4 flex flex-wrap gap-2">
-          {affectedAreas.map((area) => (
-            <span class="rounded-md bg-warning-subtle px-2.5 py-1 text-sm font-medium text-warning-strong">{area}</span>
-          ))}
-        </div>
-      )}
+  <div class="bg-card px-5 py-4">
+    {variant === 'operational' ? (
+      <p class="text-secondary-foreground">We're not aware of any issues affecting our systems.</p>
+    ) : (
+      <>
+        {affectedAreas.length > 0 && (
+          <div class="mb-4 flex flex-wrap gap-2">
+            {affectedAreas.map((area) => (
+              <span class="rounded-md bg-warning-subtle px-2.5 py-1 text-sm font-medium text-warning-strong">{area}</span>
+            ))}
+          </div>
+        )}
 
-      {incidents.length > 0 ? (
         <ul class="divide-y divide-border">
           {incidents.map((inc) => (
             <li class="py-4 first:pt-0 last:pb-0">
               <div class="flex items-start gap-3">
-                <svg class="mt-0.5 h-5 w-5 shrink-0 text-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><path d="M12 9v4" /><path d="M12 17h.01" />
+                <svg class="mt-0.5 h-5 w-5 shrink-0 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d={alertIcon} /><path d="M12 9v4" /><path d="M12 17h.01" />
                 </svg>
                 <div class="min-w-0">
-                  <a href={withBase(`roadmap/status/incidents/${inc.id}`)} class="font-semibold text-foreground hover:text-accent">
-                    {inc.title}
-                  </a>
-                  {inc.description && (
-                    <p class="mt-1 text-sm text-secondary-foreground">{inc.description}</p>
-                  )}
+                  <a href={withBase(`roadmap/status/incidents/${inc.id}`)} class="font-semibold text-foreground hover:text-accent">{inc.title}</a>
+                  {inc.description && <p class="mt-1 text-sm text-secondary-foreground">{inc.description}</p>}
                   <p class="mt-2 text-sm text-muted-foreground">{incidentMeta(inc)}</p>
                 </div>
               </div>
             </li>
           ))}
+
+          {maintenance.map((m) => (
+            <li class="py-4 first:pt-0 last:pb-0">
+              <div class="flex items-start gap-3">
+                <svg class="mt-0.5 h-5 w-5 shrink-0 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+                <div class="min-w-0">
+                  <span class="font-semibold text-foreground">{m.title}</span>
+                  {m.description && <p class="mt-1 text-sm text-secondary-foreground">{m.description}</p>}
+                  <p class="mt-2 text-sm text-muted-foreground">{maintenanceMeta(m)}</p>
+                </div>
+              </div>
+            </li>
+          ))}
         </ul>
-      ) : (
-        <p class="text-sm text-secondary-foreground">
-          Some services are degraded. See <strong class="font-medium text-foreground">System status</strong> below for details.
-        </p>
-      )}
-    </div>
-  </section>
-) : (
-  <section aria-labelledby="status-banner-title" class="overflow-hidden rounded-xl border border-success">
-    <div class="flex items-center gap-2.5 bg-success-subtle px-5 py-4">
-      <svg class="h-5 w-5 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m9 11 3 3L22 4" />
-      </svg>
-      <h1 id="status-banner-title" class="text-lg font-semibold text-foreground">We're fully operational</h1>
-    </div>
-    <div class="bg-card px-5 py-4">
-      <p class="text-secondary-foreground">We're not aware of any issues affecting our systems.</p>
-    </div>
-  </section>
-)}
+      </>
+    )}
+  </div>
+</section>

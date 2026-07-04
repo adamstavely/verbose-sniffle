@@ -82,7 +82,13 @@ export function getConnectedSystemUptime(): Record<string, UptimeData> {
     for (let d = 0; d < 90; d++) {
       const r = ((d * (i + 5) * 11 + i * 17 + 7) % 100) / 100;
       const day: UptimeData['days'][number] =
-        r > 0.985 ? 'unavailable' : r > 0.955 ? 'degraded' : 'operational';
+        r > 0.985
+          ? 'unavailable'
+          : r > 0.965
+            ? 'degraded'
+            : r > 0.945
+              ? 'maintenance'
+              : 'operational';
       days.push(day);
       if (day === 'operational') operational++;
     }

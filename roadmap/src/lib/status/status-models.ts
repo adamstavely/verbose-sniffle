@@ -88,7 +88,7 @@ export interface IncidentSummary {
 }
 
 /** Daily status for 90-day uptime bar */
-export type DailyStatus = "operational" | "degraded" | "unavailable";
+export type DailyStatus = "operational" | "maintenance" | "degraded" | "unavailable";
 
 export interface UptimeData {
   days: DailyStatus[];

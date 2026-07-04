@@ -1,6 +1,7 @@
 import type { Client } from '@elastic/elasticsearch';
 import { getElasticClient } from './elastic-client';
 import { statusConfig } from './status-config';
+import { dailyStatusFromLevel, worseDaily } from './status-utils';
 import type {
   StatusLevel,
   AppStatusSummary,
@@ -486,17 +487,6 @@ export async function getRecentIncidents(): Promise<ResolvedIncidentEntry[]> {
   }
 }
 
-function toDailyStatus(level: StatusLevel): DailyStatus {
-  switch (level) {
-    case 'OUTAGE':
-      return 'unavailable';
-    case 'DEGRADED':
-    case 'MAINTENANCE':
-      return 'degraded';
-    default:
-      return 'operational';
-  }
-}
 
 export async function getUptime90Days(): Promise<UptimeData> {
   const client = getElasticClient();
@@ -550,14 +540,7 @@ export async function getUptime90Days(): Promise<UptimeData> {
       const date = new Date(ts);
       const idx = dayIndex(date);
       const level = doc.status_level ?? 'UNKNOWN';
-      const current = days[idx];
-      const candidate = toDailyStatus(level);
-      if (
-        candidate === 'unavailable' ||
-        (candidate === 'degraded' && current === 'operational')
-      ) {
-        days[idx] = candidate;
-      }
+      days[idx] = worseDaily(days[idx], dailyStatusFromLevel(level));
     }
 
     for (const hit of incidentResult.hits.hits) {
@@ -581,13 +564,7 @@ export async function getUptime90Days(): Promise<UptimeData> {
         d.setDate(d.getDate() + 1)
       ) {
         const idx = dayIndex(new Date(d));
-        const candidate = toDailyStatus(level);
-        if (
-          candidate === 'unavailable' ||
-          (candidate === 'degraded' && days[idx] === 'operational')
-        ) {
-          days[idx] = candidate;
-        }
+        days[idx] = worseDaily(days[idx], dailyStatusFromLevel(level));
       }
     }
 
@@ -646,13 +623,7 @@ export async function getServiceUptime90Days(): Promise<Record<string, UptimeDat
       }
       const days = byService.get(id)!;
       const idx = dayIndex(new Date(ts));
-      const candidate = toDailyStatus(doc.status_level ?? 'UNKNOWN');
-      if (
-        candidate === 'unavailable' ||
-        (candidate === 'degraded' && days[idx] === 'operational')
-      ) {
-        days[idx] = candidate;
-      }
+      days[idx] = worseDaily(days[idx], dailyStatusFromLevel(doc.status_level ?? 'UNKNOWN'));
     }
 
     const out: Record<string, UptimeData> = {};

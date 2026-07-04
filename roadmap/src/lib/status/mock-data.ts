@@ -268,7 +268,13 @@ function mockSeries(seed: number): UptimeData {
   for (let i = 0; i < 90; i++) {
     const r = ((i * (seed + 3) * 7 + seed * 29 + 11) % 100) / 100;
     const status: UptimeData['days'][number] =
-      r > 0.975 ? 'unavailable' : r > 0.94 ? 'degraded' : 'operational';
+      r > 0.975
+        ? 'unavailable'
+        : r > 0.95
+          ? 'degraded'
+          : r > 0.93
+            ? 'maintenance'
+            : 'operational';
     days.push(status);
     if (status === 'operational') operational++;
   }
