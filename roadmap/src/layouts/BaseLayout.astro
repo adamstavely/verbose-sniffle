@@ -181,11 +181,11 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
           </div>
           {footerColumns.map((col) => (
             <nav aria-label={col.heading}>
-              <h3 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{col.heading}</h3>
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-foreground">{col.heading}</h3>
               <ul class="mt-4 space-y-3">
                 {col.links.map((l) => (
                   <li>
-                    <a href={l.href} class="text-sm text-secondary-foreground transition-colors hover:text-foreground">{l.label}</a>
+                    <a href={l.href} class="text-sm text-secondary-foreground underline-offset-4 transition-colors hover:text-accent hover:underline">{l.label}</a>
                   </li>
                 ))}
               </ul>
