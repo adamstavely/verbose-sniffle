@@ -1,5 +1,8 @@
 # Email notifications: setup and operations
 
+> **📌 See [HANDOFF.md](./HANDOFF.md) §6.2–6.3 for the current email/webhook wiring.** The implemented email payload is `{ to, subject, body }`.
+
+
 This guide explains how **status email notifications** work in the roadmap Astro app and what you must configure **outside** the repo: an HTTP email service, environment variables, scheduling, and Elasticsearch indices used for subscribers and deduplication.
 
 The application **does not** embed SMTP, SendGrid, Amazon SES, or Nodemailer. It sends mail by **POSTing JSON** to a URL you control. See [§2](#2-email-service-contract).
@@ -257,6 +260,6 @@ Point Astro’s `EMAIL_SERVICE_URL` at this relay (e.g. `http://relay.internal:3
 
 ## Related documentation
 
+- [HANDOFF.md](./HANDOFF.md) — architecture, environment variables, the notify cron webhook, and outstanding integration work  
 - [ELASTICSEARCH_GUIDE.md](./ELASTICSEARCH_GUIDE.md) — indices, queries, fields  
-- [INTEGRATION_GUIDE.md §19](./INTEGRATION_GUIDE.md#19-deployment-incident-notification-job) — short deploy note for the notify endpoint  
-- [STATUS_PAGE_DATA.md](./STATUS_PAGE_DATA.md) — subscribe form behavior  
+- [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) — editing the status page (incidents/maintenance) and how it relates to notification emails  

@@ -1,107 +1,104 @@
-# Status Page & Product Roadmap
+# Help Center
 
-A status dashboard and product roadmap for the Super App platform. Built with **Astro** (server-rendered via the Node adapter) and **Tailwind CSS**.
+A Help Center web app: product **documentation** (User Guide, Developer Guide,
+About), a **Release Notes** changelog, a **Product Roadmap** with community
+voting, and a live **System Status** page with incident email subscriptions.
 
-The app is **static by default** and opts the interactive routes into on-demand rendering (`export const prerender = false`). Live service health, workspace, and external-system telemetry come from **Elasticsearch** (with a mock-data fallback when ES is unavailable). Feature-request **voting**, incident **email subscriptions**, and page **feedback** are handled server-side with **Astro Actions**. Incident/maintenance content is authored in **Markdown** under `roadmap/src/content/status/`.
+Built with **Astro 7** (static-by-default, served by a standalone Node server for
+the interactive routes) and **Tailwind CSS v4**. Dynamic data — feature-request
+votes, incident subscribers, page feedback, and live service telemetry — is
+backed by **Elasticsearch**. Full-text search is powered by **Pagefind**.
 
-See [roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md), [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md), [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md), and [roadmap/STATUS_PAGE_DATA.md](roadmap/STATUS_PAGE_DATA.md) for the server + Elasticsearch operational reference.
+> The entire application lives in the **[`roadmap/`](roadmap/)** subdirectory
+> (a historical name). Run all commands from there.
 
-## Overview
+## Documentation
 
-- **Status page** — Live service health + 90-day uptime from Elasticsearch; active issues, scheduled maintenance, and recent incidents from Markdown collections; email incident subscriptions.
-- **Product roadmap** — Planned features and community feature requests (with voting) via content collections + Elasticsearch.
+| Doc | Read it for |
+|-----|-------------|
+| **[roadmap/HANDOFF.md](roadmap/HANDOFF.md)** | **Start here.** Architecture, rendering model, CSP, the Elasticsearch indices to create, the full env-var reference, integrations to wire up, and everything outstanding. |
+| **[roadmap/CONTENT_GUIDE.md](roadmap/CONTENT_GUIDE.md)** | How to add/edit every content type — guides, releases, roadmap, feature requests, status, journeys, homepage, tags. |
+| [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md) | Deep Elasticsearch operations — cluster privileges, query semantics, per-index field tables, example mappings. |
+| [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md) | Subscribe + incident-email pipeline, and the `/api/notify/run` webhook. |
 
-## Tech Stack
+> `HANDOFF.md` and `CONTENT_GUIDE.md` are the canonical entry points; the two
+> topic guides above add operational depth for the Elasticsearch and email
+> integrations.
+
+## What's inside
+
+| Area | Route | Data source |
+|------|-------|-------------|
+| Homepage | `/` | inline |
+| User Guide (Diátaxis) + role "journeys" | `/user-guide`, `/user-guide/**` | MDX + `role-guides.ts` |
+| Developer Guide | `/developer-guide/**` | MDX |
+| About | `/about/**` | MDX |
+| Release Notes (+ RSS) | `/releases`, `/rss.xml` | `releases` content collection |
+| Product Roadmap + voting | `/roadmap` | content collections + Elasticsearch |
+| System Status + subscribe | `/roadmap/status` | Elasticsearch (telemetry) + Markdown (incidents) |
+| Tags browser | `/tags`, `/tags/<slug>` | doc frontmatter |
+| Search | `/search` | Pagefind (build artifact) |
+| Notification webhook | `POST /api/notify/run` | Elasticsearch + email relay |
+
+## Tech stack
 
 | Layer | Stack |
-|-------|--------|
-| **Frontend** | Astro 7 + Node adapter (`@astrojs/node`), Tailwind CSS (in `roadmap/`) |
-| **Live telemetry** | Elasticsearch (`src/lib/status/elastic-status.ts`) via `fetch-status.ts`, with `mock-data.ts` fallback |
-| **Interactivity** | Astro Actions (`src/actions/`) — voting, subscribe, feedback |
-| **Incident content** | Markdown (`src/content/status/`) + helpers in `src/lib/status/status-content.ts` |
-| **Roadmap data** | Content collections |
+|-------|-------|
+| Framework | Astro 7, `output: 'static'` + per-route `prerender = false`; `@astrojs/node` standalone adapter |
+| Styling | Tailwind CSS v4 (CSS-native config), Design System v2.1 tokens, class-based dark mode, self-hosted Inter + JetBrains Mono |
+| Content | Astro content collections (Markdown) + MDX doc pages |
+| Backend | Elasticsearch (`@elastic/elasticsearch`) — votes, subscribers, feedback, live status |
+| Interactivity | Astro Actions (`vote`, `subscribe`, `feedback`) |
+| Search / feeds | Pagefind, `@astrojs/rss`, `@astrojs/sitemap` |
 
-## Project Structure
-
-```
-├── roadmap/           # Astro app (product roadmap + status page)
-└── roadmap/.env.example
-```
-
-## Features
-
-**Status page** (`/roadmap/status`)
-
-- **Active issues**, **scheduled maintenance**, and **recent incidents** (edit `.md` files under `roadmap/src/content/status/active-incidents/`, `maintenance/`, `recent-incidents/`)
-- Incident detail pages at `/roadmap/status/incidents/:id` (one page per active incident file)
-- Optional: workspace (`/roadmap/status/workspaces/:id`) and external systems pages still use mock telemetry for demo layout
-
-**Product roadmap** (`/roadmap`)
-
-- Browse planned features and community-submitted requests
-- Content collections for "coming soon" items
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm 11+
-
-### Roadmap app
+## Quick start
 
 ```bash
 cd roadmap
 npm install
-npm run dev
+cp .env.example .env        # fill in values, or set PUBLIC_USE_MOCK_STATUS=true to run without Elasticsearch
+npm run dev                 # http://localhost:4321
 ```
 
-The app runs at **http://localhost:4321**. The status page is at `/roadmap/status`. Edit status content in `roadmap/src/content/status/`. Feature requests live in `roadmap/src/content/feature-requests/`.
+> **Search** only works on a built site (its index is a build step), not in `dev`.
 
-### Build & run (Node server)
+### Build & run the production server
 
 ```bash
 cd roadmap
-npm run build          # emits dist/client (static assets) + dist/server (Node entry)
-npm run check          # type-check (astro check)
-node ./dist/server/entry.mjs   # serves on-demand routes + static assets
+npm run build                 # astro build + pagefind → dist/client (static) + dist/server (Node server)
+npm run check                 # TypeScript / Astro diagnostics
+node ./dist/server/entry.mjs  # standalone server (serves on-demand routes + static assets); honors PORT
 ```
 
-The build produces a standalone Node server (`@astrojs/node`). Prerendered pages are emitted as static HTML in `dist/client`; interactive routes (roadmap voting, status hub, Actions, `/api/*`) are served on demand by `dist/server`.
+Static pages are emitted as HTML in `dist/client`; interactive routes (roadmap
+voting, status hub, Actions, `/api/notify/run`) are served on demand by the Node
+server. **Deploy the server bundle** — a static-only deploy breaks the dynamic
+features.
 
-## Environment Variables
+## Configuration
 
-Set Elasticsearch and email/notification variables at runtime (see [`roadmap/.env.example`](roadmap/.env.example) and the guides). Key ones:
+Runtime configuration is entirely via environment variables — see
+[`roadmap/.env.example`](roadmap/.env.example) and the complete table in
+[`roadmap/HANDOFF.md`](roadmap/HANDOFF.md#7-environment-variables-complete-reference).
+Highlights:
 
-- `ELASTICSEARCH_URL`, `ELASTICSEARCH_API_KEY`, and the `ELASTICSEARCH_INDEX_*` names — live status/telemetry, votes, subscribers, feedback.
-- `EMAIL_SERVICE_URL` / `EMAIL_SERVICE_API_KEY` — incident notification email delivery.
-- `SITE_URL` — canonical URLs in the sitemap (see `roadmap/astro.config.mjs`).
-- `PUBLIC_USE_MOCK_STATUS=true` — force the mock-data fallback without an Elasticsearch cluster.
+- **Elasticsearch:** `ELASTICSEARCH_URL`, `ELASTICSEARCH_API_KEY`, and the
+  `ELASTICSEARCH_INDEX_*` names (10 indices — the app does **not** create them;
+  see `HANDOFF.md`).
+- **Email/notifications:** `EMAIL_SERVICE_URL` / `EMAIL_SERVICE_API_KEY` (an HTTP
+  mail relay you provide) and `NOTIFY_WEBHOOK_SECRET` (auth for the cron webhook).
+- **Support modal:** `PUBLIC_SUPPORT_EMAIL`, `PUBLIC_SERVICENOW_URL`.
+- **Site:** `SITE_URL` (canonical URLs, RSS, email links).
+- **No Elasticsearch handy?** `PUBLIC_USE_MOCK_STATUS=true` serves bundled mock
+  status data. When ES is configured but unreachable, the status page shows an
+  honest "Unknown" state rather than fake-healthy data.
 
-When Elasticsearch is unreachable, status/telemetry reads fall back to bundled mock data so the app still renders.
+## Project status
 
-## Content Collections (Roadmap Items)
-
-Add Markdown files to `roadmap/src/content/roadmap/`:
-
-```yaml
----
-title: "Dark mode support"
-description: "Full dark theme across the app"
-status: "planned"      # planned | in-progress | shipped
----
-
-Details here.
-```
-
-## Content Collections (Feature Requests)
-
-Add Markdown to `roadmap/src/content/feature-requests/` with frontmatter `id`, `title`, `description`, `status`.
-
-## Status page (Markdown)
-
-| Folder | Collection | Purpose |
-|--------|------------|---------|
-| `roadmap/src/content/status/active-incidents/` | `statusActiveIncidents` | Active issues list + `/roadmap/status/incidents/:id` — frontmatter: `id`, `title`, `level` (HEALTHY, DEGRADED, OUTAGE, MAINTENANCE, UNKNOWN), `startedAt` (ISO), optional `description`, `workaround`, `resolvedAt`, `aiNote`, `updates` (array of `timestamp`, `message`, optional `status`). Body is optional extra copy. |
-| `roadmap/src/content/status/maintenance/` | `statusMaintenance` | Scheduled maintenance — `id`, `title`, `scheduledStart`, `scheduledEnd`, `status` (SCHEDULED, IN_PROGRESS, COMPLETED), optional `description`. |
-| `roadmap/src/content/status/recent-incidents/` | `statusRecentIncidents` | Recent resolved incidents table — `id`, `date`, `title`, `duration`, `severity`, `cause`, optional `sortOrder` (higher sorts first). |
+The front end is complete, accessible (WCAG-AA reviewed), and content-driven.
+Before production a new developer must wire up the external integrations
+(Elasticsearch cluster + indices, email relay, notification cron, support/chat
+targets), replace the demo content and placeholder product name, and add
+test/CI/lint infrastructure. **All of this is enumerated in
+[`roadmap/HANDOFF.md`](roadmap/HANDOFF.md).**
