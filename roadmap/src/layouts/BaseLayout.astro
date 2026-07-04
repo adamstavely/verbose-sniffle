@@ -140,7 +140,7 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
     </header>
 
     {home ? (
-      <main id="main-content" class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
+      <main id="main-content" class="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-7xl flex-col justify-center px-4 py-8 sm:px-6">
         <slot />
       </main>
     ) : (
