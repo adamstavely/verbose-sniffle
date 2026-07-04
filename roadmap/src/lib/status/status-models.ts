@@ -79,6 +79,8 @@ export interface IncidentSummary {
   workaround?: string;
   /** AI-specific note (e.g. confidence scores during degradation) */
   aiNote?: string;
+  /** User-facing areas affected (e.g. "Website", "App"). */
+  affects?: string[];
   updates?: IncidentUpdate[];
   affectedWorkspaceIds?: string[];
   affectedCoreServiceIds?: string[];
@@ -86,7 +88,7 @@ export interface IncidentSummary {
 }
 
 /** Daily status for 90-day uptime bar */
-export type DailyStatus = "operational" | "degraded" | "unavailable";
+export type DailyStatus = "operational" | "maintenance" | "degraded" | "unavailable";
 
 export interface UptimeData {
   days: DailyStatus[];

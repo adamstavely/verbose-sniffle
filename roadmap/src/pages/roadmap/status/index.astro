@@ -2,166 +2,83 @@
 export const prerender = false;
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import PageHeader from '../../../components/PageHeader.astro';
 import PageMetaFooter from '../../../components/PageMetaFooter.astro';
-import StatusIllustration from '../../../components/illustrations/StatusIllustration.astro';
-import StatusBadge from '../../../components/status/StatusBadge.astro';
-import ServiceHealth from '../../../components/status/ServiceHealth.astro';
-import UptimeBar from '../../../components/status/UptimeBar.astro';
+import StatusBanner from '../../../components/status/StatusBanner.astro';
+import StatusCard from '../../../components/status/StatusCard.astro';
+import StatusLegend from '../../../components/status/StatusLegend.astro';
+import { getActiveIncidentsFromContent, getMaintenanceFromContent } from '../../../lib/status/status-content';
+import { fetchSummary, fetchServiceUptime } from '../../../lib/status/fetch-status';
 import {
-  getActiveIncidentsFromContent,
-  getMaintenanceFromContent,
-  getRecentIncidentsFromContent,
-} from '../../../lib/status/status-content';
-import { fetchSummary, fetchUptime } from '../../../lib/status/fetch-status';
-import { getConnectedSystems } from '../../../lib/status/connected-services';
+  getConnectedSystems,
+  getConnectedSystemUptime,
+} from '../../../lib/status/connected-services';
 import { getExternalSystemTypeLabel } from '../../../lib/status/status-labels';
 import { withBase } from '../../../lib/site-url';
 
 // Data sources on this page:
-//   • Service health + 90-day uptime  → live Elasticsearch telemetry (fetch-status).
-//     In production an ES failure surfaces as an honest unknown/empty state; mock
-//     data is only used in the explicit PUBLIC_USE_MOCK_STATUS demo mode.
-//   • Known Issues / Maintenance / Recent incidents → Markdown (src/content/status/**).
+//   • Status banner + System status (service health + per-service 90-day uptime)
+//     → live Elasticsearch telemetry (fetch-status). In production an ES failure
+//     surfaces as an honest unknown/empty state; mock data is only used in the
+//     explicit PUBLIC_USE_MOCK_STATUS demo mode.
+//   • Active incidents + Scheduled maintenance → Markdown (src/content/status/**).
 //   • Connected services → the curated list in lib/status/connected-services.ts.
-const [incidents, maintenanceList, recentIncidents, summaryDto, uptime] =
-  await Promise.all([
-    getActiveIncidentsFromContent(),
-    getMaintenanceFromContent(),
-    getRecentIncidentsFromContent(),
-    fetchSummary(),
-    fetchUptime(),
-  ]);
+const [incidents, maintenanceList, summaryDto, serviceUptime] = await Promise.all([
+  getActiveIncidentsFromContent(),
+  getMaintenanceFromContent(),
+  fetchSummary(),
+  fetchServiceUptime(),
+]);
 
 const { summary, coreServices } = summaryDto;
-const externalSystems = getConnectedSystems();
 const activeMaintenance = maintenanceList.filter((m) => m.status !== 'COMPLETED');
-const recent = recentIncidents.slice(0, 10);
+
+const serviceRows = coreServices.map((s) => ({
+  name: s.name,
+  level: s.level,
+  uptime: serviceUptime[s.id],
+  info: s.impact,
+}));
+
+const connectedUptime = getConnectedSystemUptime();
+const connectedRows = getConnectedSystems().map((sys) => ({
+  name: sys.name,
+  level: sys.level,
+  meta: getExternalSystemTypeLabel(sys.type),
+  uptime: connectedUptime[sys.id],
+}));
+
+const monthYear = (d: Date) =>
+  d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+const rangeLabel = `${monthYear(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000))} – ${monthYear(new Date())}`;
 ---
 
 <BaseLayout
   title="Status - Help Center"
-  description="Platform status: live service health, active issues, scheduled maintenance, and recent incidents."
+  description="Platform status: live service health, active issues, scheduled maintenance, and incident history."
 >
-  <div class="space-y-12">
-    <PageHeader title="System Status">
-      <StatusIllustration slot="icon" />
-      <StatusBadge slot="actions" level={summary.level} variant="pillCompact" />
-      {summary.overallMessage}
-      <p slot="meta" class="mt-1 text-xs text-muted-foreground">
-        {summary.environment} · updated {new Date(summary.lastUpdated).toLocaleString()}
-      </p>
-    </PageHeader>
+  <h1 class="sr-only">System status</h1>
+  <div class="space-y-8">
+    <StatusBanner level={summary.level} incidents={incidents} maintenance={activeMaintenance} />
 
-    <section aria-labelledby="service-health-heading">
-      <h2 id="service-health-heading" class="text-lg font-semibold text-foreground mb-3">Service health</h2>
-      <ServiceHealth services={coreServices} />
-    </section>
+    <StatusCard title="System status" rangeLabel={rangeLabel} rows={serviceRows} />
 
-    <section aria-labelledby="uptime-heading">
-      <h2 id="uptime-heading" class="text-lg font-semibold text-foreground mb-3">90-day uptime</h2>
-      {uptime.days.length > 0 ? (
-        <UptimeBar data={uptime} />
-      ) : (
-        <p class="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">
-          Uptime data is currently unavailable.
-        </p>
-      )}
-    </section>
+    <StatusLegend />
 
-    <section aria-labelledby="incidents-heading">
-      <h2 id="incidents-heading" class="text-lg font-semibold text-foreground mb-3">Known Issues</h2>
-      {incidents.length > 0 ? (
-        <>
-          <p class="text-sm text-secondary-foreground mb-4">
-            Active incidents we're investigating. Workarounds and updates appear below.
-          </p>
-          <ul class="space-y-4">
-            {incidents.map((inc) => (
-              <li class="rounded-lg border border-border bg-card p-4 shadow-sm">
-                <div class="flex items-center justify-between gap-4">
-                  <a
-                    href={withBase(`roadmap/status/incidents/${inc.id}`)}
-                    class="font-medium text-foreground hover:text-accent"
-                  >
-                    {inc.title}
-                  </a>
-                  <StatusBadge level={inc.level} variant="pillCompact" />
-                </div>
-                {inc.description && (
-                  <p class="mt-2 text-sm text-secondary-foreground">{inc.description}</p>
-                )}
-                {inc.workaround && (
-                  <p class="mt-2 text-sm text-warning-strong bg-warning-subtle rounded p-2">
-                    <strong>Workaround:</strong> {inc.workaround}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <p class="text-sm text-secondary-foreground">No active incidents.</p>
-      )}
-    </section>
+    <StatusCard
+      title="Connected services"
+      rangeLabel={rangeLabel}
+      rows={connectedRows}
+      link={{ href: withBase('roadmap/status/external-systems'), label: 'View all →' }}
+    />
 
-    {activeMaintenance.length > 0 && (
-      <section aria-labelledby="maintenance-heading">
-        <h2 id="maintenance-heading" class="text-lg font-semibold text-foreground mb-3">
-          Scheduled maintenance
-        </h2>
-        <ul class="space-y-3">
-          {activeMaintenance.map((m) => (
-            <li class="rounded-lg border border-border bg-info-subtle p-4">
-              <div class="font-medium text-foreground">{m.title}</div>
-              {m.description && (
-                <p class="mt-1 text-sm text-secondary-foreground">{m.description}</p>
-              )}
-              <p class="mt-2 text-xs text-secondary-foreground">
-                {new Date(m.scheduledStart).toLocaleString()} – {new Date(m.scheduledEnd).toLocaleString()}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
-
-    <section aria-labelledby="external-heading">
-      <div class="flex items-center justify-between mb-3">
-        <h2 id="external-heading" class="text-lg font-semibold text-foreground">Connected services</h2>
-        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-accent-hover hover:text-accent">
-          View all →
-        </a>
-      </div>
-      <ul class="space-y-2">
-        {externalSystems.map((sys) => (
-          <li class="flex items-center justify-between rounded border border-border bg-card px-4 py-2 text-sm">
-            <div>
-              <span class="font-medium text-foreground">{sys.name}</span>
-              <span class="ml-2 text-muted-foreground">{getExternalSystemTypeLabel(sys.type)}</span>
-            </div>
-            <StatusBadge level={sys.level} variant="pillCompact" />
-          </li>
-        ))}
-      </ul>
-    </section>
-
-    <section aria-labelledby="recent-heading">
-      <h2 id="recent-heading" class="text-lg font-semibold text-foreground mb-3">Recent incidents</h2>
-      <p class="text-sm text-secondary-foreground mb-4">Resolved incidents from the last 90 days.</p>
-      <ul class="space-y-2">
-        {recent.map((inc) => (
-          <li class="flex items-center justify-between rounded border border-border bg-card px-4 py-2 text-sm">
-            <div>
-              <span class="text-muted-foreground">{inc.date}</span>
-              <span class="ml-2 font-medium text-foreground">{inc.title}</span>
-            </div>
-            <StatusBadge level={inc.severity} variant="pillCompact" />
-          </li>
-        ))}
-      </ul>
-    </section>
-
+    <div class="flex justify-center">
+      <a
+        href={withBase('roadmap/status/history')}
+        class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+      >
+        View incident history →
+      </a>
+    </div>
   </div>
 
   <PageMetaFooter lastUpdated={summary.lastUpdated} />

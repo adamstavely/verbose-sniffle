@@ -1,6 +1,7 @@
 import type { Client } from '@elastic/elasticsearch';
 import { getElasticClient } from './elastic-client';
 import { statusConfig } from './status-config';
+import { dailyStatusFromLevel, worseDaily } from './status-utils';
 import type {
   StatusLevel,
   AppStatusSummary,
@@ -486,17 +487,6 @@ export async function getRecentIncidents(): Promise<ResolvedIncidentEntry[]> {
   }
 }
 
-function toDailyStatus(level: StatusLevel): DailyStatus {
-  switch (level) {
-    case 'OUTAGE':
-      return 'unavailable';
-    case 'DEGRADED':
-    case 'MAINTENANCE':
-      return 'degraded';
-    default:
-      return 'operational';
-  }
-}
 
 export async function getUptime90Days(): Promise<UptimeData> {
   const client = getElasticClient();
@@ -550,14 +540,7 @@ export async function getUptime90Days(): Promise<UptimeData> {
       const date = new Date(ts);
       const idx = dayIndex(date);
       const level = doc.status_level ?? 'UNKNOWN';
-      const current = days[idx];
-      const candidate = toDailyStatus(level);
-      if (
-        candidate === 'unavailable' ||
-        (candidate === 'degraded' && current === 'operational')
-      ) {
-        days[idx] = candidate;
-      }
+      days[idx] = worseDaily(days[idx], dailyStatusFromLevel(level));
     }
 
     for (const hit of incidentResult.hits.hits) {
@@ -581,13 +564,7 @@ export async function getUptime90Days(): Promise<UptimeData> {
         d.setDate(d.getDate() + 1)
       ) {
         const idx = dayIndex(new Date(d));
-        const candidate = toDailyStatus(level);
-        if (
-          candidate === 'unavailable' ||
-          (candidate === 'degraded' && days[idx] === 'operational')
-        ) {
-          days[idx] = candidate;
-        }
+        days[idx] = worseDaily(days[idx], dailyStatusFromLevel(level));
       }
     }
 
@@ -600,6 +577,64 @@ export async function getUptime90Days(): Promise<UptimeData> {
     // Telemetry unavailable — do not fabricate 100% uptime. Return an empty
     // series so the UI can show an "unavailable" state instead of a green bar.
     return { days: [], percentage: 0 };
+  }
+}
+
+/**
+ * Per-service 90-day uptime, keyed by `service_id`. Groups the core-service
+ * telemetry by service and reduces each day to its worst status (mirroring
+ * getUptime90Days's per-day logic). Days with no sample default to operational.
+ * A service with no telemetry in the window simply has no entry.
+ */
+export async function getServiceUptime90Days(): Promise<Record<string, UptimeData>> {
+  const client = getElasticClient();
+  const to = new Date();
+  const from = new Date(to.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const fromStart = new Date(from);
+  fromStart.setHours(0, 0, 0, 0);
+  const dayIndex = (date: Date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const diff = Math.floor(
+      (d.getTime() - fromStart.getTime()) / (24 * 60 * 60 * 1000)
+    );
+    return Math.max(0, Math.min(89, diff));
+  };
+
+  try {
+    const result = await client.search<ElasticCoreServiceDoc>({
+      index: statusConfig.indices.coreServices,
+      size: 10000,
+      query: {
+        range: {
+          '@timestamp': { gte: from.toISOString(), lte: to.toISOString() },
+        },
+      },
+    });
+
+    const byService = new Map<string, DailyStatus[]>();
+    for (const hit of result.hits.hits) {
+      const doc = hit._source ?? {};
+      const id = doc.service_id ?? hit._id;
+      const ts = doc['@timestamp'];
+      if (!id || !ts) continue;
+      if (!byService.has(id)) {
+        byService.set(id, new Array(90).fill('operational'));
+      }
+      const days = byService.get(id)!;
+      const idx = dayIndex(new Date(ts));
+      days[idx] = worseDaily(days[idx], dailyStatusFromLevel(doc.status_level ?? 'UNKNOWN'));
+    }
+
+    const out: Record<string, UptimeData> = {};
+    for (const [id, days] of byService) {
+      const operational = days.filter((d) => d === 'operational').length;
+      out[id] = { days, percentage: Math.round((operational / 90) * 1000) / 10 };
+    }
+    return out;
+  } catch (error) {
+    console.error('Failed to query ElasticSearch for per-service uptime', error);
+    return {};
   }
 }
 

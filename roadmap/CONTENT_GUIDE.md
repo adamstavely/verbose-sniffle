@@ -249,6 +249,9 @@ The `/roadmap/status` page has three kinds of data:
 ### 6a. Known Issues (active incidents)
 - **Files:** `src/content/status/active-incidents/*.md` (filename is arbitrary;
   the **route** uses the frontmatter `id`).
+- **Where they show:** when any active incident exists, the page's top banner
+  turns red ("We're currently experiencing issues") and lists each incident with
+  its latest update status, how long it's been ongoing, and the `affects` pills.
 - Also creates a detail page at `/roadmap/status/incidents/<id>`.
 - **The body renders** on the detail page; if `description` is omitted it's
   auto-excerpted from the body. Sorted by `startedAt` (newest first).
@@ -263,6 +266,9 @@ description: "Uploads are failing."  # optional
 workaround: "Retry in 10 minutes."   # optional
 resolvedAt: "2026-07-04T16:00:00Z"   # optional
 aiNote: "Root cause: gateway timeout." # optional
+affects:                             # optional — pills shown in the banner
+  - Website
+  - App
 updates:                             # optional timeline
   - timestamp: "2026-07-04T15:00:00Z"
     message: "Investigating."
@@ -274,8 +280,9 @@ Longer incident write-up (Markdown) renders on the detail page.
 
 ### 6b. Scheduled maintenance
 - **Files:** `src/content/status/maintenance/*.md`.
-- Only items with `status` other than `COMPLETED` are shown. Sorted by
-  `scheduledStart`. Body is not rendered.
+- **Where it shows:** a notice in the top section of the status page (below the
+  banner) when present. Only items with `status` other than `COMPLETED` are
+  shown. Sorted by `scheduledStart`. Body is not rendered.
 
 ```md
 ---
@@ -290,8 +297,10 @@ description: "Search may be slower." # optional
 
 ### 6c. Recent incidents (resolved)
 - **Files:** `src/content/status/recent-incidents/*.md`.
-- Shown as a list (top 10), **ordered by `sortOrder` descending** (the `date`
-  field is a display string only, so use `sortOrder` to control order).
+- **Where they show:** the **Incident history** page at `/roadmap/status/history`
+  (reached via the "View incident history" button on the status page), **ordered
+  by `sortOrder` descending** (the `date` field is a display string only, so use
+  `sortOrder` to control order).
 
 ```md
 ---
@@ -336,6 +345,11 @@ export const CONNECTED_SYSTEMS = [
 | `type` | ✔ | `SAAS` · `INTERNAL` · `THIRD_PARTY_API` |
 | `level` | ✔ | `HEALTHY` · `DEGRADED` · `OUTAGE` · `MAINTENANCE` · `UNKNOWN` |
 | `note` | | Optional short note |
+
+> The status page shows each connected service with a 90-day uptime bar to match
+> the Service health card. Because this list is curated (not telemetry), that bar
+> is an **illustrative, deterministic stand-in** — `getConnectedSystemUptime()` in
+> the same file generates it. Swap it for a real feed if these systems gain one.
 
 > This is a **code file** (TypeScript), so mind the quotes, commas, and enum
 > spelling. Run `npm run check` to catch type errors.

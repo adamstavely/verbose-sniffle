@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import StatusBadge from '../../../../components/status/StatusBadge.astro';
 import { entryToIncidentSummary } from '../../../../lib/status/status-content';
+import { getUpdateStatusDotClass } from '../../../../lib/status/status-utils';
 import { withBase } from '../../../../lib/site-url';
 
 export async function getStaticPaths() {
@@ -17,6 +18,34 @@ if (!entry) throw new Error(`Unknown incident: ${id}`);
 
 const incident = entryToIncidentSummary(entry);
 const { Content } = await render(entry);
+
+// Newest update first — the incident timeline reads top-down as it unfolds.
+const sortedUpdates = (incident.updates ?? [])
+  .slice()
+  .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+const latestUpdateTs = sortedUpdates[0]?.timestamp;
+
+const timestampFmt: Intl.DateTimeFormatOptions = {
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+};
+
+/** How long before the latest update this one landed (e.g. "1 hour earlier"). */
+function relativeEarlier(ts: string): string | null {
+  if (!latestUpdateTs) return null;
+  const ms = new Date(latestUpdateTs).getTime() - new Date(ts).getTime();
+  if (ms < 60_000) return null;
+  const mins = Math.round(ms / 60_000);
+  if (mins < 60) return `${mins} min earlier`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} earlier`;
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? '' : 's'} earlier`;
+}
 ---
 
 <BaseLayout
@@ -49,28 +78,35 @@ const { Content } = await render(entry);
       </div>
     )}
 
-    {incident.updates && incident.updates.length > 0 && (
+    {sortedUpdates.length > 0 && (
       <section class="mt-8" aria-labelledby="updates-heading">
-        <h2 id="updates-heading" class="text-lg font-semibold text-foreground mb-4">
-          Updates
-        </h2>
-        <ul class="space-y-3">
-          {incident.updates
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-            .map((u) => (
-              <li class="rounded-lg border border-border bg-card p-4">
-                <div class="flex items-center justify-between text-sm">
-                  <span class="text-muted-foreground">
-                    {new Date(u.timestamp).toLocaleString()}
-                  </span>
-                  {u.status && (
-                    <span class="font-medium text-secondary-foreground">{u.status}</span>
+        <div class="overflow-hidden rounded-xl border border-border bg-card">
+          <div class="border-b border-border px-5 py-4">
+            <h2 id="updates-heading" class="text-lg font-semibold text-foreground">Updates</h2>
+          </div>
+          <ol class="px-5 py-5">
+            {sortedUpdates.map((u, i) => {
+              const rel = relativeEarlier(u.timestamp);
+              const isLast = i === sortedUpdates.length - 1;
+              return (
+                <li class="relative flex gap-4 pb-6 last:pb-0">
+                  {!isLast && (
+                    <span class={`absolute bottom-0 left-[5px] top-5 w-px ${getUpdateStatusDotClass(u.status)}`} aria-hidden="true" />
                   )}
-                </div>
-                <p class="mt-1 text-secondary-foreground">{u.message}</p>
-              </li>
-            ))}
-        </ul>
+                  <span class={`relative z-10 mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${getUpdateStatusDotClass(u.status)}`} aria-hidden="true" />
+                  <div class="min-w-0 flex-1">
+                    {u.status && <div class="font-semibold text-foreground">{u.status}</div>}
+                    <p class="mt-1 text-secondary-foreground">{u.message}</p>
+                    <p class="mt-2 text-sm text-muted-foreground">
+                      {new Date(u.timestamp).toLocaleString(undefined, timestampFmt)}
+                      {rel && <span class="text-muted-foreground/70"> ({rel})</span>}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       </section>
     )}
 

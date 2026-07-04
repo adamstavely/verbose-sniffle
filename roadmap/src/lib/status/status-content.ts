@@ -32,6 +32,7 @@ export function entryToIncidentSummary(
     workaround: d.workaround,
     resolvedAt: d.resolvedAt,
     aiNote: d.aiNote,
+    affects: d.affects,
     updates: d.updates,
   };
 }

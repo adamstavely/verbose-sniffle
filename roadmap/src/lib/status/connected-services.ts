@@ -1,4 +1,4 @@
-import type { StatusLevel } from './status-models';
+import type { StatusLevel, UptimeData } from './status-models';
 
 /**
  * A third-party or internal system the platform depends on, shown in the
@@ -62,4 +62,37 @@ export const CONNECTED_SYSTEMS: ConnectedSystem[] = [
 /** Returns the curated connected systems, sorted by display name. */
 export function getConnectedSystems(): ConnectedSystem[] {
   return [...CONNECTED_SYSTEMS].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Illustrative 90-day uptime series per connected system, keyed by id.
+ *
+ * Connected services are a hand-curated list, not telemetry, so there is no real
+ * per-day history to draw. This produces a deterministic, mostly-operational
+ * stand-in (seeded by index) purely so the status page can show a 90-day bar
+ * consistent with the live Service health section. If these systems ever gain a
+ * real health feed, replace this with that data.
+ */
+export function getConnectedSystemUptime(): Record<string, UptimeData> {
+  const systems = getConnectedSystems();
+  const out: Record<string, UptimeData> = {};
+  systems.forEach((sys, i) => {
+    const days: UptimeData['days'] = [];
+    let operational = 0;
+    for (let d = 0; d < 90; d++) {
+      const r = ((d * (i + 5) * 11 + i * 17 + 7) % 100) / 100;
+      const day: UptimeData['days'][number] =
+        r > 0.985
+          ? 'unavailable'
+          : r > 0.965
+            ? 'degraded'
+            : r > 0.945
+              ? 'maintenance'
+              : 'operational';
+      days.push(day);
+      if (day === 'operational') operational++;
+    }
+    out[sys.id] = { days, percentage: Math.round((operational / 90) * 1000) / 10 };
+  });
+  return out;
 }

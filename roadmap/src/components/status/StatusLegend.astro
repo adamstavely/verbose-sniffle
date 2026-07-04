@@ -1,0 +1,24 @@
+---
+import { getDailyStatusBarClass } from 'shared/status-utils';
+import type { DailyStatus } from 'shared/status-models';
+
+// Colour key for the uptime bars, shared by the Service health and Connected
+// services cards. Swatch colours come from the same DS-aligned helper the bars
+// use, so the legend can never drift from the bars.
+const items: { label: string; day: DailyStatus }[] = [
+  { label: 'Operational', day: 'operational' },
+  { label: 'Maintenance', day: 'maintenance' },
+  { label: 'Degraded', day: 'degraded' },
+  { label: 'Outage', day: 'unavailable' },
+];
+---
+
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-1 text-xs text-muted-foreground">
+  <span class="font-medium text-secondary-foreground">Key</span>
+  {items.map((item) => (
+    <span class="flex items-center gap-1.5">
+      <span class={`h-2.5 w-2.5 rounded-sm ${getDailyStatusBarClass(item.day)}`} aria-hidden="true" />
+      {item.label}
+    </span>
+  ))}
+</div>
