@@ -2,7 +2,9 @@
 export const prerender = false;
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
 import PageMetaFooter from '../../../components/PageMetaFooter.astro';
+import StatusIllustration from '../../../components/illustrations/StatusIllustration.astro';
 import StatusBanner from '../../../components/status/StatusBanner.astro';
 import StatusCard from '../../../components/status/StatusCard.astro';
 import StatusLegend from '../../../components/status/StatusLegend.astro';
@@ -56,7 +58,10 @@ const rangeLabel = `${monthYear(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000))
   title="Status - Help Center"
   description="Platform status: live service health, active issues, scheduled maintenance, and incident history."
 >
-  <h1 class="sr-only">System status</h1>
+  <PageHeader title="System Status">
+    <StatusIllustration slot="icon" />
+    Live service health, active issues, scheduled maintenance, and incident history.
+  </PageHeader>
   <div class="space-y-8">
     <StatusBanner level={summary.level} incidents={incidents} maintenance={activeMaintenance} />
 

@@ -38,7 +38,6 @@ const HERO = {
 } as const;
 const h = HERO[hero];
 
-const isIncidentHero = hero === 'outage' || hero === 'degraded';
 const isMaintenanceHero = hero === 'maintenance';
 
 function ongoingFor(startedAt: string): string {
@@ -101,7 +100,7 @@ const alertIcon =
         <path d={alertIcon} /><path d="M12 9v4" /><path d="M12 17h.01" />
       </svg>
     )}
-    <h1 id="status-banner-title" class="text-lg font-semibold text-foreground">{h.title}</h1>
+    <h2 id="status-banner-title" class="text-lg font-semibold text-foreground">{h.title}</h2>
   </div>
 
   <div class="bg-card px-5 py-4">
