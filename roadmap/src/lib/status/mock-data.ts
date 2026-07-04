@@ -260,3 +260,33 @@ export function getMockUptime(): UptimeData {
     percentage: Math.round((operational / 90) * 1000) / 10,
   };
 }
+
+/** Deterministic per-service 90-day series, varied by seed so bars differ. */
+function mockSeries(seed: number): UptimeData {
+  const days: UptimeData['days'] = [];
+  let operational = 0;
+  for (let i = 0; i < 90; i++) {
+    const r = ((i * (seed + 3) * 7 + seed * 29 + 11) % 100) / 100;
+    const status: UptimeData['days'][number] =
+      r > 0.975 ? 'unavailable' : r > 0.94 ? 'degraded' : 'operational';
+    days.push(status);
+    if (status === 'operational') operational++;
+  }
+  return { days, percentage: Math.round((operational / 90) * 1000) / 10 };
+}
+
+/** Mock per-service uptime keyed by the mock core-service ids. */
+export function getMockServiceUptime(): Record<string, UptimeData> {
+  const ids = [
+    'auth-service',
+    'billing-service',
+    'messaging-service',
+    'storage-service',
+    'search-service',
+  ];
+  const out: Record<string, UptimeData> = {};
+  ids.forEach((id, i) => {
+    out[id] = mockSeries(i + 1);
+  });
+  return out;
+}

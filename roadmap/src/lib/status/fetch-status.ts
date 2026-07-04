@@ -8,6 +8,7 @@ import {
   getIncidentById,
   getScheduledMaintenance,
   getUptime90Days,
+  getServiceUptime90Days,
 } from './elastic-status';
 import {
   MOCK_SUMMARY,
@@ -18,6 +19,7 @@ import {
   MOCK_RECENT_INCIDENTS,
   MOCK_SCHEDULED_MAINTENANCE,
   getMockUptime,
+  getMockServiceUptime,
 } from './mock-data';
 import { cached } from './cache';
 
@@ -104,4 +106,10 @@ export async function fetchScheduledMaintenance() {
 
 export async function fetchUptime() {
   return cached('uptime', () => orMock(() => getUptime90Days(), () => getMockUptime()));
+}
+
+export async function fetchServiceUptime() {
+  return cached('service-uptime', () =>
+    orMock(() => getServiceUptime90Days(), () => getMockServiceUptime())
+  );
 }

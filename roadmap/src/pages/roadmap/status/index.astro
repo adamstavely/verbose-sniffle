@@ -2,108 +2,59 @@
 export const prerender = false;
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import PageHeader from '../../../components/PageHeader.astro';
 import PageMetaFooter from '../../../components/PageMetaFooter.astro';
-import StatusIllustration from '../../../components/illustrations/StatusIllustration.astro';
 import StatusBadge from '../../../components/status/StatusBadge.astro';
-import ServiceHealth from '../../../components/status/ServiceHealth.astro';
-import UptimeBar from '../../../components/status/UptimeBar.astro';
+import StatusBanner from '../../../components/status/StatusBanner.astro';
+import SystemStatus from '../../../components/status/SystemStatus.astro';
 import {
   getActiveIncidentsFromContent,
   getMaintenanceFromContent,
   getRecentIncidentsFromContent,
 } from '../../../lib/status/status-content';
-import { fetchSummary, fetchUptime } from '../../../lib/status/fetch-status';
+import { fetchSummary, fetchServiceUptime } from '../../../lib/status/fetch-status';
 import { getConnectedSystems } from '../../../lib/status/connected-services';
 import { getExternalSystemTypeLabel } from '../../../lib/status/status-labels';
 import { withBase } from '../../../lib/site-url';
 
 // Data sources on this page:
-//   • Service health + 90-day uptime  → live Elasticsearch telemetry (fetch-status).
-//     In production an ES failure surfaces as an honest unknown/empty state; mock
-//     data is only used in the explicit PUBLIC_USE_MOCK_STATUS demo mode.
-//   • Known Issues / Maintenance / Recent incidents → Markdown (src/content/status/**).
+//   • Status banner + System status (service health + per-service 90-day uptime)
+//     → live Elasticsearch telemetry (fetch-status). In production an ES failure
+//     surfaces as an honest unknown/empty state; mock data is only used in the
+//     explicit PUBLIC_USE_MOCK_STATUS demo mode.
+//   • Active incidents / Maintenance / Recent incidents → Markdown (src/content/status/**).
 //   • Connected services → the curated list in lib/status/connected-services.ts.
-const [incidents, maintenanceList, recentIncidents, summaryDto, uptime] =
+const [incidents, maintenanceList, recentIncidents, summaryDto, serviceUptime] =
   await Promise.all([
     getActiveIncidentsFromContent(),
     getMaintenanceFromContent(),
     getRecentIncidentsFromContent(),
     fetchSummary(),
-    fetchUptime(),
+    fetchServiceUptime(),
   ]);
 
 const { summary, coreServices } = summaryDto;
+const servicesWithUptime = coreServices.map((s) => ({
+  ...s,
+  uptime: serviceUptime[s.id],
+}));
 const externalSystems = getConnectedSystems();
 const activeMaintenance = maintenanceList.filter((m) => m.status !== 'COMPLETED');
 const recent = recentIncidents.slice(0, 10);
+
+const monthYear = (d: Date) =>
+  d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+const rangeLabel = `${monthYear(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000))} – ${monthYear(new Date())}`;
 ---
 
 <BaseLayout
   title="Status - Help Center"
   description="Platform status: live service health, active issues, scheduled maintenance, and recent incidents."
 >
-  <div class="space-y-12">
-    <PageHeader title="System Status">
-      <StatusIllustration slot="icon" />
-      <StatusBadge slot="actions" level={summary.level} variant="pillCompact" />
-      {summary.overallMessage}
-      <p slot="meta" class="mt-1 text-xs text-muted-foreground">
-        {summary.environment} · updated {new Date(summary.lastUpdated).toLocaleString()}
-      </p>
-    </PageHeader>
+  <h1 class="sr-only">System status</h1>
+  <div class="space-y-10">
+    <StatusBanner level={summary.level} incidents={incidents} />
 
-    <section aria-labelledby="service-health-heading">
-      <h2 id="service-health-heading" class="text-lg font-semibold text-foreground mb-3">Service health</h2>
-      <ServiceHealth services={coreServices} />
-    </section>
-
-    <section aria-labelledby="uptime-heading">
-      <h2 id="uptime-heading" class="text-lg font-semibold text-foreground mb-3">90-day uptime</h2>
-      {uptime.days.length > 0 ? (
-        <UptimeBar data={uptime} />
-      ) : (
-        <p class="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">
-          Uptime data is currently unavailable.
-        </p>
-      )}
-    </section>
-
-    <section aria-labelledby="incidents-heading">
-      <h2 id="incidents-heading" class="text-lg font-semibold text-foreground mb-3">Known Issues</h2>
-      {incidents.length > 0 ? (
-        <>
-          <p class="text-sm text-secondary-foreground mb-4">
-            Active incidents we're investigating. Workarounds and updates appear below.
-          </p>
-          <ul class="space-y-4">
-            {incidents.map((inc) => (
-              <li class="rounded-lg border border-border bg-card p-4 shadow-sm">
-                <div class="flex items-center justify-between gap-4">
-                  <a
-                    href={withBase(`roadmap/status/incidents/${inc.id}`)}
-                    class="font-medium text-foreground hover:text-accent"
-                  >
-                    {inc.title}
-                  </a>
-                  <StatusBadge level={inc.level} variant="pillCompact" />
-                </div>
-                {inc.description && (
-                  <p class="mt-2 text-sm text-secondary-foreground">{inc.description}</p>
-                )}
-                {inc.workaround && (
-                  <p class="mt-2 text-sm text-warning-strong bg-warning-subtle rounded p-2">
-                    <strong>Workaround:</strong> {inc.workaround}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <p class="text-sm text-secondary-foreground">No active incidents.</p>
-      )}
-    </section>
+    <SystemStatus services={servicesWithUptime} rangeLabel={rangeLabel} />
 
     {activeMaintenance.length > 0 && (
       <section aria-labelledby="maintenance-heading">

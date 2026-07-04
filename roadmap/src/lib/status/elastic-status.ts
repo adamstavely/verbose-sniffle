@@ -603,6 +603,70 @@ export async function getUptime90Days(): Promise<UptimeData> {
   }
 }
 
+/**
+ * Per-service 90-day uptime, keyed by `service_id`. Groups the core-service
+ * telemetry by service and reduces each day to its worst status (mirroring
+ * getUptime90Days's per-day logic). Days with no sample default to operational.
+ * A service with no telemetry in the window simply has no entry.
+ */
+export async function getServiceUptime90Days(): Promise<Record<string, UptimeData>> {
+  const client = getElasticClient();
+  const to = new Date();
+  const from = new Date(to.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const fromStart = new Date(from);
+  fromStart.setHours(0, 0, 0, 0);
+  const dayIndex = (date: Date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const diff = Math.floor(
+      (d.getTime() - fromStart.getTime()) / (24 * 60 * 60 * 1000)
+    );
+    return Math.max(0, Math.min(89, diff));
+  };
+
+  try {
+    const result = await client.search<ElasticCoreServiceDoc>({
+      index: statusConfig.indices.coreServices,
+      size: 10000,
+      query: {
+        range: {
+          '@timestamp': { gte: from.toISOString(), lte: to.toISOString() },
+        },
+      },
+    });
+
+    const byService = new Map<string, DailyStatus[]>();
+    for (const hit of result.hits.hits) {
+      const doc = hit._source ?? {};
+      const id = doc.service_id ?? hit._id;
+      const ts = doc['@timestamp'];
+      if (!id || !ts) continue;
+      if (!byService.has(id)) {
+        byService.set(id, new Array(90).fill('operational'));
+      }
+      const days = byService.get(id)!;
+      const idx = dayIndex(new Date(ts));
+      const candidate = toDailyStatus(doc.status_level ?? 'UNKNOWN');
+      if (
+        candidate === 'unavailable' ||
+        (candidate === 'degraded' && days[idx] === 'operational')
+      ) {
+        days[idx] = candidate;
+      }
+    }
+
+    const out: Record<string, UptimeData> = {};
+    for (const [id, days] of byService) {
+      const operational = days.filter((d) => d === 'operational').length;
+      out[id] = { days, percentage: Math.round((operational / 90) * 1000) / 10 };
+    }
+    return out;
+  } catch (error) {
+    console.error('Failed to query ElasticSearch for per-service uptime', error);
+    return {};
+  }
+}
+
 export async function getIncidentById(
   incidentId: string
 ): Promise<IncidentSummary | null> {

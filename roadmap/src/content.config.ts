@@ -38,6 +38,8 @@ const statusActiveIncidents = defineCollection({
     workaround: z.string().optional(),
     resolvedAt: z.string().optional(),
     aiNote: z.string().optional(),
+    /** User-facing areas affected (e.g. "Website", "App"), shown as pills. */
+    affects: z.array(z.string()).optional(),
     updates: z.array(incidentUpdate).optional(),
   }),
 });

@@ -79,6 +79,8 @@ export interface IncidentSummary {
   workaround?: string;
   /** AI-specific note (e.g. confidence scores during degradation) */
   aiNote?: string;
+  /** User-facing areas affected (e.g. "Website", "App"). */
+  affects?: string[];
   updates?: IncidentUpdate[];
   affectedWorkspaceIds?: string[];
   affectedCoreServiceIds?: string[];
