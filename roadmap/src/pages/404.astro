@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/site-url';
+
+const popular = [
+  { label: 'Home', href: withBase('') },
+  { label: 'User Guide', href: withBase('user-guide') },
+  { label: 'Developer Guide', href: withBase('developer-guide') },
+  { label: 'Status', href: withBase('roadmap/status') },
+  { label: 'Releases', href: withBase('releases') },
+  { label: 'Tags', href: withBase('tags') },
+];
+---
+
+<BaseLayout title="Page not found - Help Center" description="The page you were looking for could not be found.">
+  <div class="mx-auto max-w-xl text-center">
+    <p class="text-sm font-semibold uppercase tracking-[0.09em] text-accent">404</p>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight text-foreground">We couldn't find that page</h1>
+    <p class="mt-2 text-secondary-foreground">
+      The page may have moved. Try a search, or jump to a popular section.
+    </p>
+
+    <div id="search-404" class="pagefind-themed mt-8 text-left"></div>
+
+    <nav aria-label="Popular sections" class="mt-8 flex flex-wrap justify-center gap-2">
+      {popular.map((l) => (
+        <a
+          href={l.href}
+          class="rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-secondary-foreground shadow-sm transition-colors hover:border-border-strong hover:text-foreground"
+        >
+          {l.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+
+  <link rel="stylesheet" href={withBase('pagefind/pagefind-ui.css')} />
+  <script src={withBase('pagefind/pagefind-ui.js')} is:inline></script>
+  <script is:inline>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (typeof PagefindUI === 'undefined') return;
+      new PagefindUI({ element: '#search-404', showSubResults: true, showImages: false });
+    });
+  </script>
+</BaseLayout>
+
+<style is:global>
+  .pagefind-themed {
+    --pagefind-ui-primary: var(--color-accent);
+    --pagefind-ui-text: var(--color-foreground);
+    --pagefind-ui-background: var(--color-card);
+    --pagefind-ui-border: var(--color-border);
+    --pagefind-ui-tag: var(--color-muted);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 8px;
+    --pagefind-ui-font: inherit;
+  }
+</style>

@@ -1,0 +1,121 @@
+---
+// A single global "Still need help?" dialog. Any element with
+// `data-open-support` opens it (the script wires them up), so triggers can live
+// in the footer, on the feedback widget, etc. Targets are configurable via
+// PUBLIC_* env with placeholder defaults.
+const supportEmail = import.meta.env.PUBLIC_SUPPORT_EMAIL || 'support@example.com';
+const serviceNowUrl = import.meta.env.PUBLIC_SERVICENOW_URL || 'https://example.service-now.com/help';
+---
+
+<dialog
+  id="support-modal"
+  aria-labelledby="support-modal-title"
+  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-xl border border-border bg-card p-0 text-foreground shadow-lg"
+>
+  <div class="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
+    <div>
+      <h2 id="support-modal-title" class="text-lg font-semibold text-foreground">Still need help?</h2>
+      <p class="mt-0.5 text-sm text-secondary-foreground">Choose how you'd like to reach us.</p>
+    </div>
+    <button
+      type="button"
+      data-close-support
+      aria-label="Close"
+      class="-mr-2 shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <ul class="space-y-2 p-4">
+    <li>
+      <a
+        href={`mailto:${supportEmail}`}
+        class="flex items-center gap-3 rounded-lg border border-border p-3 text-left transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent-subtle text-accent">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-10 5L2 7" />
+          </svg>
+        </span>
+        <span class="min-w-0">
+          <span class="block font-medium text-foreground">Email support</span>
+          <span class="block truncate text-sm text-secondary-foreground">{supportEmail}</span>
+        </span>
+      </a>
+    </li>
+    <li>
+      <button
+        type="button"
+        data-support-chat
+        class="flex w-full items-center gap-3 rounded-lg border border-border p-3 text-left transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent-subtle text-accent">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </span>
+        <span class="min-w-0">
+          <span class="block font-medium text-foreground">Live chat</span>
+          <span class="block text-sm text-secondary-foreground">Chat with our support team</span>
+        </span>
+      </button>
+    </li>
+    <li>
+      <a
+        href={serviceNowUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex items-center gap-3 rounded-lg border border-border p-3 text-left transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent-subtle text-accent">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M9 15h6M9 11h2" />
+          </svg>
+        </span>
+        <span class="min-w-0">
+          <span class="block font-medium text-foreground">Create a ticket</span>
+          <span class="block text-sm text-secondary-foreground">Open a request in ServiceNow</span>
+        </span>
+      </a>
+    </li>
+  </ul>
+</dialog>
+
+<script>
+  const dialog = document.getElementById('support-modal') as HTMLDialogElement | null;
+  if (dialog) {
+    const open = (e: Event) => {
+      e.preventDefault();
+      if (!dialog.open) dialog.showModal();
+    };
+    document.querySelectorAll('[data-open-support]').forEach((el) =>
+      el.addEventListener('click', open)
+    );
+    dialog
+      .querySelectorAll('[data-close-support]')
+      .forEach((el) => el.addEventListener('click', () => dialog.close()));
+    // Click on the backdrop (the dialog element itself, outside its content) closes it.
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+    // Live chat: hand off to a chat widget if one is present, else guide the user.
+    dialog.querySelector('[data-support-chat]')?.addEventListener('click', () => {
+      dialog.close();
+      const chat = (window as unknown as { HelpCenterChat?: { open?: () => void } }).HelpCenterChat;
+      if (chat && typeof chat.open === 'function') {
+        chat.open();
+      } else {
+        window.alert('Live chat is not available right now — please email us or open a ticket.');
+      }
+    });
+  }
+</script>
+
+<style is:global>
+  #support-modal::backdrop {
+    background: rgb(15 23 42 / 0.5);
+  }
+</style>

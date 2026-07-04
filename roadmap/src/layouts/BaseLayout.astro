@@ -2,6 +2,18 @@
 import '../styles/global.css';
 import { withBase } from '../lib/site-url';
 import PageFeedback from '../components/PageFeedback.astro';
+import SupportModal from '../components/SupportModal.astro';
+
+const footerLinks = [
+  { label: 'Roadmap', href: withBase('roadmap') },
+  { label: 'Status', href: withBase('roadmap/status') },
+  { label: 'About', href: withBase('about') },
+  { label: 'User Guide', href: withBase('user-guide') },
+  { label: 'Developer Guide', href: withBase('developer-guide') },
+  { label: 'Releases', href: withBase('releases') },
+  { label: 'Tags', href: withBase('tags') },
+];
+const year = new Date().getFullYear();
 
 interface Props {
   title: string;
@@ -98,6 +110,35 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
       <slot />
       {showPageFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
     </main>
+
+    <footer class="mt-16 border-t border-border bg-card">
+      <div class="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+        <div>
+          <p class="text-sm font-semibold text-foreground">Help Center</p>
+          <p class="mt-1 text-sm text-muted-foreground">Guides, releases, and platform status.</p>
+          <button
+            type="button"
+            data-open-support
+            class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
+            </svg>
+            Still need help?
+          </button>
+        </div>
+        <nav aria-label="Footer" class="flex flex-wrap gap-x-6 gap-y-2">
+          {footerLinks.map((l) => (
+            <a href={l.href} class="text-sm text-secondary-foreground hover:text-foreground">{l.label}</a>
+          ))}
+        </nav>
+      </div>
+      <div class="mx-auto max-w-4xl px-4 pb-8 sm:px-6">
+        <p class="text-xs text-muted-foreground">© {year} Help Center. Incident history retained 90 days.</p>
+      </div>
+    </footer>
+
+    <SupportModal />
 
     <!-- Toggle wiring. Kept is:inline + byte-stable so its sha256 is CSP-allowlisted. -->
     <script is:inline>(function(){var b=document.getElementById('theme-toggle'),r=document.documentElement;function s(){if(b)b.setAttribute('aria-pressed',r.classList.contains('dark')?'true':'false');}s();if(b)b.addEventListener('click',function(){var d=!r.classList.contains('dark');r.classList.toggle('dark',d);try{localStorage.setItem('theme',d?'dark':'light');}catch(e){}s();});})();</script>
