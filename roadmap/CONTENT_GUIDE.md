@@ -235,24 +235,49 @@ status: "pending"                # pending | approved | rejected
 
 ## 6. System Status content
 
-The `/roadmap/status` page has three kinds of data:
+The `/roadmap/status` page is built from:
 
-- **Live telemetry** (service health and 90-day uptime) — comes from **live
-  Elasticsearch** telemetry via the observability pipeline, *not editable here*.
-  Service health is a flat list of whatever "core services" exist in the
+- **Live telemetry** (Service health + the 90-day uptime bars) — live
+  **Elasticsearch** via the observability pipeline, *not editable here*. Service
+  health is a flat list of whatever "core services" exist in the
   `status-core-services` index; there is no hardcoded catalog. A developer adds a
   service by indexing a doc — see `HANDOFF.md` §8 and `ELASTICSEARCH_GUIDE.md`.
-- **Three Markdown-driven sections you edit:** Known Issues, Scheduled
-  Maintenance, and Recent Incidents.
-- **One hand-curated data file you edit:** Connected services (see 6d).
+- **The status hero** — the big banner at the top. You don't edit it directly; it
+  reflects the current state (see 6a).
+- **Markdown you edit:** active incidents (6b), scheduled maintenance (6c), and
+  resolved-incident history (6d).
+- **One data file you edit:** Connected services (6e).
 
-### 6a. Known Issues (active incidents)
+### 6a. The status hero (banner)
+
+The banner at the top shows **one** state at a time — never a mix. You don't edit
+it directly; it's derived from the content below, and the state is chosen by
+**priority** (highest wins):
+
+| Hero | Colour | Shows when | Body |
+|------|--------|-----------|------|
+| **Outage** | red | an active incident is `level: OUTAGE` (or a core service reports OUTAGE) | the active incident(s) |
+| **Degraded** | amber | an active incident is `level: DEGRADED` (or a service is DEGRADED), and nothing is an outage | the active incident(s) |
+| **Scheduled maintenance** | blue | a non-`COMPLETED` maintenance entry exists, and there's no incident/degradation | the maintenance item(s) |
+| **Fully operational** | green | no active incidents, no active maintenance, services healthy | a reassurance line |
+
+(If telemetry can't be reached at all, the hero shows a neutral "checking system
+status" state rather than claiming everything is fine.)
+
+**To drive the hero:**
+- **Outage / Degraded** → add an active incident (6b) with that `level`.
+- **Maintenance** → add a maintenance entry (6c) with no active incident present.
+- **Operational** → remove the active incident (move it to history, 6d) and mark
+  maintenance `COMPLETED` (or delete it).
+
+Because only the top state shows, an active incident **hides** the maintenance
+hero until the incident is cleared.
+
+### 6b. Active incidents (Known Issues)
 - **Files:** `src/content/status/active-incidents/*.md` (filename is arbitrary;
   the **route** uses the frontmatter `id`).
-- **Where they show:** when any active incident exists, the page's top banner
-  turns red ("We're currently experiencing issues") and lists each incident with
-  its latest update status, how long it's been ongoing, and the `affects` pills.
-- Also creates a detail page at `/roadmap/status/incidents/<id>`.
+- **Where they show:** they drive the **outage/degraded hero** (6a) and each gets
+  a detail page at `/roadmap/status/incidents/<id>`.
 - **The body renders** on the detail page; if `description` is omitted it's
   auto-excerpted from the body. Sorted by `startedAt` (newest first).
 
@@ -278,11 +303,30 @@ updates:                             # optional timeline
 Longer incident write-up (Markdown) renders on the detail page.
 ```
 
-### 6b. Scheduled maintenance
+**Posting updates as the incident unfolds.** Add entries to the `updates` list —
+each is `{ timestamp, message, status }`. They render as a **timeline** on the
+detail page (newest first): the `status` label drives the dot colour
+(*Investigating* / *Identified* → amber, *Monitoring* → blue,
+*Resolved* / *Complete* → green) and each older entry shows how long before the
+latest it landed (e.g. "3 hours earlier"). The **most recent** update's `status`
+is also what the hero shows next to "Ongoing for …". To post an update, add a new
+entry with the current time and rebuild.
+
+**Resolving → moving to history.** An incident stays on the hero for as long as
+its file is in `active-incidents/`. When it's over:
+1. **Delete the file from `active-incidents/`** — this clears it from the hero.
+2. **Add a matching entry to `recent-incidents/`** (6d) so it shows in the
+   Incident history.
+
+> Setting `resolvedAt` alone does **not** take an incident off the hero — the
+> banner lists every file in `active-incidents/`. You must move the file.
+
+### 6c. Scheduled maintenance
 - **Files:** `src/content/status/maintenance/*.md`.
-- **Where it shows:** a notice in the top section of the status page (below the
-  banner) when present. Only items with `status` other than `COMPLETED` are
-  shown. Sorted by `scheduledStart`. Body is not rendered.
+- **Where it shows:** it heads the **maintenance hero** (6a) when it's the most
+  significant active state. Only items with `status` other than `COMPLETED` are
+  shown. Sorted by `scheduledStart`. Body is not rendered. Mark it `COMPLETED`
+  (or delete the file) when the window is over.
 
 ```md
 ---
@@ -295,12 +339,13 @@ description: "Search may be slower." # optional
 ---
 ```
 
-### 6c. Recent incidents (resolved)
+### 6d. Incident history (resolved)
 - **Files:** `src/content/status/recent-incidents/*.md`.
 - **Where they show:** the **Incident history** page at `/roadmap/status/history`
   (reached via the "View incident history" button on the status page), **ordered
   by `sortOrder` descending** (the `date` field is a display string only, so use
   `sortOrder` to control order).
+- This is where you add an entry when you **resolve** an active incident (6b).
 
 ```md
 ---
@@ -314,7 +359,7 @@ sortOrder: 30          # higher shows first
 ---
 ```
 
-### 6d. Connected services
+### 6e. Connected services
 Unlike the Markdown sections above, connected services live in a **TypeScript
 data file**, not a content collection:
 
@@ -411,7 +456,7 @@ Tag slugs are generated automatically (lowercased, spaces → dashes), so
 | Feature requests | `src/content/feature-requests/*.md` | ✘ | live vote count |
 | Known issues (incidents) | `src/content/status/active-incidents/*.md` | ✔ | `startedAt` desc |
 | Scheduled maintenance | `src/content/status/maintenance/*.md` | ✘ | `scheduledStart` |
-| Recent incidents | `src/content/status/recent-incidents/*.md` | ✘ | `sortOrder` desc |
+| Incident history | `src/content/status/recent-incidents/*.md` | ✘ | `sortOrder` desc |
 | Connected services | `src/lib/status/connected-services.ts` (`CONNECTED_SYSTEMS[]`) | — | array order |
 | Homepage cards | `src/pages/index.astro` (`cards[]`) | — | array order |
 | Tags | MDX `tags:` frontmatter | — | count desc |
