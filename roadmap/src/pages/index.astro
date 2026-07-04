@@ -61,6 +61,32 @@ const cards = [
     <p class="mt-2 text-[15px] text-secondary-foreground">
       Browse guides, releases, and everything about the product.
     </p>
+    <form
+      role="search"
+      method="get"
+      action={withBase('search')}
+      class="mx-auto mt-6 flex max-w-xl items-center gap-2 rounded-lg border border-border bg-card p-1.5 shadow-sm focus-within:ring-2 focus-within:ring-accent"
+    >
+      <label for="hero-search" class="sr-only">Search the Help Center</label>
+      <svg class="ml-2 h-5 w-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+      <input
+        id="hero-search"
+        type="search"
+        name="q"
+        placeholder="Search the docs…"
+        autocomplete="off"
+        class="min-w-0 flex-1 bg-transparent px-1 py-1.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none"
+      />
+      <button
+        type="submit"
+        class="shrink-0 rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent dark:text-slate-900"
+      >
+        Search
+      </button>
+    </form>
   </section>
 
   <section class="mt-11 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="Help Center sections">

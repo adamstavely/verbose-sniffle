@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/site-url';
+
+// Pagefind builds its index + UI into `dist/client/pagefind/` during `npm run
+// build` (astro build && pagefind …). The UI assets are loaded from that output,
+// so search works on the built site / `astro preview`, not in `astro dev`.
+---
+
+<BaseLayout title="Search - Help Center" description="Search the Help Center documentation.">
+  <h1 class="mb-6 text-2xl font-bold text-foreground">Search</h1>
+  <div id="search" class="pagefind-themed"></div>
+
+  <link rel="stylesheet" href={withBase('pagefind/pagefind-ui.css')} />
+  <script src={withBase('pagefind/pagefind-ui.js')} is:inline></script>
+  <script is:inline>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (typeof PagefindUI === 'undefined') return;
+      new PagefindUI({ element: '#search', showSubResults: true, showImages: false });
+      var q = new URLSearchParams(window.location.search).get('q');
+      if (q) {
+        var input = document.querySelector('#search input');
+        if (input) {
+          input.value = q;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.focus();
+        }
+      } else {
+        var input2 = document.querySelector('#search input');
+        if (input2) input2.focus();
+      }
+    });
+  </script>
+</BaseLayout>
+
+<style is:global>
+  /* Theme the Pagefind default UI with the app's design tokens (light + dark). */
+  .pagefind-themed {
+    --pagefind-ui-primary: var(--color-accent);
+    --pagefind-ui-text: var(--color-foreground);
+    --pagefind-ui-background: var(--color-card);
+    --pagefind-ui-border: var(--color-border);
+    --pagefind-ui-tag: var(--color-muted);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 8px;
+    --pagefind-ui-font: inherit;
+  }
+</style>
