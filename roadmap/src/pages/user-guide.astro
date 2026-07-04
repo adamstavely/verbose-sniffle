@@ -13,8 +13,7 @@ const categories = ug && ug.kind === 'group' ? ug.categories ?? [] : [];
 
 <BaseLayout title="User Guide - Help Center" description="How to use the product, organized the Diátaxis way.">
   <PageHeader title="User Guide">
-    Organized with <a href="https://diataxis.fr/" class="text-accent hover:text-accent-hover">Diátaxis</a> —
-    learning, tasks, lookup, and understanding, each in its own place.
+    <div class="intro"><UserGuideIntro /></div>
   </PageHeader>
 
   <RoleGuides />
@@ -37,3 +36,12 @@ const categories = ug && ug.kind === 'group' ? ug.categories ?? [] : [];
     ))}
   </div>
 </BaseLayout>
+
+<style>
+  .intro :global(a) {
+    color: var(--color-accent);
+  }
+  .intro :global(a:hover) {
+    color: var(--color-accent-hover);
+  }
+</style>

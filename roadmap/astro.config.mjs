@@ -14,6 +14,7 @@ import rehypeExternalLinks from 'rehype-external-links';
 import { unified } from '@astrojs/markdown-remark';
 import { remarkReadingTime } from './src/lib/remark-reading-time.mjs';
 import { remarkLastUpdated } from './src/lib/remark-last-updated.mjs';
+import { rehypeExternalLinkOptions } from './src/lib/rehype-external-link-options.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,10 +34,8 @@ export default defineConfig({
     mdx({
       processor: unified({
         remarkPlugins: [remarkReadingTime, remarkLastUpdated],
-        // Open external links in a new tab with safe rel attributes.
-        rehypePlugins: [
-          [rehypeExternalLinks, { target: '_blank', rel: ['nofollow', 'noopener', 'noreferrer'] }],
-        ],
+        // Open external links in a new tab with safe rel attributes + icon suffix.
+        rehypePlugins: [[rehypeExternalLinks, rehypeExternalLinkOptions]],
       }),
     }),
     sitemap(),

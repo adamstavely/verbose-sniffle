@@ -156,3 +156,11 @@
     color: var(--color-accent-hover);
   }
 }
+
+/* Lucide-style external-link suffix injected by rehype-external-links on MDX links. */
+.external-link-icon {
+  display: inline-block;
+  margin-left: 0.125rem;
+  vertical-align: -0.125em;
+  line-height: 0;
+}
