@@ -45,7 +45,7 @@ const recent = recentIncidents.slice(0, 10);
   title="Status - Help Center"
   description="Platform status: live service health, active issues, scheduled maintenance, and recent incidents."
 >
-  <div class="max-w-4xl mx-auto space-y-12">
+  <div class="space-y-12">
     <PageHeader title="Platform status">
       <StatusBadge slot="actions" level={summary.level} variant="pillCompact" />
       {summary.overallMessage}
@@ -170,7 +170,7 @@ const recent = recentIncidents.slice(0, 10);
     </section>
   </div>
 
-  <footer class="max-w-4xl mx-auto pt-8 mt-12 border-t border-border text-sm text-muted-foreground">
+  <footer class="pt-8 mt-12 border-t border-border text-sm text-muted-foreground">
     <p>Questions? Contact the Platform team via the #platform-support channel.</p>
     <p class="mt-1">Incident history retained 90 days.</p>
   </footer>
