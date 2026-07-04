@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocList from '../components/DocList.astro';
 import PageHeader from '../components/PageHeader.astro';
+import AboutIllustration from '../components/illustrations/AboutIllustration.astro';
 
 const modules = import.meta.glob<{
   frontmatter: { title: string; description?: string; order?: number };
@@ -21,6 +22,7 @@ const pages = Object.values(modules)
 
 <BaseLayout title="About - Help Center" description="Learn about our product and team">
   <PageHeader title="About IMAX">
+    <AboutIllustration slot="icon" class="h-12 w-12 shrink-0" />
     Learn about our product, mission, and the team behind it.
   </PageHeader>
   <DocList pages={pages} />

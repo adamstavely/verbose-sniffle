@@ -5,7 +5,7 @@ interface Props {
 
 const { class: className = '' } = Astro.props;
 ---
-<!-- About: stacked profile cards with a sparkle -->
+<!-- About card illustration (Design System --ill-* tokens; themes in dark mode). -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 96 96"
@@ -13,13 +13,12 @@ const { class: className = '' } = Astro.props;
   class={className}
   aria-hidden="true"
 >
-  <rect x="10" y="12" width="76" height="72" rx="22" fill="var(--ill-bg)" />
-  <rect x="24" y="32" width="33" height="40" rx="7" fill="var(--ill-primary-soft)" transform="rotate(-11 40 52)" />
+  <rect x="10" y="12" width="76" height="72" rx="22" fill="var(--ill-bg)"></rect>
+  <rect x="24" y="32" width="33" height="40" rx="7" fill="var(--ill-paper)" stroke="var(--ill-ink)" stroke-width="2.4" transform="rotate(-11 40 52)"></rect>
   <g transform="rotate(7 54 49)">
-    <rect x="37" y="27" width="34" height="44" rx="7" fill="var(--ill-paper)" stroke="var(--ill-paper-border)" stroke-width="1.6" />
-    <rect x="44" y="34" width="13" height="13" rx="4" fill="var(--ill-primary)" />
-    <rect x="44" y="52" width="20" height="3.6" rx="1.8" fill="var(--ill-ink)" opacity="0.75" />
-    <rect x="44" y="59" width="14" height="3.6" rx="1.8" fill="var(--ill-paper-line)" />
+  <rect x="37" y="27" width="34" height="44" rx="7" fill="var(--ill-paper)" stroke="var(--ill-ink)" stroke-width="2.4"></rect>
+  <rect x="44" y="34" width="13" height="13" rx="4" fill="var(--ill-primary)"></rect>
+  <line x1="44" y1="54" x2="64" y2="54" stroke="var(--ill-paper-line)" stroke-width="2.2" stroke-linecap="round"></line>
+  <line x1="44" y1="61" x2="58" y2="61" stroke="var(--ill-paper-line)" stroke-width="2.2" stroke-linecap="round"></line>
   </g>
-  <path d="M70 22 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z" fill="var(--ill-primary)" />
 </svg>

@@ -5,7 +5,7 @@ interface Props {
 
 const { class: className = '' } = Astro.props;
 ---
-<!-- Roadmap: winding path with a milestone marker and destination flag -->
+<!-- Roadmap card illustration (Design System --ill-* tokens; themes in dark mode). -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 96 96"
@@ -13,13 +13,15 @@ const { class: className = '' } = Astro.props;
   class={className}
   aria-hidden="true"
 >
-  <rect x="10" y="12" width="76" height="72" rx="22" fill="var(--ill-bg)" />
-  <path d="M22 68 C34 68 34 46 46 46 C58 46 58 32 70 32" stroke="var(--ill-primary-soft)" stroke-width="8" stroke-linecap="round" fill="none" />
-  <path d="M22 68 C34 68 34 46 46 46 C58 46 58 32 70 32" stroke="var(--ill-road-dash)" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 7" fill="none" />
-  <circle cx="22" cy="68" r="6" fill="var(--ill-paper)" stroke="var(--ill-primary)" stroke-width="3" />
-  <circle cx="46" cy="46" r="6.5" fill="var(--ill-primary)" />
-  <path d="M46 49 v-6 M43.2 45.5 L46 42.7 L48.8 45.5" stroke="var(--ill-on-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-  <line x1="70" y1="32" x2="70" y2="16" stroke="var(--ill-ink)" stroke-width="3" stroke-linecap="round" />
-  <path d="M70 17 L82 21 L70 25 Z" fill="var(--ill-primary)" />
-  <circle cx="70" cy="32" r="3.5" fill="var(--ill-ink)" />
+  <rect x="10" y="12" width="76" height="72" rx="22" fill="var(--ill-bg)"></rect>
+  <g transform="translate(46 44) scale(0.9) translate(-46 -44)">
+  <path d="M22 68 C34 68 34 46 46 46 C58 46 58 32 70 32" stroke="var(--ill-primary-soft)" stroke-width="8" stroke-linecap="round" fill="none"></path>
+  <path d="M22 68 C34 68 34 46 46 46 C58 46 58 32 70 32" stroke="var(--ill-road-dash)" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 7" fill="none"></path>
+  <circle cx="22" cy="68" r="6" fill="var(--ill-paper)" stroke="var(--ill-ink)" stroke-width="3"></circle>
+  <circle cx="46" cy="46" r="6.5" fill="var(--ill-primary)"></circle>
+  <path d="M46 49 v-6 M43.2 45.5 L46 42.7 L48.8 45.5" stroke="var(--ill-on-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+  <line x1="70" y1="32" x2="70" y2="16" stroke="var(--ill-ink)" stroke-width="3" stroke-linecap="round"></line>
+  <path d="M70 17 L82 21 L70 25 Z" fill="var(--ill-primary)"></path>
+  <circle cx="70" cy="32" r="3.5" fill="var(--ill-ink)"></circle>
+  </g>
 </svg>
