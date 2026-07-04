@@ -9,14 +9,17 @@ interface Props {
   title: string;
 }
 const { title } = Astro.props;
+const hasIcon = Astro.slots.has('icon');
 ---
 
 <header class="mb-8">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-4">
-      <div class="h-20 w-20 shrink-0 [&>svg]:h-full [&>svg]:w-full">
-        <slot name="icon" />
-      </div>
+      {hasIcon && (
+        <div class="h-20 w-20 shrink-0 [&>svg]:h-full [&>svg]:w-full">
+          <slot name="icon" />
+        </div>
+      )}
       <h1 class="text-2xl font-bold text-foreground">{title}</h1>
     </div>
     <slot name="actions" />
