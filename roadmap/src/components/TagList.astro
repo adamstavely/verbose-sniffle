@@ -1,0 +1,48 @@
+---
+import { slugifyTag, tagHref } from '../lib/tag-utils';
+
+interface Props {
+  /** Display labels (a single doc's tags) or {display,count} objects (the index). */
+  tags: (string | { display: string; count?: number })[];
+  /** Show "(n)" counts after each chip (used on the tags index). */
+  showCounts?: boolean;
+  /** Render chips as links to their tag page. Set false inside an <a> card. */
+  linked?: boolean;
+  class?: string;
+}
+
+const { tags, showCounts = false, linked = true, class: className = '' } = Astro.props;
+
+const chips = tags.map((t) =>
+  typeof t === 'string'
+    ? { display: t, count: undefined }
+    : { display: t.display, count: t.count }
+);
+
+const chipClass =
+  'inline-flex items-center gap-1 rounded bg-accent-subtle px-2 py-0.5 text-xs text-accent';
+---
+
+{chips.length > 0 && (
+  <ul class:list={['flex flex-wrap gap-2', className]} role="list">
+    {chips.map((c) => (
+      <li>
+        {linked ? (
+          <a href={tagHref(slugifyTag(c.display))} class={`${chipClass} transition-colors hover:underline`}>
+            <span>{c.display}</span>
+            {showCounts && c.count != null && (
+              <span class="text-secondary-foreground">({c.count})</span>
+            )}
+          </a>
+        ) : (
+          <span class={chipClass}>
+            <span>{c.display}</span>
+            {showCounts && c.count != null && (
+              <span class="text-secondary-foreground">({c.count})</span>
+            )}
+          </span>
+        )}
+      </li>
+    ))}
+  </ul>
+)}

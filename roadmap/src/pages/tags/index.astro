@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TagList from '../../components/TagList.astro';
+import { getAllTags } from '../../lib/docs';
+
+const tags = getAllTags();
+---
+
+<BaseLayout title="Tags - Help Center" description="Browse documentation by tag">
+  <h1 class="mb-6 text-2xl font-bold text-foreground">Tags</h1>
+  <p class="mb-8 text-secondary-foreground">
+    Browse guides and documentation by topic.
+  </p>
+  {tags.length === 0 ? (
+    <p class="rounded-lg border border-dashed border-border-strong bg-muted p-6 text-secondary-foreground">
+      No tags yet — add a <code class="rounded bg-muted px-1 font-mono text-sm">tags:</code> list to a doc's frontmatter.
+    </p>
+  ) : (
+    <TagList tags={tags} showCounts />
+  )}
+</BaseLayout>
