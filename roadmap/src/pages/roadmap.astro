@@ -4,6 +4,7 @@ export const prerender = false;
 import { actions } from 'astro:actions';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import PageMetaFooter from '../components/PageMetaFooter.astro';
 import RoadmapList from '../components/RoadmapList.astro';
 import FeatureRequestCard from '../components/FeatureRequestCard.astro';
 import Toast from '../components/Toast.astro';
@@ -77,4 +78,6 @@ const sortedRequests = [...requests].sort(
       </ul>
     )}
   </section>
+
+  <PageMetaFooter lastUpdated={__BUILD_ISO__} />
 </BaseLayout>

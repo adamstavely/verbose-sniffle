@@ -1,6 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import PageFeedback from '../components/PageFeedback.astro';
+import PageMetaFooter from '../components/PageMetaFooter.astro';
 import TagList from '../components/TagList.astro';
 import { withBase } from '../lib/site-url';
 import { getSection, getCategory, getSectionSiblings, getRelatedByTags } from '../lib/docs';
@@ -45,14 +45,6 @@ const section = getSection(pathname);
 const category = getCategory(pathname);
 const { prev, next } = await getSectionSiblings(pathname);
 const related = await getRelatedByTags(pathname, tags);
-
-const formattedUpdated = lastUpdated
-  ? new Date(lastUpdated).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  : null;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -143,12 +135,7 @@ const formattedUpdated = lastUpdated
         </section>
       )}
 
-      <footer class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
-        <p class="text-sm text-muted-foreground">
-          {formattedUpdated ? `Last Updated: ${formattedUpdated}` : ''}
-        </p>
-        <PageFeedback bare />
-      </footer>
+      <PageMetaFooter lastUpdated={lastUpdated} />
     </div>
 
     {hasToc && (
