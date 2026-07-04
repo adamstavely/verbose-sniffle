@@ -29,7 +29,7 @@ const total = journey.links.length;
   </nav>
 
   <PageHeader title={journey.title}>
-    <span slot="actions" class="rounded-full bg-accent-subtle px-3 py-1 text-xs font-semibold text-accent">
+    <span slot="actions" class="rounded-full bg-accent-subtle px-3 py-1 text-xs font-semibold text-accent-hover">
       {journey.roleName}
     </span>
     {journey.summary}
@@ -46,7 +46,7 @@ const total = journey.links.length;
           href={withBase(link.to)}
           class="group flex items-center gap-4 rounded-lg border border-border bg-card p-4 shadow-sm transition hover:border-border-strong hover:shadow-md"
         >
-          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-sm font-semibold text-accent">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-sm font-semibold text-accent-hover">
             {i + 1}
           </span>
           <span class="min-w-0 flex-1">
@@ -60,6 +60,6 @@ const total = journey.links.length;
   </ol>
 
   <div class="mt-8 border-t border-border pt-6">
-    <a href={withBase('user-guide')} class="text-sm text-accent hover:text-accent-hover">← Back to the User Guide</a>
+    <a href={withBase('user-guide')} class="text-sm text-accent-hover hover:text-accent">← Back to the User Guide</a>
   </div>
 </BaseLayout>

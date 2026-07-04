@@ -22,6 +22,7 @@
 
   /* Semantic */
   --color-success: #16A34A;
+  --color-success-strong: #15803D; /* dark text that meets AA on white/subtle fills */
   --color-success-subtle: #F0FDF4;
   --color-warning: #EABA1C;
   --color-warning-strong: #92600A; /* dark text for legibility on the subtle fill */
@@ -75,6 +76,7 @@
   /* Semantic — keep vivid solids (dots, bars, badges read on both themes);
      soften the subtle fills to translucent tints and lift warning text. */
   --color-success: #4ADE80;
+  --color-success-strong: #4ADE80; /* light green stays legible on dark surfaces */
   --color-success-subtle: rgba(16, 185, 129, 0.16);
   --color-warning: #EABA1C;
   --color-warning-strong: #FCD34D;
@@ -148,12 +150,13 @@
 }
 
 @utility link {
-  color: var(--color-accent);
+  /* accent-hover (not accent) so inline links meet AA contrast on the page bg. */
+  color: var(--color-accent-hover);
   text-decoration-line: underline;
   text-underline-offset: 2px;
 
   &:hover {
-    color: var(--color-accent-hover);
+    color: var(--color-accent);
   }
 }
 
