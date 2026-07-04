@@ -64,6 +64,16 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
               <a href={withBase('tags')} class="text-secondary-foreground hover:text-foreground">Tags</a>
             </li>
           </ul>
+          <a
+            href={withBase('search')}
+            aria-label="Search"
+            class="inline-flex items-center justify-center rounded-full border border-border bg-card p-2 text-secondary-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          </a>
           <button
             id="theme-toggle"
             type="button"
