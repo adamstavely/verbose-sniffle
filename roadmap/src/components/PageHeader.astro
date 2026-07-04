@@ -14,12 +14,11 @@ const hasIcon = Astro.slots.has('icon');
 
 <header class="mb-8">
   <div class="flex flex-wrap items-center justify-between gap-3">
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-5">
       {hasIcon && (
-          <div class="flex items-center gap-5">
-      <div class="h-28 w-28 shrink-0 [&>svg]:h-full [&>svg]:w-full">
-        <slot name="icon" />
-      </div>
+        <div class="h-28 w-28 shrink-0 [&>svg]:h-full [&>svg]:w-full">
+          <slot name="icon" />
+        </div>
       )}
       <h1 class="text-2xl font-bold text-foreground">{title}</h1>
     </div>
