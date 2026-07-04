@@ -2,7 +2,6 @@
 import BaseLayout from './BaseLayout.astro';
 import PageFeedback from '../components/PageFeedback.astro';
 import TagList from '../components/TagList.astro';
-import DocList from '../components/DocList.astro';
 import { withBase } from '../lib/site-url';
 import { getSection, getCategory, getSectionSiblings, getRelatedByTags } from '../lib/docs';
 
@@ -126,7 +125,21 @@ const formattedUpdated = lastUpdated
           <h2 id="related-heading" class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Related
           </h2>
-          <DocList pages={related.map((d) => ({ title: d.title, description: d.description, url: d.url }))} />
+          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((d) => (
+              <li>
+                <a
+                  href={d.url}
+                  class="group flex h-full flex-col rounded-lg border border-border bg-card p-4 transition-colors hover:border-border-strong hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                >
+                  <span class="text-sm font-semibold text-foreground group-hover:text-accent">{d.title}</span>
+                  {d.description && (
+                    <span class="mt-1 line-clamp-2 text-xs text-muted-foreground">{d.description}</span>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

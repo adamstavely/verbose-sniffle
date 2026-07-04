@@ -23,9 +23,11 @@ const year = new Date().getFullYear();
 interface Props {
   title: string;
   description?: string;
+  /** Home variant: no sidebar, no footer, no top-nav search (the hero owns it). */
+  home?: boolean;
 }
 
-const { title, description = 'Help Center - planned features and release information' } = Astro.props;
+const { title, description = 'Help Center - planned features and release information', home = false } = Astro.props;
 
 // Show the "was this helpful?" widget only on the about and guide pages.
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
@@ -56,33 +58,42 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
     <header class="sticky top-0 z-30 border-b border-border bg-card">
       <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6" aria-label="Main navigation">
         <div class="flex items-center gap-3">
-          <button
-            id="menu-toggle"
-            type="button"
-            aria-label="Open navigation"
-            aria-expanded="false"
-            aria-controls="app-sidebar"
-            class="inline-flex items-center justify-center rounded-md border border-border bg-card p-2 text-secondary-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:hidden"
-          >
-            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M3 6h18M3 12h18M3 18h18" />
-            </svg>
-          </button>
+          {!home && (
+            <button
+              id="menu-toggle"
+              type="button"
+              aria-label="Open navigation"
+              aria-expanded="false"
+              aria-controls="app-sidebar"
+              class="inline-flex items-center justify-center rounded-md border border-border bg-card p-2 text-secondary-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:hidden"
+            >
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18M3 12h18M3 18h18" />
+              </svg>
+            </button>
+          )}
           <a href={withBase('')} class="text-lg font-semibold text-foreground hover:text-secondary-foreground">
             Help Center
           </a>
         </div>
+        {!home && (
+          <form role="search" method="get" action={withBase('search')} class="hidden flex-1 justify-center md:flex">
+            <div class="relative w-full max-w-md">
+              <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <input
+                type="search"
+                name="q"
+                placeholder="Search the Help Center…"
+                aria-label="Search the Help Center"
+                class="w-full rounded-full border border-border bg-background py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              />
+            </div>
+          </form>
+        )}
         <div class="flex items-center gap-3">
-          <a
-            href={withBase('search')}
-            aria-label="Search"
-            class="inline-flex items-center justify-center rounded-full border border-border bg-card p-2 text-secondary-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-          >
-            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </a>
           <button
             id="theme-toggle"
             type="button"
@@ -100,26 +111,40 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
               <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
             </svg>
           </button>
+          <button
+            type="button"
+            aria-label="Account"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            JD
+          </button>
         </div>
       </div>
     </header>
 
-    <div class="mx-auto flex w-full max-w-7xl gap-10 px-4 sm:px-6">
-      <aside
-        id="app-sidebar"
-        class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full overflow-y-auto border-r border-border bg-card px-3 py-4 transition-transform duration-200 ease-out data-[open]:translate-x-0 lg:sticky lg:top-16 lg:z-auto lg:h-[calc(100vh-4rem)] lg:w-60 lg:shrink-0 lg:translate-x-0 lg:border-r-0 lg:bg-transparent lg:px-0 lg:py-8"
-        aria-label="Sidebar navigation"
-      >
-        <SidebarNav tree={tree} pathname={Astro.url.pathname} />
-      </aside>
-      <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-black/40 lg:hidden" aria-hidden="true"></div>
-
-      <main id="main-content" class="min-w-0 flex-1 py-8">
+    {home ? (
+      <main id="main-content" class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
         <slot />
-        {showPageFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
       </main>
-    </div>
+    ) : (
+      <div class="mx-auto flex w-full max-w-7xl gap-10 px-4 sm:px-6">
+        <aside
+          id="app-sidebar"
+          class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full overflow-y-auto border-r border-border bg-card px-3 py-4 transition-transform duration-200 ease-out data-[open]:translate-x-0 lg:sticky lg:top-16 lg:z-auto lg:h-[calc(100vh-4rem)] lg:w-60 lg:shrink-0 lg:translate-x-0 lg:border-r-0 lg:bg-transparent lg:px-0 lg:py-8"
+          aria-label="Sidebar navigation"
+        >
+          <SidebarNav tree={tree} pathname={Astro.url.pathname} />
+        </aside>
+        <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-black/40 lg:hidden" aria-hidden="true"></div>
 
+        <main id="main-content" class="min-w-0 flex-1 py-8">
+          <slot />
+          {showPageFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
+        </main>
+      </div>
+    )}
+
+    {!home && (
     <footer class="mt-16 border-t border-border bg-card">
       <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:flex-row sm:items-start sm:justify-between sm:px-6">
         <div>
@@ -147,6 +172,7 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
         <p class="text-xs text-muted-foreground">© {year} Help Center. Incident history retained 90 days.</p>
       </div>
     </footer>
+    )}
 
     <SupportModal />
 

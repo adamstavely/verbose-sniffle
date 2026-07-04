@@ -13,12 +13,6 @@ import { withBase } from './site-url';
 
 export { USER_GUIDE_CATEGORIES } from './docs';
 
-export interface NavLink {
-  label: string;
-  href: string;
-  /** Normalized pathname this link represents, for exact active-matching. */
-  match: string;
-}
 export interface NavPage {
   title: string;
   url: string;
@@ -29,19 +23,25 @@ export interface NavCategory {
   description: string;
   pages: NavPage[];
 }
-export interface NavGroup {
-  slug: string;
-  name: string;
-  href: string;
-  pages?: NavPage[];
-  categories?: NavCategory[];
-}
+/** A single link (Roadmap/Status/Releases) or a collapsible section. */
+export type NavItem =
+  | { kind: 'link'; label: string; href: string; match: string }
+  | {
+      kind: 'group';
+      slug: string;
+      name: string;
+      href: string;
+      pages?: NavPage[];
+      categories?: NavCategory[];
+    };
 export interface NavTree {
-  flat: NavLink[];
-  groups: NavGroup[];
+  items: NavItem[];
 }
 
-/** Structured navigation for the sidebar (flat links + collapsible groups). */
+/**
+ * Ordered sidebar navigation. Fixed order:
+ * About · User Guide · Releases · Roadmap · Status · Developer Guide.
+ */
 export async function getNavTree(): Promise<NavTree> {
   const docs = await getAllDocs();
   const byOrder = (a: RawDoc, b: RawDoc) =>
@@ -61,32 +61,13 @@ export async function getNavTree(): Promise<NavTree> {
     }));
 
   return {
-    flat: [
-      { label: 'Home', href: withBase(''), match: '/' },
-      { label: 'Roadmap', href: withBase('roadmap'), match: '/roadmap' },
-      { label: 'Status', href: withBase('roadmap/status'), match: '/roadmap/status' },
-      { label: 'Releases', href: withBase('releases'), match: '/releases' },
-      { label: 'Tags', href: withBase('tags'), match: '/tags' },
-    ],
-    groups: [
-      {
-        slug: 'about',
-        name: 'About',
-        href: withBase('about'),
-        pages: inSection('about').map(toPage),
-      },
-      {
-        slug: 'user-guide',
-        name: 'User Guide',
-        href: withBase('user-guide'),
-        categories,
-      },
-      {
-        slug: 'developer-guide',
-        name: 'Developer Guide',
-        href: withBase('developer-guide'),
-        pages: inSection('developer-guide').map(toPage),
-      },
+    items: [
+      { kind: 'group', slug: 'about', name: 'About', href: withBase('about'), pages: inSection('about').map(toPage) },
+      { kind: 'group', slug: 'user-guide', name: 'User Guide', href: withBase('user-guide'), categories },
+      { kind: 'link', label: 'Releases', href: withBase('releases'), match: '/releases' },
+      { kind: 'link', label: 'Roadmap', href: withBase('roadmap'), match: '/roadmap' },
+      { kind: 'link', label: 'Status', href: withBase('roadmap/status'), match: '/roadmap/status' },
+      { kind: 'group', slug: 'developer-guide', name: 'Developer Guide', href: withBase('developer-guide'), pages: inSection('developer-guide').map(toPage) },
     ],
   };
 }

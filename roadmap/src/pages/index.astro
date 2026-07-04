@@ -54,7 +54,7 @@ const cards = [
 ];
 ---
 
-<BaseLayout title="Help Center" description="Browse guides, releases, and everything about the product.">
+<BaseLayout home title="Help Center" description="Browse guides, releases, and everything about the product.">
   <section class="text-center">
     <p class="text-xs font-semibold uppercase tracking-[0.09em] text-accent">Help Center</p>
     <h1 class="mt-2.5 text-3xl font-bold tracking-tight text-foreground">How can we help?</h1>
@@ -103,5 +103,16 @@ const cards = [
         </span>
       </a>
     ))}
+  </section>
+
+  <section class="mt-12 flex flex-col items-center justify-center gap-4 text-center sm:flex-row">
+    <p class="text-lg font-semibold text-foreground">Still need help?</p>
+    <button
+      type="button"
+      data-open-support
+      class="rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-slate-900"
+    >
+      Contact support
+    </button>
   </section>
 </BaseLayout>
