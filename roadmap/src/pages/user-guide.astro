@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import DocList from '../components/DocList.astro';
 import PageHeader from '../components/PageHeader.astro';
 import RoleGuides from '../components/RoleGuides.astro';
-import UserGuideIntro from '../components/UserGuideIntro.astro';
 import { getNavTree } from '../lib/nav';
 
 const ug = (await getNavTree()).items.find(
@@ -13,9 +12,7 @@ const categories = ug && ug.kind === 'group' ? ug.categories ?? [] : [];
 ---
 
 <BaseLayout title="User Guide - Help Center" description="How to use the product, organized the Diátaxis way.">
-  <PageHeader title="User Guide">
-    <div class="intro"><UserGuideIntro /></div>
-  </PageHeader>
+  <PageHeader title="User Guide" />
 
   <RoleGuides />
 
@@ -37,12 +34,3 @@ const categories = ug && ug.kind === 'group' ? ug.categories ?? [] : [];
     ))}
   </div>
 </BaseLayout>
-
-<style>
-  .intro :global(a) {
-    color: var(--color-accent);
-  }
-  .intro :global(a:hover) {
-    color: var(--color-accent-hover);
-  }
-</style>
