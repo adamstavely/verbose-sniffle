@@ -144,3 +144,13 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+@utility link {
+  color: var(--color-accent);
+  text-decoration-line: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: var(--color-accent-hover);
+  }
+}
