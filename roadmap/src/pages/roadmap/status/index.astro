@@ -121,7 +121,7 @@ const recent = recentIncidents.slice(0, 10);
               {m.description && (
                 <p class="mt-1 text-sm text-secondary-foreground">{m.description}</p>
               )}
-              <p class="mt-2 text-xs text-muted-foreground">
+              <p class="mt-2 text-xs text-secondary-foreground">
                 {new Date(m.scheduledStart).toLocaleString()} – {new Date(m.scheduledEnd).toLocaleString()}
               </p>
             </li>
@@ -133,7 +133,7 @@ const recent = recentIncidents.slice(0, 10);
     <section aria-labelledby="external-heading">
       <div class="flex items-center justify-between mb-3">
         <h2 id="external-heading" class="text-lg font-semibold text-foreground">Connected services</h2>
-        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-accent hover:text-accent-hover">
+        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-accent-hover hover:text-accent">
           View all →
         </a>
       </div>

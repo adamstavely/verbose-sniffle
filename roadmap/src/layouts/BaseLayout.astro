@@ -4,6 +4,7 @@ import { withBase } from '../lib/site-url';
 import PageFeedback from '../components/PageFeedback.astro';
 import SupportModal from '../components/SupportModal.astro';
 import SidebarNav from '../components/SidebarNav.astro';
+import HelpCircleIcon from '../components/HelpCircleIcon.astro';
 import { getNavTree } from '../lib/nav';
 
 // async + lazy → safe to build even on prerender=false pages (no init cycle).
@@ -131,7 +132,7 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
           <button
             type="button"
             aria-label="Account"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-slate-900"
           >
             JD
           </button>
@@ -175,9 +176,7 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
               data-open-support
               class="mt-5 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-slate-900"
             >
-              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
-              </svg>
+              <HelpCircleIcon class="h-4 w-4" />
               Still need help?
             </button>
           </div>

@@ -19,11 +19,11 @@ const flatActive = (match: string) =>
 // Shared style for the six top-level items (all uppercase).
 const topBase =
   'rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors';
-const topOn = 'bg-accent-subtle text-accent';
+const topOn = 'bg-accent-subtle text-accent-hover';
 const topOff = 'text-secondary-foreground hover:bg-muted hover:text-foreground';
 
 const linkBase = 'block rounded-md px-3 py-1.5 text-sm transition-colors';
-const on = 'bg-accent-subtle text-accent font-medium';
+const on = 'bg-accent-subtle text-accent-hover font-medium';
 const off = 'text-secondary-foreground hover:bg-muted hover:text-foreground';
 const chevron =
   'M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.21 6.29a.75.75 0 111.02-1.1l4.5 4.25a.75.75 0 010 1.06l-4.5 4.25a.75.75 0 01-1.02-.02z';
@@ -44,7 +44,7 @@ const chevron =
         const groupOpen = activeSection === item.slug;
         return (
           <details class="group" open={groupOpen}>
-            <summary class={`flex cursor-pointer list-none items-center justify-between ${topBase} ${groupOpen ? 'text-accent' : topOff} [&::-webkit-details-marker]:hidden`}>
+            <summary class={`flex cursor-pointer list-none items-center justify-between ${topBase} ${groupOpen ? 'text-accent-hover' : topOff} [&::-webkit-details-marker]:hidden`}>
               <span>{item.name}</span>
               <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 shrink-0 transition-transform group-open:rotate-90" aria-hidden="true">
                 <path fill-rule="evenodd" d={chevron} clip-rule="evenodd" />
