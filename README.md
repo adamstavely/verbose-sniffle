@@ -18,14 +18,12 @@ backed by **Elasticsearch**. Full-text search is powered by **Pagefind**.
 |-----|-------------|
 | **[roadmap/HANDOFF.md](roadmap/HANDOFF.md)** | **Start here.** Architecture, rendering model, CSP, the Elasticsearch indices to create, the full env-var reference, integrations to wire up, and everything outstanding. |
 | **[roadmap/CONTENT_GUIDE.md](roadmap/CONTENT_GUIDE.md)** | How to add/edit every content type — guides, releases, roadmap, feature requests, status, journeys, homepage, tags. |
-| [roadmap/STATUS_PAGE_DATA.md](roadmap/STATUS_PAGE_DATA.md) | Status-page Markdown sections in depth. |
-| [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md) | Elasticsearch index shapes & queries. |
-| [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md) | Subscribe + incident-email pipeline. |
-| [roadmap/INTEGRATION_GUIDE.md](roadmap/INTEGRATION_GUIDE.md) | End-to-end integration reference. |
+| [roadmap/ELASTICSEARCH_GUIDE.md](roadmap/ELASTICSEARCH_GUIDE.md) | Deep Elasticsearch operations — cluster privileges, query semantics, per-index field tables, example mappings. |
+| [roadmap/EMAIL_NOTIFICATIONS_GUIDE.md](roadmap/EMAIL_NOTIFICATIONS_GUIDE.md) | Subscribe + incident-email pipeline, and the `/api/notify/run` webhook. |
 
-> Some of the four topic guides predate recent changes and contain a few stale
-> details. Where they disagree with the code, **`HANDOFF.md` and `CONTENT_GUIDE.md`
-> are authoritative** (see the "Documentation map" section of `HANDOFF.md`).
+> `HANDOFF.md` and `CONTENT_GUIDE.md` are the canonical entry points; the two
+> topic guides above add operational depth for the Elasticsearch and email
+> integrations.
 
 ## What's inside
 

@@ -74,8 +74,8 @@ verbose-sniffle/            # git root
 └── roadmap/                # THE APP
     ├── HANDOFF.md          # ← this file
     ├── CONTENT_GUIDE.md    # how to edit all content
-    ├── INTEGRATION_GUIDE.md, ELASTICSEARCH_GUIDE.md,
-    │   EMAIL_NOTIFICATIONS_GUIDE.md, STATUS_PAGE_DATA.md   # topic references
+    ├── ELASTICSEARCH_GUIDE.md,
+    │   EMAIL_NOTIFICATIONS_GUIDE.md   # topic references
     ├── .env.example        # every runtime env var
     ├── astro.config.mjs    # build/runtime config
     ├── package.json        # scripts + deps
@@ -362,8 +362,8 @@ existence of any doc for `maintenance_id.keyword` means "already emailed".
 **10. `page-feedback`** — `{ page_path, helpful ('yes'|'no'), message?, visitor_id, '@timestamp' }`;
 id = `hash(feedback, pagePath, visitorId)` (one vote per page per visitor).
 
-> The four topic guides (`ELASTICSEARCH_GUIDE.md`, `INTEGRATION_GUIDE.md`,
-> `EMAIL_NOTIFICATIONS_GUIDE.md`, `STATUS_PAGE_DATA.md`) contain deeper detail on
+> The two topic guides (`ELASTICSEARCH_GUIDE.md`,
+> `EMAIL_NOTIFICATIONS_GUIDE.md`) contain deeper detail on
 > queries and index shapes. Where they disagree with this section, **this section
 > and the code are authoritative** (see [Documentation map](#documentation-map--accuracy)).
 
@@ -443,9 +443,7 @@ latest review):
 |-----|-------|--------|
 | `HANDOFF.md` (this) | Architecture, integrations, ES indices, env, outstanding | **Canonical** |
 | `CONTENT_GUIDE.md` | How to edit every content type | **Canonical** |
-| `STATUS_PAGE_DATA.md` | Status page Markdown sections | Accurate |
-| `ELASTICSEARCH_GUIDE.md` | ES index shapes & queries | Useful, but: incorrectly says `STATUS_FETCH_TIMEOUT_MS` is unused (it **is** read); lists `STATUS_ERROR_RATE_*`/`STATUS_LATENCY_P95_*` threshold vars that **no code reads**; implies ES drives the incidents/maintenance UI (it's Markdown). |
-| `INTEGRATION_GUIDE.md` | End-to-end integration | Useful, but: collection names/paths are **stale** (says `statusIncidents`/`statusAnnouncements` under `src/content/status/incidents|announcements`; actual are `statusActiveIncidents`/`statusMaintenance`/`statusRecentIncidents` + `releases`); says Astro 5.x (actual **7.x**). |
-| `EMAIL_NOTIFICATIONS_GUIDE.md` | Subscribe + email pipeline | Mostly accurate; the email body contract is `{ to, subject, body }`. |
+| `ELASTICSEARCH_GUIDE.md` | ES index shapes & queries | Accurate (reviewed against code): `STATUS_FETCH_TIMEOUT_MS` is read; no `STATUS_ERROR_RATE_*`/`STATUS_LATENCY_P95_*` threshold vars exist; the incidents/maintenance/recent UI is Markdown-driven while core-services/workspaces/external-systems/uptime are live ES. |
+| `EMAIL_NOTIFICATIONS_GUIDE.md` | Subscribe + email pipeline | Accurate; the email body contract is `{ to, subject, body }`. |
 
 When in doubt, **the code and this document win.**

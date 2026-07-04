@@ -260,6 +260,6 @@ Point Astro’s `EMAIL_SERVICE_URL` at this relay (e.g. `http://relay.internal:3
 
 ## Related documentation
 
+- [HANDOFF.md](./HANDOFF.md) — architecture, environment variables, the notify cron webhook, and outstanding integration work  
 - [ELASTICSEARCH_GUIDE.md](./ELASTICSEARCH_GUIDE.md) — indices, queries, fields  
-- [INTEGRATION_GUIDE.md §19](./INTEGRATION_GUIDE.md#19-deployment-incident-notification-job) — short deploy note for the notify endpoint  
-- [STATUS_PAGE_DATA.md](./STATUS_PAGE_DATA.md) — subscribe form behavior  
+- [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) — editing the status page (incidents/maintenance) and how it relates to notification emails  

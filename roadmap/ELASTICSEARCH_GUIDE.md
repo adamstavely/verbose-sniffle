@@ -1,11 +1,26 @@
 # Elasticsearch setup and operations
 
-> **📌 [HANDOFF.md](./HANDOFF.md) §8 is the current source of truth for indices and env vars.** Note: `STATUS_FETCH_TIMEOUT_MS` **is** read by the app, the `STATUS_ERROR_RATE_*`/`STATUS_LATENCY_P95_*` threshold vars are **not** read by any code, and the status page's incidents/maintenance come from **Markdown**, not these ES indices (those feed email notifications only).
+> **Companion to [HANDOFF.md](./HANDOFF.md).** HANDOFF §8 is the quick index +
+> env reference; this guide adds the operational depth — cluster privileges,
+> query semantics, per-index field tables, and example mappings.
 
+This guide is the **operational reference** for connecting Elasticsearch to the
+app. **Normative field shapes** are defined in TypeScript in
+`src/lib/status/elastic-status.ts` (read paths) and in the
+vote/subscriber/feedback/notification modules (write paths). This document
+describes behavior and tuning so platform engineers can provision indices,
+credentials, and pipelines correctly.
 
-This guide is the **operational reference** for connecting Elasticsearch to the roadmap/status Astro app after integration. It complements [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) (deployment and file layout) and [STATUS_PAGE_DATA.md](./STATUS_PAGE_DATA.md) (what appears on the UI vs Markdown).
-
-**Normative field shapes** are defined in TypeScript in `src/lib/status/elastic-status.ts` (read paths) and in the vote/subscriber/feedback/notification modules (write paths). This document describes behavior and tuning so platform engineers can provision indices, credentials, and pipelines correctly.
+> **Two things people get wrong — read this first:**
+> - The status **page** renders its Known Issues (active incidents), Scheduled
+>   Maintenance, and Recent Incidents from **Markdown** (`src/content/status/**`),
+>   **not** from the `status-incidents` / `status-scheduled-maintenance` ES
+>   indices. Those two ES indices are read **only** by the email-notification job
+>   (`/api/notify/run`). Editing Markdown updates the page; writing those ES docs
+>   sends emails. See [CONTENT_GUIDE.md §6](./CONTENT_GUIDE.md#6-system-status-content).
+> - `status-core-services`, `status-workspaces`, and `status-external-systems`
+>   **are** read live by the status page (service health, 90-day uptime,
+>   connected systems).
 
 ---
 
@@ -63,7 +78,7 @@ The Astro server **writes** these via Actions and notification jobs.
 |----------|-------------|
 | `ELASTICSEARCH_URL` | Cluster URL, e.g. `https://my-deployment.es.region.cloud.es.io:443`. If unset, the client defaults to `http://localhost:9200` (local development). |
 
-Use **HTTPS** in production. The Node server resolves DNS and opens TLS to this host from your **deployment runtime** (container, VM, Vercel/Netlify region, etc.).
+Use **HTTPS** in production. The Node server resolves DNS and opens TLS to this host from your **deployment runtime** (container, VM, etc.).
 
 ### 2.2 API key
 
@@ -75,10 +90,13 @@ Create an API key in Kibana **Stack Management → API keys** (or your cloud con
 
 ### 2.3 Network path
 
-- **Serverless hosts** (Vercel, Netlify, etc.): Elasticsearch must accept connections from the platform’s outbound IPs or be reachable on the public internet with TLS + API key. Corporate clusters often require **IP allowlisting** or a **proxy** in front of Elasticsearch.
-- **VPC / private clusters**: Run the Astro server in the same VPC or use a secure tunnel/proxy so `ELASTICSEARCH_URL` is reachable from the process.
-
-See [INTEGRATION_GUIDE.md §15–18](./INTEGRATION_GUIDE.md#15-deployment-overview) for platform-specific notes.
+- The Node server opens connections to Elasticsearch from the **deployment
+  runtime** (container/VM). The cluster must accept those connections — public
+  internet with TLS + API key, or an in-VPC/tunnelled endpoint.
+- **VPC / private clusters**: run the Astro server in the same VPC or use a
+  secure tunnel/proxy so `ELASTICSEARCH_URL` is reachable from the process.
+- Corporate clusters often require **IP allowlisting** or a **proxy** in front of
+  Elasticsearch.
 
 ---
 
@@ -132,14 +150,16 @@ Authoritative copy-paste list: `roadmap/.env.example`.
 | Variable | Default | Role |
 |----------|---------|------|
 | `STATUS_ENVIRONMENT` | _(fallback `production` in code)_ | Label shown in the status summary (e.g. `production`, `staging`) |
-| `STATUS_TIME_WINDOW_MINUTES` | `5` | Rolling window for **telemetry** queries and for **`getIncidents`** (active incidents list). See [§5](#5-query-semantics-and-tuning). |
-| `NOTIFICATION_INCIDENT_WINDOW_MINUTES` | `1440` (24h) | Lookback for **notification** incident and maintenance queries (`getIncidentsForNotifications`, `getMaintenanceForNotifications`) |
-| `STATUS_ERROR_RATE_HEALTHY_MAX` | `0.01` | Thresholds for UI degradation (with latency thresholds below) |
-| `STATUS_ERROR_RATE_DEGRADED_MAX` | `0.05` | |
-| `STATUS_LATENCY_P95_HEALTHY_MAX` | `500` | Latency P95 threshold (ms), healthy band |
-| `STATUS_LATENCY_P95_DEGRADED_MAX` | `1500` | Latency P95 threshold (ms), degraded band |
+| `STATUS_TIME_WINDOW_MINUTES` | `5` | Rolling window for the live **telemetry** queries (core services, workspaces, external systems). See [§5](#5-query-semantics-and-tuning). |
+| `NOTIFICATION_INCIDENT_WINDOW_MINUTES` | `1440` (24h) | Lookback for the **notification** incident and maintenance queries (`getIncidentsForNotifications`, `getMaintenanceForNotifications`) |
+| `STATUS_FETCH_TIMEOUT_MS` | `15000` | Per-request Elasticsearch timeout in ms; also sets `maxRetries: 1`. Set to `0` to disable the timeout. Read in `elastic-client.ts`. |
 | `PUBLIC_USE_MOCK_STATUS` | _(unset)_ | When `true`, status data is read from in-memory mock data; **no Elasticsearch calls for status** (votes/subscribe/feedback still use ES if invoked) |
-| `STATUS_FETCH_TIMEOUT_MS` | Documented in `.env.example` / root README | **Not read by the reference app source**; reserved for custom forks or future use. Safe to omit. |
+
+> **There are no error-rate / latency threshold variables.** `status_level`
+> comes **directly from the Elasticsearch documents** your pipeline writes — the
+> app does not compute a level from `error_rate` / `latency_p95_ms`. (Older drafts
+> mentioned `STATUS_ERROR_RATE_*` / `STATUS_LATENCY_P95_*`; no code reads them and
+> they are not in `.env.example`.)
 
 ---
 
@@ -155,41 +175,36 @@ Understanding these behaviors avoids “empty UI” surprises and misconfigured 
 
 If nothing falls in the window, sections appear empty or “unknown” without necessarily throwing an error.
 
-### 5.2 Active incidents list (`getIncidents` → status page)
+### 5.2 Incidents, recent incidents & maintenance — the ES read path is unused by the page
 
-- **Query:** `started_at` must fall within the **same** rolling window as telemetry: last `STATUS_TIME_WINDOW_MINUTES`
-- **Implication:** An incident that **started** outside that window will **not** appear in the active incidents list, even if it is still unresolved, unless you **increase** `STATUS_TIME_WINDOW_MINUTES` or your pipeline **updates** documents so `started_at` stays recent (unusual).
+`elastic-status.ts` still contains ES read functions for incidents
+(`getIncidents`), recent incidents (`getRecentIncidents`), scheduled maintenance
+(`getScheduledMaintenance`), and incident-by-id (`getIncidentById`), plus their
+`fetch*` wrappers. **None of these are called by any page.** The status page and
+the incident detail page render these three sections from **Markdown content
+collections** (`src/content/status/**`) instead — see
+[CONTENT_GUIDE.md §6](./CONTENT_GUIDE.md#6-system-status-content). Treat these ES
+functions as dead code for the UI (a future dev may delete them or re-wire the
+page to ES). The **only** live ES incident/maintenance reads are the notification
+functions in §5.3.
 
-**Tradeoff:** `STATUS_TIME_WINDOW_MINUTES` is **shared** with telemetry. Increasing it to keep long incidents visible also widens the time range for core services, workspaces, and external systems (more historical docs considered before “latest per id”).
+### 5.3 Notifications (`getIncidentsForNotifications`, `getMaintenanceForNotifications`)
 
-### 5.3 Notifications (`getIncidentsForNotifications`)
+- **Incident window:** `NOTIFICATION_INCIDENT_WINDOW_MINUTES` (default 24h);
+  query = docs where **`started_at` OR `resolved_at`** falls in `[now - window, now]`.
+- **Maintenance:** `scheduled_start` within the window, `scheduled_end >= now`,
+  excludes `COMPLETED`; sorted by `scheduled_start` ascending. One email round per
+  maintenance id (dedupe index).
+- These are the ES reads that actually matter for `status-incidents` /
+  `status-scheduled-maintenance`. Used by `/api/notify/run` for email delivery
+  (see [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md)).
 
-- **Window:** `NOTIFICATION_INCIDENT_WINDOW_MINUTES` (default 24h)
-- **Query:** Documents where **`started_at` OR `resolved_at`** falls in `[now - window, now]`
-- Used by `/api/notify/run` for email delivery (see [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md))
+### 5.4 Uptime (90 days)
 
-### 5.4 Incident by ID (`getIncidentById`)
-
-- **Query:** `term` on `incident_id` (not `.keyword` in code). With default dynamic mapping, `incident_id` is typically both `text` and `keyword`; if lookups fail in your cluster, add an explicit `keyword` field or use a pipeline that matches your mapping.
-
-### 5.5 Recent incidents (90 days)
-
-- **Query:** `resolved_at` exists and falls within the last 90 days, sorted by `resolved_at` descending
-
-### 5.6 Scheduled maintenance (UI)
-
-- **Query:** `scheduled_end >= now`, not completed (`status !== 'COMPLETED'` after mapping)
-- **Sort:** `scheduled_start` ascending
-
-### 5.7 Scheduled maintenance (email notification path)
-
-- **Query:** `scheduled_start` within the notification window, `scheduled_end >= now`, excludes `COMPLETED`
-- **Sort:** `scheduled_start` ascending  
-- One email round per maintenance id (dedupe index). See [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md).
-
-### 5.8 Uptime (90 days)
-
-- Loads core service docs and incident docs over 90 days; derives per-day status from `@timestamp` / `started_at` / `resolved_at` as implemented in `getUptime90Days` in `elastic-status.ts`.
+- The status page's 90-day uptime bar **is** live ES: `getUptime90Days` loads
+  `status-core-services` docs and `status-incidents` docs over 90 days and derives
+  per-day `operational | degraded | unavailable` from `@timestamp` / `started_at`
+  / `resolved_at`. On error it returns an empty series (the UI shows "unavailable").
 
 ---
 
@@ -211,8 +226,8 @@ Defined in `src/lib/status/status-models.ts`.
 | `service_id` | Stable id; fallback to `_id` |
 | `service_name` | Display name |
 | `status_level` | |
-| `error_rate` | Optional; compared to `STATUS_ERROR_RATE_*` |
-| `latency_p95_ms` | Optional; compared to `STATUS_LATENCY_P95_*` |
+| `error_rate` | Optional; stored/available but not used to compute `status_level` |
+| `latency_p95_ms` | Optional; stored/available but not used to compute `status_level` |
 
 ### 6.3 `status-workspaces` (read)
 
@@ -357,7 +372,7 @@ Repeat similarly for other indices using the field tables above.
 
 ## 8. Verification checklist
 
-After deployment, align with [INTEGRATION_GUIDE.md §20](./INTEGRATION_GUIDE.md#20-post-deploy-verification):
+After deployment:
 
 | Check | Action |
 |-------|--------|
@@ -373,8 +388,8 @@ After deployment, align with [INTEGRATION_GUIDE.md §20](./INTEGRATION_GUIDE.md#
 
 ## 9. Related documentation
 
-- [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) — adapters, copying files, deployment  
-- [STATUS_PAGE_DATA.md](./STATUS_PAGE_DATA.md) — UI sections vs Elasticsearch vs Markdown  
-- [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md) — subscribers, `/api/notify/run`, email HTTP API  
+- [HANDOFF.md](./HANDOFF.md) — architecture, the full index list (§8), env reference, and integrations to wire up
+- [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) — editing the Markdown-driven status sections (incidents, maintenance, recent)
+- [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md) — subscribers, `/api/notify/run`, email HTTP API
 
 Code references: `src/lib/status/elastic-client.ts`, `src/lib/status/status-config.ts`, `src/lib/status/elastic-status.ts`, `src/lib/status/fetch-status.ts`.

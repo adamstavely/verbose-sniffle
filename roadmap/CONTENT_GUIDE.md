@@ -237,8 +237,8 @@ status: "pending"                # pending | approved | rejected
 The `/roadmap/status` page has two kinds of data:
 
 - **Live telemetry** (service health, 90-day uptime, connected systems) — comes
-  from **Elasticsearch**, *not editable here*. See `STATUS_PAGE_DATA.md` and
-  `HANDOFF.md`.
+  from **Elasticsearch**, *not editable here*. See `HANDOFF.md` §8 and
+  `ELASTICSEARCH_GUIDE.md`.
 - **Three Markdown-driven sections you edit:** Known Issues, Scheduled
   Maintenance, and Recent Incidents.
 
