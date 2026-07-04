@@ -1,0 +1,28 @@
+---
+layout: ../../../layouts/MdxDocLayout.astro
+title: Understanding the permissions model
+description: Why access is scoped to workspaces and roles, and what that means for you.
+order: 2
+tags: ["Explanation", "Security"]
+---
+
+Permissions are deliberately simple: access is granted by **workspace
+membership** and shaped by a **role**.
+
+## Membership grants access
+
+If you're a member of a workspace, you can see its shared content by default.
+There's no per-item approval queue, because within a team that friction usually
+costs more than it protects.
+
+## Roles shape what you can change
+
+Roles (Member, Admin) decide who can manage people and settings. Keeping the set
+of roles small makes the model easy to reason about — you rarely have to guess
+who can do what.
+
+## The trade-off
+
+This model favors collaboration over fine-grained control. For teams that need
+stricter boundaries, separate workspaces are the recommended tool rather than
+deep per-item permissions.

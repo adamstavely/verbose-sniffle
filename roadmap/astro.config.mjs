@@ -45,6 +45,7 @@ export default defineConfig({
   redirects: {
     '/requests': '/roadmap',
     '/style-guide': '/developer-guide/style-guide',
+    '/user-guide/getting-started': '/user-guide/tutorials/getting-started',
   },
 
   vite: {

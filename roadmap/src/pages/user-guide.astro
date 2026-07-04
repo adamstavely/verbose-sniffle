@@ -1,27 +1,26 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocList from '../components/DocList.astro';
+import { getNavTree } from '../lib/nav';
 
-const modules = import.meta.glob<{
-  frontmatter: { title: string; description?: string; order?: number };
-  url?: string;
-}>('./user-guide/*.mdx', { eager: true });
-
-const pages = Object.values(modules)
-  .filter((m) => m.url)
-  .map((m) => ({
-    title: m.frontmatter.title,
-    description: m.frontmatter.description,
-    url: m.url as string,
-    order: m.frontmatter.order ?? 99,
-  }))
-  .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+const ug = (await getNavTree()).groups.find((g) => g.slug === 'user-guide');
+const categories = ug?.categories ?? [];
 ---
 
-<BaseLayout title="User Guide - Help Center" description="How to use the product">
-  <h1 class="mb-6 text-2xl font-bold text-foreground">User Guide</h1>
+<BaseLayout title="User Guide - Help Center" description="How to use the product, organized the Diátaxis way.">
+  <h1 class="mb-2 text-2xl font-bold text-foreground">User Guide</h1>
   <p class="mb-8 text-secondary-foreground">
-    Step-by-step guides for using the product and its features.
+    Organized with <a href="https://diataxis.fr/" class="text-accent hover:text-accent-hover">Diátaxis</a> —
+    learning, tasks, lookup, and understanding, each in its own place.
   </p>
-  <DocList pages={pages} />
+
+  <div class="space-y-10">
+    {categories.map((c) => (
+      <section id={c.slug} aria-labelledby={`h-${c.slug}`} class="scroll-mt-20">
+        <h2 id={`h-${c.slug}`} class="mb-1 text-lg font-semibold text-foreground">{c.name}</h2>
+        <p class="mb-4 text-sm text-muted-foreground">{c.description}</p>
+        <DocList pages={c.pages} emptyText={`No ${c.name.toLowerCase()} yet.`} />
+      </section>
+    ))}
+  </div>
 </BaseLayout>

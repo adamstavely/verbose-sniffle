@@ -4,7 +4,7 @@ import PageFeedback from '../components/PageFeedback.astro';
 import TagList from '../components/TagList.astro';
 import DocList from '../components/DocList.astro';
 import { withBase } from '../lib/site-url';
-import { getSection, getSectionSiblings, getRelatedByTags } from '../lib/docs';
+import { getSection, getCategory, getSectionSiblings, getRelatedByTags } from '../lib/docs';
 
 interface Heading {
   depth: number;
@@ -43,6 +43,7 @@ const pathname = Astro.url.pathname;
 const toc = headings.filter((h) => h.depth === 2);
 const hasToc = toc.length > 0;
 const section = getSection(pathname);
+const category = getCategory(pathname);
 const { prev, next } = await getSectionSiblings(pathname);
 const related = await getRelatedByTags(pathname, tags);
 
@@ -62,6 +63,12 @@ const formattedUpdated = lastUpdated
       <>
         <span aria-hidden="true">/</span>
         <a href={section.url} class="hover:text-foreground">{section.name}</a>
+      </>
+    )}
+    {category && (
+      <>
+        <span aria-hidden="true">/</span>
+        <a href={category.url} class="hover:text-foreground">{category.name}</a>
       </>
     )}
     <span aria-hidden="true">/</span>
