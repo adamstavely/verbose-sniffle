@@ -5,7 +5,7 @@ interface Props {
 
 const { class: className = '' } = Astro.props;
 ---
-<!-- Releases: launching rocket -->
+<!-- Releases card illustration (Design System --ill-* tokens; themes in dark mode). -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 96 96"
@@ -13,11 +13,12 @@ const { class: className = '' } = Astro.props;
   class={className}
   aria-hidden="true"
 >
-  <rect x="10" y="12" width="76" height="72" rx="22" fill="var(--ill-bg)" />
-  <path d="M45 60 L38 70 L46 66 Z" fill="var(--ill-rocket-flame2)" />
-  <path d="M48 20 C55 27 57 43 53 57 L43 57 C39 43 41 27 48 20 Z" fill="var(--ill-primary)" />
-  <path d="M43 52 L34 63 L44 58 Z" fill="var(--ill-ink)" />
-  <path d="M53 52 L62 63 L52 58 Z" fill="var(--ill-ink)" />
-  <circle cx="48" cy="37" r="5.2" fill="var(--ill-paper)" stroke="var(--ill-ink)" stroke-width="2" />
-  <path d="M43 58 L48 72 L53 58 Z" fill="var(--ill-rocket-flame)" />
+  <rect x="10" y="12" width="76" height="72" rx="22" fill="var(--ill-bg)"></rect>
+  <g transform="rotate(33 48 45)">
+  <path d="M44 57 L48 71 L52 57 Z" fill="var(--ill-rocket-flame)" stroke="var(--ill-ink)" stroke-width="2.4" stroke-linejoin="round"></path>
+  <path d="M43 50 L34 61 L43 56 Z" fill="var(--ill-paper)" stroke="var(--ill-ink)" stroke-width="2.4" stroke-linejoin="round"></path>
+  <path d="M53 50 L62 61 L53 56 Z" fill="var(--ill-paper)" stroke="var(--ill-ink)" stroke-width="2.4" stroke-linejoin="round"></path>
+  <path d="M48 20 C55 27 57 44 53 57 L43 57 C39 44 41 27 48 20 Z" fill="var(--ill-paper)" stroke="var(--ill-ink)" stroke-width="2.4" stroke-linejoin="round"></path>
+  <circle cx="48" cy="37" r="5" fill="var(--ill-primary)"></circle>
+  </g>
 </svg>
