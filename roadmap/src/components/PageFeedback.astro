@@ -70,6 +70,12 @@ const { question = 'Was this page helpful?', pagePath = Astro.url.pathname, bare
     >
       Submit feedback
     </button>
+    <p class="mt-3 text-sm text-secondary-foreground">
+      Still need help?{' '}
+      <button type="button" data-open-support class="font-medium text-accent hover:text-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+        Contact support
+      </button>
+    </p>
   </div>
   <p id="page-feedback-thanks" class="mt-3 w-full text-right text-sm text-success hidden" role="status" aria-live="polite">
     Thanks for your feedback!
