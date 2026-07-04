@@ -117,11 +117,6 @@ export const USER_GUIDE_CATEGORIES: Record<
     order: 3,
     description: 'Information-oriented technical descriptions to look things up in.',
   },
-  explanation: {
-    name: 'Explanation',
-    order: 4,
-    description: 'Understanding-oriented background on how and why things work.',
-  },
 };
 
 export const stripSlash = (p: string) => p.replace(/\/+$/, '') || '/';
@@ -144,7 +139,14 @@ export function getCategory(
   if (firstSegment(pathname) !== 'user-guide') return null;
   const slug = secondSegment(pathname);
   const meta = USER_GUIDE_CATEGORIES[slug];
-  return meta ? { slug, name: meta.name, url: withBase(`user-guide#${slug}`) } : null;
+  if (!meta) return null;
+  // Tutorials has a dedicated landing page; the others are anchors on the
+  // User Guide overview.
+  const url =
+    slug === 'tutorials'
+      ? withBase('user-guide/tutorials')
+      : withBase(`user-guide#${slug}`);
+  return { slug, name: meta.name, url };
 }
 
 /**

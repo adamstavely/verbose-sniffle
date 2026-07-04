@@ -54,7 +54,6 @@ export const ROLE_GUIDES: RoleGuide[] = [
         summary: 'Work through documents and capture your findings.',
         links: [
           { label: 'Build your first project', to: 'user-guide/tutorials/first-project' },
-          { label: 'How the platform fits together', to: 'user-guide/explanation/architecture-overview' },
           { label: 'Glossary', to: 'user-guide/reference/glossary' },
         ],
       },
@@ -80,7 +79,6 @@ export const ROLE_GUIDES: RoleGuide[] = [
         links: [
           { label: 'Getting started', to: 'user-guide/tutorials/getting-started' },
           { label: 'Invite teammates', to: 'user-guide/how-to/invite-teammates' },
-          { label: 'Understanding the permissions model', to: 'user-guide/explanation/permissions-model' },
         ],
       },
       {
@@ -89,16 +87,6 @@ export const ROLE_GUIDES: RoleGuide[] = [
         summary: 'Stay ahead of incidents and platform updates.',
         links: [
           { label: 'Platform status', to: 'roadmap/status' },
-        ],
-      },
-      {
-        slug: 'understand-platform',
-        title: 'Understand how it fits together',
-        summary: 'Background on the architecture and access model.',
-        links: [
-          { label: 'How the platform fits together', to: 'user-guide/explanation/architecture-overview' },
-          { label: 'Understanding the permissions model', to: 'user-guide/explanation/permissions-model' },
-          { label: 'Glossary', to: 'user-guide/reference/glossary' },
         ],
       },
     ],

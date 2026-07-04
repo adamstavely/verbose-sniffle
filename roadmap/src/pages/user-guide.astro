@@ -2,7 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocList from '../components/DocList.astro';
 import PageHeader from '../components/PageHeader.astro';
-import RoleGuides from '../components/RoleGuides.astro';
 import UserGuideIllustration from '../components/illustrations/UserGuideIllustration.astro';
 import { getNavTree } from '../lib/nav';
 
@@ -10,22 +9,16 @@ const ug = (await getNavTree()).items.find(
   (i) => i.kind === 'group' && i.slug === 'user-guide'
 );
 const categories = ug && ug.kind === 'group' ? ug.categories ?? [] : [];
+const tutorialsHref = categories.find((c) => c.slug === 'tutorials')?.href;
 ---
 
 <BaseLayout title="User Guide - Help Center" description="How to use the product, organized the Diátaxis way.">
   <PageHeader title="User Guide">
     <UserGuideIllustration slot="icon" />
+    Browse the guides, organized with <a href="https://diataxis.fr/" class="link">Diátaxis</a> —
+    learning, tasks, and lookup. New here? Start with the
+    <a href={tutorialsHref} class="link">Tutorials</a>.
   </PageHeader>
-
-  <RoleGuides />
-
-  <div class="mb-6 border-t border-border pt-8">
-    <h2 class="text-lg font-semibold text-foreground">Or browse everything</h2>
-    <p class="mt-1 text-sm text-secondary-foreground">
-      All guides, organized with <a href="https://diataxis.fr/" class="link">Diátaxis</a> —
-      learning, tasks, lookup, and understanding.
-    </p>
-  </div>
 
   <div class="space-y-10">
     {categories.map((c) => (

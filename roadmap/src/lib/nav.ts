@@ -22,7 +22,14 @@ export interface NavCategory {
   name: string;
   description: string;
   pages: NavPage[];
+  /** Landing-page URL, when the category has a dedicated page (e.g. Tutorials). */
+  href?: string;
 }
+
+/** Categories that have a standalone landing page (not just an overview anchor). */
+const CATEGORY_LANDINGS: Record<string, string> = {
+  tutorials: 'user-guide/tutorials',
+};
 /** A single link (Roadmap/Status/Releases) or a collapsible section. */
 export type NavItem =
   | { kind: 'link'; label: string; href: string; match: string }
@@ -58,6 +65,7 @@ export async function getNavTree(): Promise<NavTree> {
       name: meta.name,
       description: meta.description,
       pages: userGuide.filter((d) => secondSegment(d.url) === slug).map(toPage),
+      href: CATEGORY_LANDINGS[slug] ? withBase(CATEGORY_LANDINGS[slug]) : undefined,
     }));
 
   return {

@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import DocList from '../../../components/DocList.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import RoleGuides from '../../../components/RoleGuides.astro';
+import UserGuideIllustration from '../../../components/illustrations/UserGuideIllustration.astro';
+import { getNavTree, USER_GUIDE_CATEGORIES } from '../../../lib/nav';
+import { withBase } from '../../../lib/site-url';
+
+const ug = (await getNavTree()).items.find(
+  (i) => i.kind === 'group' && i.slug === 'user-guide'
+);
+const categories = ug && ug.kind === 'group' ? ug.categories ?? [] : [];
+const tutorials = categories.find((c) => c.slug === 'tutorials');
+const pages = tutorials?.pages ?? [];
+const description = USER_GUIDE_CATEGORIES.tutorials.description;
+---
+
+<BaseLayout
+  title="Tutorials - User Guide"
+  description={description}
+>
+  <nav aria-label="Breadcrumb" class="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+    <a href={withBase('')} class="hover:text-foreground">Home</a>
+    <span aria-hidden="true">/</span>
+    <a href={withBase('user-guide')} class="hover:text-foreground">User Guide</a>
+    <span aria-hidden="true">/</span>
+    <span class="text-secondary-foreground">Tutorials</span>
+  </nav>
+
+  <PageHeader title="Tutorials">
+    <UserGuideIllustration slot="icon" />
+    {description}
+  </PageHeader>
+
+  <RoleGuides />
+
+  <div class="mb-6 border-t border-border pt-8">
+    <h2 class="text-lg font-semibold text-foreground">All tutorials</h2>
+    <p class="mt-1 text-sm text-secondary-foreground">
+      Step-by-step lessons to learn the essentials.
+    </p>
+  </div>
+
+  <DocList pages={pages} layout="grid" emptyText="No tutorials yet." />
+</BaseLayout>

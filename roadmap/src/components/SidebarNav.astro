@@ -78,8 +78,15 @@ const chevron =
                         <path fill-rule="evenodd" d={chevron} clip-rule="evenodd" />
                       </svg>
                     </summary>
-                    {c.pages.length > 0 ? (
+                    {c.pages.length > 0 || c.href ? (
                       <ul class="space-y-0.5 border-l border-border pl-2">
+                        {c.href && (
+                          <li>
+                            <a href={c.href} class={`${linkBase} ${isActive(c.href) ? on : off}`} aria-current={isActive(c.href) ? 'page' : undefined}>
+                              Overview
+                            </a>
+                          </li>
+                        )}
                         {c.pages.map((p) => (
                           <li>
                             <a href={p.url} class={`${linkBase} ${isActive(p.url) ? on : off}`} aria-current={isActive(p.url) ? 'page' : undefined}>
