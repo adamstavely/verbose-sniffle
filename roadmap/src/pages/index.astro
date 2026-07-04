@@ -56,8 +56,7 @@ const cards = [
 
 <BaseLayout home title="Help Center" description="Browse guides, releases, and everything about the product.">
   <section class="text-center">
-    <p class="text-xs font-semibold uppercase tracking-[0.09em] text-accent">Help Center</p>
-    <h1 class="mt-2.5 text-3xl font-bold tracking-tight text-foreground">How can we help?</h1>
+    <h1 class="text-3xl font-bold tracking-tight text-foreground">Hi, how can we help?</h1>
     <p class="mt-2 text-[15px] text-secondary-foreground">
       Browse guides, releases, and everything about the product.
     </p>
@@ -97,7 +96,7 @@ const cards = [
       >
         <Illustration class="h-28 w-28" />
         <h2 class="mt-6 mb-2.5 text-xl font-bold text-foreground">{title}</h2>
-        <p class="mb-4 text-sm leading-relaxed text-secondary-foreground">{description}</p>
+        <p class="mb-4 line-clamp-2 min-h-[2.85rem] text-sm leading-relaxed text-secondary-foreground">{description}</p>
         <span class="text-sm font-semibold text-accent group-hover:text-accent-hover">
           {cta}&nbsp;&rarr;
         </span>
