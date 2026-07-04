@@ -1,0 +1,372 @@
+# Content Update Guide
+
+How to add and edit every piece of content in the Help Center — guides, release
+notes, the roadmap, feature requests, the status page, role "journeys," the
+homepage, and tags. No framework knowledge is required for most of this; you
+edit Markdown/MDX files and the site rebuilds.
+
+> **Where things live:** everything is under `roadmap/`. Content is either an
+> **Astro content collection** (Markdown files under `src/content/…`, validated
+> by a schema) or an **MDX doc page** (a `.mdx` file that *is* a page under
+> `src/pages/…`). This guide covers both.
+
+> **After editing:** run `npm run build` (or `npm run dev` for a live preview).
+> Enums are **case-sensitive** — `OUTAGE`, `SCHEDULED`, `in-progress` must match
+> exactly. Run `npm run check` to catch schema/type errors.
+
+**Contents**
+1. [User Guide & Developer Guide & About pages (MDX docs)](#1-doc-pages-user-guide--developer-guide--about)
+2. [Role "journeys" (choose-your-path)](#2-role-journeys)
+3. [Release Notes](#3-release-notes)
+4. [Product Roadmap items](#4-product-roadmap-items)
+5. [Feature requests (voting)](#5-feature-requests)
+6. [System Status content](#6-system-status-content)
+7. [Homepage cards](#7-homepage-cards)
+8. [Tags](#8-tags)
+9. [Support modal, illustrations, and other config](#9-support-modal-illustrations--misc)
+10. [Quick reference table](#quick-reference)
+
+---
+
+## 1. Doc pages (User Guide / Developer Guide / About)
+
+These are **MDX files that are themselves pages**. Sidebar nav, breadcrumbs,
+"On this page" table of contents, reading time, "last updated," prev/next, and
+"related" are all generated automatically — you just write the file.
+
+### Where they live
+| Section | Folder | URL |
+|---------|--------|-----|
+| About | `src/pages/about/*.mdx` | `/about/<slug>` |
+| Developer Guide | `src/pages/developer-guide/*.mdx` | `/developer-guide/<slug>` |
+| User Guide (Diátaxis) | `src/pages/user-guide/<category>/*.mdx` | `/user-guide/<category>/<slug>` |
+
+The **User Guide** is organized with the [Diátaxis](https://diataxis.fr/)
+framework into four categories: `tutorials`, `how-to`, `reference`,
+`explanation`. Put each page in the right subfolder.
+
+### Frontmatter
+```mdx
+---
+layout: ../../../layouts/MdxDocLayout.astro
+title: Configure notifications
+description: Turn incident and digest emails on or off for your account.
+order: 2
+tags: ["Notifications", "How-to"]
+---
+
+Your Markdown/MDX content here. Use `##` for section headings.
+```
+
+| Field | Required | Notes |
+|-------|:--------:|-------|
+| `layout` | ✔ | Path to `MdxDocLayout.astro`, **relative to the file** — see below |
+| `title` | ✔ | Used for the `<h1>`, breadcrumb, nav label, and related cards |
+| `description` | | Meta description + subtitle on nav/related cards |
+| `order` | | Number; controls position in the sidebar, section index, and prev/next (default `99`) |
+| `tags` | | Array of topic chips → each links to `/tags/<slug>` and powers "Related" |
+| `prose` | | `true` by default (nice doc typography). Set `false` only for fully hand-styled MDX (the style guide does this) |
+
+**The `layout` path depends on folder depth** (it is relative to the `.mdx` file):
+- `about/` and `developer-guide/` pages (2 levels deep): `../../layouts/MdxDocLayout.astro`
+- `user-guide/<category>/` pages (3 levels deep): `../../../layouts/MdxDocLayout.astro`
+
+> **Do not set `minutesRead` or `lastUpdated`** — they are injected automatically
+> (reading time from the content; "last updated" from the file's last git commit
+> date, falling back to file modified time).
+
+### Add a new doc page — steps
+1. Create the `.mdx` file in the right folder (for User Guide, the right Diátaxis subfolder).
+2. Add the frontmatter above (mind the relative `layout` path).
+3. Write content. Every `##` heading becomes an entry in the "On this page" rail.
+4. Save/build. It **automatically** appears in: the sidebar (positioned by `order`),
+   the section's index page, prev/next within its section/category, and — for each
+   tag — the `/tags/<slug>` and `/tags` pages. No registration needed.
+
+### Add a new User Guide category
+The four Diátaxis categories are defined in `src/lib/docs.ts`
+(`USER_GUIDE_CATEGORIES`). To add another, add an entry there (slug → name,
+order, description) and create the matching subfolder under
+`src/pages/user-guide/`.
+
+---
+
+## 2. Role "journeys"
+
+The User Guide landing shows a **role picker** (Analyst / Operations). Each role
+has **workflows**, and each workflow is a short, ordered "journey" of links into
+existing doc pages. Journey pages (`/user-guide/journeys/<id>`) are generated
+automatically.
+
+### Edit roles/workflows
+All data is in **`src/lib/role-guides.ts`**:
+```ts
+export const ROLE_GUIDES = [
+  {
+    slug: 'analyst',
+    name: 'Analyst',
+    tagline: 'Search, analyze, and annotate in the Analyst Workspace.',
+    workflows: [
+      {
+        slug: 'get-set-up',
+        title: 'Get set up',
+        summary: 'Sign in, find your workspace, and learn the essentials.',
+        links: [
+          { label: 'Getting started', to: 'user-guide/tutorials/getting-started' },
+          { label: 'Build your first project', to: 'user-guide/tutorials/first-project' },
+        ],
+      },
+      // ...more workflows
+    ],
+  },
+  // ...more roles
+];
+```
+- To **add a workflow**: add a `{ slug, title, summary, links[] }` object. The
+  journey page regenerates from `` `${role.slug}-${workflow.slug}` `` automatically.
+- `links[].to` is a base-relative path to an existing page (no leading slash).
+
+### ⚠️ Adding a new ROLE requires one component edit
+The role tab picker is zero-JavaScript (pure CSS), and the CSS that shows each
+role's panel is **hardcoded per slug** in `src/components/RoleGuides.astro`
+(inside the `<style is:global>` block, e.g. `#rg-analyst:checked ~ #rg-panel-analyst`).
+When you add a new role, copy the existing analyst/operations CSS rules and add
+matching ones for your new slug — otherwise the new role's panel stays hidden.
+(Editing/adding *workflows* to an existing role needs no CSS change.)
+
+---
+
+## 3. Release Notes
+
+The `/releases` changelog and `/rss.xml` feed.
+
+- **Files:** `src/content/releases/*.md` (e.g. `v2-3-0.md`).
+- **The Markdown body IS rendered** on the page (unlike roadmap/feature items).
+- **Sorted newest-first by `date`.**
+
+```md
+---
+version: "2.3.0"          # rendered as "v2.3.0"
+date: 2026-07-01          # YAML date or ISO string
+title: Dark mode, search, and documentation tags
+summary: A one-line summary shown under the version.
+tags: ["feature", "ui"]  # display-only chips (NOT clickable, not part of /tags)
+---
+
+## Highlights
+- **Dark mode** across the entire Help Center.
+- Full-text search.
+
+## Fixes
+- ...
+```
+
+| Field | Required | Notes |
+|-------|:--------:|-------|
+| `version` | ✔ | String, e.g. `"2.3.0"` |
+| `date` | ✔ | Date (YAML date or ISO string) — sorts the list |
+| `title` | ✔ | Release headline |
+| `summary` | ✔ | One-line summary |
+| `tags` | | Display-only chips; **release tags are NOT part of the `/tags` browser** |
+
+Add a release: create a new `.md` file, fill in the frontmatter, write the notes
+in the body. It appears at the top of `/releases` and in the RSS feed.
+
+---
+
+## 4. Product Roadmap items
+
+The "Planned & In Progress" cards on `/roadmap`.
+
+- **Files:** `src/content/roadmap/*.md`.
+- **Frontmatter only** — the body is ignored.
+
+```md
+---
+title: "Dark mode support"
+description: "Full dark theme across the app."
+status: "planned"          # planned | in-progress | shipped
+targetQuarter: "Q2 2025"   # optional, shown as a muted chip
+priority: "high"           # optional: high | medium | low
+---
+```
+
+| Field | Required | Values |
+|-------|:--------:|--------|
+| `title` | ✔ | |
+| `description` | ✔ | |
+| `status` | ✔ | `planned` · `in-progress` · `shipped` |
+| `targetQuarter` | | free text, e.g. `"Q2 2025"` |
+| `priority` | | `high` · `medium` · `low` |
+
+Items are grouped by `status` (In Progress → Planned → Shipped) and sorted by
+priority within each group.
+
+---
+
+## 5. Feature requests
+
+Community-votable requests on `/roadmap`. Voting is live (Elasticsearch-backed);
+cards are **sorted by vote count, highest first**.
+
+- **Files:** `src/content/feature-requests/*.md`.
+- **Frontmatter only.**
+
+```md
+---
+id: "csv-import"                 # UNIQUE and STABLE — it is the vote key
+title: "CSV import"
+description: "Bulk-import records from a CSV file."
+status: "pending"                # pending | approved | rejected
+---
+```
+
+| Field | Required | Values |
+|-------|:--------:|--------|
+| `id` | ✔ | **Must be unique and never change** — votes are keyed to it |
+| `title` | ✔ | |
+| `description` | ✔ | |
+| `status` | ✔ | `pending` · `approved` · `rejected` |
+
+> Changing an item's `id` orphans its existing votes. Pick a stable id.
+
+---
+
+## 6. System Status content
+
+The `/roadmap/status` page has two kinds of data:
+
+- **Live telemetry** (service health, 90-day uptime, connected systems) — comes
+  from **Elasticsearch**, *not editable here*. See `STATUS_PAGE_DATA.md` and
+  `HANDOFF.md`.
+- **Three Markdown-driven sections you edit:** Known Issues, Scheduled
+  Maintenance, and Recent Incidents.
+
+> **Important:** editing this Markdown updates the **status page**, but does **not**
+> send incident **emails**. Incident/maintenance emails are driven by separate
+> Elasticsearch documents (see `HANDOFF.md` §6.3). If you need both, you must
+> update both.
+
+### 6a. Known Issues (active incidents)
+- **Files:** `src/content/status/active-incidents/*.md` (filename is arbitrary;
+  the **route** uses the frontmatter `id`).
+- Also creates a detail page at `/roadmap/status/incidents/<id>`.
+- **The body renders** on the detail page; if `description` is omitted it's
+  auto-excerpted from the body. Sorted by `startedAt` (newest first).
+
+```md
+---
+id: "inc-001"                       # unique — becomes the detail-page URL
+title: "Storage service degraded"
+level: "OUTAGE"                     # HEALTHY | DEGRADED | OUTAGE | MAINTENANCE | UNKNOWN
+startedAt: "2026-07-04T14:30:00Z"   # ISO datetime
+description: "Uploads are failing."  # optional
+workaround: "Retry in 10 minutes."   # optional
+resolvedAt: "2026-07-04T16:00:00Z"   # optional
+aiNote: "Root cause: gateway timeout." # optional
+updates:                             # optional timeline
+  - timestamp: "2026-07-04T15:00:00Z"
+    message: "Investigating."
+    status: "investigating"          # optional
+---
+
+Longer incident write-up (Markdown) renders on the detail page.
+```
+
+### 6b. Scheduled maintenance
+- **Files:** `src/content/status/maintenance/*.md`.
+- Only items with `status` other than `COMPLETED` are shown. Sorted by
+  `scheduledStart`. Body is not rendered.
+
+```md
+---
+id: "maint-001"
+title: "Search index rebuild"
+scheduledStart: "2026-07-10T02:00:00Z"
+scheduledEnd: "2026-07-10T04:00:00Z"
+status: "SCHEDULED"                  # SCHEDULED | IN_PROGRESS | COMPLETED
+description: "Search may be slower." # optional
+---
+```
+
+### 6c. Recent incidents (resolved)
+- **Files:** `src/content/status/recent-incidents/*.md`.
+- Shown as a list (top 10), **ordered by `sortOrder` descending** (the `date`
+  field is a display string only, so use `sortOrder` to control order).
+
+```md
+---
+id: "INC-2831"
+date: "Mar 4"          # display string only
+title: "Login latency"
+duration: "38 min"
+severity: "DEGRADED"   # HEALTHY | DEGRADED | OUTAGE | MAINTENANCE | UNKNOWN
+cause: "Cache eviction storm."
+sortOrder: 30          # higher shows first
+---
+```
+
+---
+
+## 7. Homepage cards
+
+The six cards on `/` (User Guide, Release Notes, Product Roadmap, About, System
+Status, Developer Guide) are defined in a `cards` array at the top of
+**`src/pages/index.astro`**. Edit the `title`, `description`, `cta`, or `href` of
+any entry directly. The hero heading, search box, and "Contact support" button
+are inline in the same file.
+
+The **illustrations** are inline-SVG components in
+`src/components/illustrations/` (one per card). They're also reused as the icon
+next to each section page's title. To restyle an illustration, edit the SVG in
+its component; the colors use theme tokens (`--ill-*`) so they adapt to dark mode.
+
+---
+
+## 8. Tags
+
+Tags are driven entirely by the `tags: [...]` frontmatter on **MDX doc pages**
+(section 1). Adding a tag to a doc:
+- shows a chip on that page,
+- adds the page to `/tags/<slug>` and the `/tags` index (counts update automatically),
+- feeds the "Related" section on other pages sharing the tag.
+
+Tag slugs are generated automatically (lowercased, spaces → dashes), so
+`"Getting Started"` → `/tags/getting-started`. There's nothing to register.
+
+> Release-note `tags` are **display-only** and are not part of this tag browser.
+
+---
+
+## 9. Support modal, illustrations & misc
+
+- **Support modal targets** ("Still need help?") are environment variables, not
+  content: `PUBLIC_SUPPORT_EMAIL` and `PUBLIC_SERVICENOW_URL` (see `.env.example`
+  / `HANDOFF.md`). The "Live chat" option needs a real chat widget wired up by a
+  developer.
+- **Footer links, nav labels, and section titles** live in `src/layouts/BaseLayout.astro`
+  and `src/lib/nav.ts` (editing these is a developer task — they're code, not content).
+- **Product name:** note the app currently mixes "IMAX", "Super App," and "Help
+  Center." If you're doing a content pass, align on one name (see `HANDOFF.md` §10
+  for every place it appears).
+
+---
+
+## Quick reference
+
+| Content type | Edit here | Body used? | Ordering |
+|--------------|-----------|:----------:|----------|
+| Doc pages (guides/about) | `src/pages/{about,developer-guide,user-guide/<cat>}/*.mdx` | ✔ | frontmatter `order` |
+| Role journeys | `src/lib/role-guides.ts` | — | array order |
+| Release notes | `src/content/releases/*.md` | ✔ | `date` desc |
+| Roadmap items | `src/content/roadmap/*.md` | ✘ | status → priority |
+| Feature requests | `src/content/feature-requests/*.md` | ✘ | live vote count |
+| Known issues (incidents) | `src/content/status/active-incidents/*.md` | ✔ | `startedAt` desc |
+| Scheduled maintenance | `src/content/status/maintenance/*.md` | ✘ | `scheduledStart` |
+| Recent incidents | `src/content/status/recent-incidents/*.md` | ✘ | `sortOrder` desc |
+| Homepage cards | `src/pages/index.astro` (`cards[]`) | — | array order |
+| Tags | MDX `tags:` frontmatter | — | count desc |
+
+Every collection schema is defined and enforced in `src/content.config.ts` — if a
+build fails on your content, check your frontmatter against that file (or run
+`npm run check`).

@@ -1,5 +1,8 @@
 # Status Page: Data Sources and Updates
 
+> **📌 For the full picture see [HANDOFF.md](./HANDOFF.md) and, for editing, [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) §6.** This file is accurate.
+
+
 This document explains what data appears on the status page, where it comes from, and how to update it.
 
 The status hub is a **hybrid**: live service telemetry is pulled from Elasticsearch (with a mock-data fallback when the cluster is unreachable), while incident and maintenance **content** is authored in Markdown. Data fetching goes through [`src/lib/status/fetch-status.ts`](src/lib/status/fetch-status.ts) (Elasticsearch, `fetch-status`/`elastic-status`) and [`src/lib/status/status-content.ts`](src/lib/status/status-content.ts) (Markdown collections).

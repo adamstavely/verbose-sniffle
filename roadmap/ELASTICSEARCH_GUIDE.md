@@ -1,5 +1,8 @@
 # Elasticsearch setup and operations
 
+> **📌 [HANDOFF.md](./HANDOFF.md) §8 is the current source of truth for indices and env vars.** Note: `STATUS_FETCH_TIMEOUT_MS` **is** read by the app, the `STATUS_ERROR_RATE_*`/`STATUS_LATENCY_P95_*` threshold vars are **not** read by any code, and the status page's incidents/maintenance come from **Markdown**, not these ES indices (those feed email notifications only).
+
+
 This guide is the **operational reference** for connecting Elasticsearch to the roadmap/status Astro app after integration. It complements [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) (deployment and file layout) and [STATUS_PAGE_DATA.md](./STATUS_PAGE_DATA.md) (what appears on the UI vs Markdown).
 
 **Normative field shapes** are defined in TypeScript in `src/lib/status/elastic-status.ts` (read paths) and in the vote/subscriber/feedback/notification modules (write paths). This document describes behavior and tuning so platform engineers can provision indices, credentials, and pipelines correctly.

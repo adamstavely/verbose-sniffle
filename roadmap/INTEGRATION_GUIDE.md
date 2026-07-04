@@ -1,5 +1,8 @@
 # Integration and deployment guide: roadmap and status page
 
+> **📌 Read [HANDOFF.md](./HANDOFF.md) and [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) first — they are the current source of truth.** This guide has stale details: content-collection names/paths (it predates `statusActiveIncidents`/`statusMaintenance`/`statusRecentIncidents` + `releases`) and the Astro version (the app is now **Astro 7**).
+
+
 This document is the **single reference** for merging the roadmap and status features into your Astro site and deploying them safely. It includes every **Astro server-side** requirement (adapter, middleware, API routes, Actions, and on-demand pages) so expectations stay aligned with the architecture.
 
 If anything here conflicts with an older note elsewhere in the repo, **this file wins**.
