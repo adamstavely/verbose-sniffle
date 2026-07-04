@@ -1,6 +1,7 @@
 ---
 // Shared hero for the top-level overview pages (About, User Guide, Releases,
 // Roadmap, Status, Developer Guide) so their headers share one consistent style.
+// - `icon` slot: optional illustration/icon rendered left of the title
 // - default slot: the description text (may contain inline links)
 // - `actions` slot: optional right-aligned control (e.g. RSS link, status badge)
 // - `meta` slot: optional small print rendered under the description
@@ -12,7 +13,10 @@ const { title } = Astro.props;
 
 <header class="mb-8">
   <div class="flex flex-wrap items-center justify-between gap-3">
-    <h1 class="text-2xl font-bold text-foreground">{title}</h1>
+    <div class="flex items-center gap-3">
+      <slot name="icon" />
+      <h1 class="text-2xl font-bold text-foreground">{title}</h1>
+    </div>
     <slot name="actions" />
   </div>
   <div class="mt-2 text-secondary-foreground"><slot /></div>

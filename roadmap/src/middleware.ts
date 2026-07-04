@@ -15,10 +15,12 @@ const SECURITY_HEADERS: Record<string, string> = {
     "base-uri 'self'",
     "img-src 'self' data:",
     "style-src 'self' 'unsafe-inline'",
-    // Byte-stable inline scripts (theme init, theme toggle, sidebar drawer,
-    // support modal) are allowlisted by hash so `script-src` stays free of
-    // 'unsafe-inline'. Update these if any of those scripts' bytes change.
-    "script-src 'self' 'sha256-uHjSJ6je3geuIxFbjyT/xbLAuzglm3PUZYoWAUrZyto=' 'sha256-/Jz2sqssm9frp4tFtb76t1+WhNWgOwi6Ej5GmSEOzf4=' 'sha256-UuKa0MbPu5kgKdnOaONHH1NPdKVLwqE0TcVz4lbcjDw=' 'sha256-QM627dG5UHqgNYEWXZ+G3movY2eJtRVjQt2CLLJXTw0='",
+    // Inline scripts allowlisted by hash so `script-src` stays free of
+    // 'unsafe-inline': theme init, theme toggle, sidebar drawer, support modal,
+    // back-to-top FAB (byte-stable is:inline), and the page-feedback module
+    // Astro inlines on the on-demand roadmap/status pages. Update these if any
+    // script's bytes change.
+    "script-src 'self' 'sha256-uHjSJ6je3geuIxFbjyT/xbLAuzglm3PUZYoWAUrZyto=' 'sha256-/Jz2sqssm9frp4tFtb76t1+WhNWgOwi6Ej5GmSEOzf4=' 'sha256-UuKa0MbPu5kgKdnOaONHH1NPdKVLwqE0TcVz4lbcjDw=' 'sha256-QM627dG5UHqgNYEWXZ+G3movY2eJtRVjQt2CLLJXTw0=' 'sha256-Hj6/pIe2kDSToseUVHSujktb/hpiiBhfYPMApJcdvE4=' 'sha256-dZArUt0LcowvobguQJ3Sx2QJhMe2jXtENAxNbfdtaaA='",
     "connect-src 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",

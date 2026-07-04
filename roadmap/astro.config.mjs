@@ -49,6 +49,12 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    // Build timestamp baked in at build time — used as "Last Updated" on the
+    // dynamic (prerender=false) Roadmap page, which has no per-item date and
+    // can't run git at request time.
+    define: {
+      __BUILD_ISO__: JSON.stringify(new Date().toISOString()),
+    },
     resolve: {
       alias: {
         shared: path.resolve(__dirname, 'src/lib/status'),

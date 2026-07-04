@@ -5,7 +5,7 @@ interface Props {
 
 const { class: className = '' } = Astro.props;
 ---
-<!-- Developer Guide: code editor window with brackets -->
+<!-- Developer Guide card illustration (Design System --ill-* tokens; themes in dark mode). -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 96 96"
@@ -13,13 +13,13 @@ const { class: className = '' } = Astro.props;
   class={className}
   aria-hidden="true"
 >
-  <rect x="10" y="12" width="76" height="72" rx="22" fill="var(--ill-bg)" />
-  <rect x="18" y="26" width="60" height="44" rx="8" fill="var(--ill-panel)" stroke="var(--ill-panel-border)" stroke-width="1.5" />
-  <path d="M18 34 a8 8 0 0 1 8 -8 L70 26 a8 8 0 0 1 8 8 L78 38 L18 38 Z" fill="var(--ill-panel-bar)" />
-  <circle cx="26" cy="32" r="2.4" fill="#FF6B6B" />
-  <circle cx="34" cy="32" r="2.4" fill="#FFC94A" />
-  <circle cx="42" cy="32" r="2.4" fill="#3FCF8E" />
-  <path d="M41 47 L34 54 L41 61" stroke="var(--ill-code)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-  <path d="M55 47 L62 54 L55 61" stroke="var(--ill-code)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-  <line x1="52" y1="45" x2="44" y2="63" stroke="var(--ill-code-slash)" stroke-width="3" stroke-linecap="round" />
+  <rect x="10" y="12" width="76" height="72" rx="22" fill="var(--ill-bg)"></rect>
+  <rect x="18" y="26" width="60" height="44" rx="8" fill="var(--ill-paper)" stroke="var(--ill-ink)" stroke-width="2.4" stroke-linejoin="round"></rect>
+  <line x1="18" y1="37" x2="78" y2="37" stroke="var(--ill-ink)" stroke-width="2.4"></line>
+  <circle cx="26" cy="31.5" r="2.2" fill="var(--ill-paper-line)"></circle>
+  <circle cx="34" cy="31.5" r="2.2" fill="var(--ill-paper-line)"></circle>
+  <circle cx="42" cy="31.5" r="2.2" fill="var(--ill-paper-line)"></circle>
+  <path d="M41 48 L34 55 L41 62" stroke="var(--ill-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+  <path d="M55 48 L62 55 L55 62" stroke="var(--ill-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+  <line x1="52" y1="46" x2="44" y2="64" stroke="var(--ill-primary)" stroke-width="3" stroke-linecap="round"></line>
 </svg>

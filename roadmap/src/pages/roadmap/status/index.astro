@@ -4,6 +4,8 @@ export const prerender = false;
 import { actions } from 'astro:actions';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
+import PageMetaFooter from '../../../components/PageMetaFooter.astro';
+import StatusIllustration from '../../../components/illustrations/StatusIllustration.astro';
 import StatusBadge from '../../../components/status/StatusBadge.astro';
 import Capabilities from '../../../components/status/Capabilities.astro';
 import UptimeBar from '../../../components/status/UptimeBar.astro';
@@ -47,6 +49,7 @@ const recent = recentIncidents.slice(0, 10);
 >
   <div class="space-y-12">
     <PageHeader title="System Status">
+      <StatusIllustration slot="icon" class="h-12 w-12 shrink-0" />
       <StatusBadge slot="actions" level={summary.level} variant="pillCompact" />
       {summary.overallMessage}
       <p slot="meta" class="mt-1 text-xs text-muted-foreground">
@@ -169,4 +172,6 @@ const recent = recentIncidents.slice(0, 10);
       <SubscribeNotifications result={subscribeResult?.data} />
     </section>
   </div>
+
+  <PageMetaFooter lastUpdated={summary.lastUpdated} />
 </BaseLayout>
