@@ -1,4 +1,5 @@
 import { slugifyTag } from './tag-utils';
+import { withBase } from './site-url';
 
 // Re-export the pure helpers so callers can import everything tag-related from
 // `docs.ts` if they prefer. `TagList` imports them from `tag-utils` directly to
@@ -17,18 +18,17 @@ export interface RawDoc {
 
 /** A tag aggregated across all docs. */
 export interface TagInfo {
-  /** URL-safe: lowercase, non-alphanumeric collapsed to hyphens. */
   slug: string;
-  /** Label shown in the UI (first-seen casing wins). */
   display: string;
   count: number;
 }
 
-// Astro injects `frontmatter` and `url` onto page modules. Glob the three doc
-// sections (relative to this file) so every doc's frontmatter is available at
-// build time. `import.meta.glob` is a Vite macro — the pattern must be a static
-// literal and `eager: true` is required to read frontmatter synchronously.
-const modules = import.meta.glob<{
+// LAZY glob (`eager: false`): building this map does NOT import the MDX page
+// modules, so `MdxDocLayout` (which the pages use) can import this module
+// without triggering the init-order import cycle that an eager glob causes
+// (docs → MDX pages → MdxDocLayout → docs). The pages are imported on demand
+// inside `getAllDocs()`, by which point every module is fully initialized.
+const loaders = import.meta.glob<{
   frontmatter: {
     title: string;
     description?: string;
@@ -42,26 +42,30 @@ const modules = import.meta.glob<{
     '../pages/user-guide/*.mdx',
     '../pages/developer-guide/*.mdx',
   ],
-  { eager: true }
+  { eager: false }
 );
 
-const allDocs: RawDoc[] = Object.values(modules)
-  .filter((m) => m.url)
-  .map((m) => ({
-    title: m.frontmatter.title,
-    description: m.frontmatter.description,
-    url: m.url as string,
-    order: m.frontmatter.order ?? 99,
-    tags: (m.frontmatter.tags ?? []).map((t) => t.trim()).filter(Boolean),
-  }));
+let cache: RawDoc[] | null = null;
 
-/** Every doc, unsorted. */
-export function getAllDocs(): RawDoc[] {
-  return allDocs;
+/** Every doc, resolved once and memoized. */
+export async function getAllDocs(): Promise<RawDoc[]> {
+  if (cache) return cache;
+  const mods = await Promise.all(Object.values(loaders).map((load) => load()));
+  cache = mods
+    .filter((m) => m.url)
+    .map((m) => ({
+      title: m.frontmatter.title,
+      description: m.frontmatter.description,
+      url: m.url as string,
+      order: m.frontmatter.order ?? 99,
+      tags: (m.frontmatter.tags ?? []).map((t) => t.trim()).filter(Boolean),
+    }));
+  return cache;
 }
 
 /** All tags with counts, deduped by slug, sorted by count desc then display. */
-export function getAllTags(docs: RawDoc[] = allDocs): TagInfo[] {
+export async function getAllTags(): Promise<TagInfo[]> {
+  const docs = await getAllDocs();
   const bySlug = new Map<string, TagInfo>();
   for (const doc of docs) {
     for (const tag of doc.tags) {
@@ -78,8 +82,59 @@ export function getAllTags(docs: RawDoc[] = allDocs): TagInfo[] {
 }
 
 /** Docs carrying a given tag slug, sorted like the section index pages. */
-export function getDocsByTag(slug: string, docs: RawDoc[] = allDocs): RawDoc[] {
+export async function getDocsByTag(slug: string): Promise<RawDoc[]> {
+  const docs = await getAllDocs();
   return docs
     .filter((d) => d.tags.some((t) => slugifyTag(t) === slug))
     .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+}
+
+// ── Section / prev-next / related helpers ────────────────────────────────────
+
+const SECTIONS: Record<string, string> = {
+  about: 'About',
+  'user-guide': 'User Guide',
+  'developer-guide': 'Developer Guide',
+};
+
+const stripSlash = (p: string) => p.replace(/\/+$/, '') || '/';
+const firstSegment = (url: string) => stripSlash(url).replace(/^\//, '').split('/')[0];
+
+/** Resolve the guide section a doc URL belongs to (for breadcrumbs). */
+export function getSection(pathname: string): { slug: string; name: string; url: string } | null {
+  const seg = firstSegment(pathname);
+  if (seg && SECTIONS[seg]) return { slug: seg, name: SECTIONS[seg], url: withBase(seg) };
+  return null;
+}
+
+/** Previous/next doc within the same section, ordered by `order` then title. */
+export async function getSectionSiblings(
+  pathname: string
+): Promise<{ prev: RawDoc | null; next: RawDoc | null }> {
+  const section = getSection(pathname);
+  if (!section) return { prev: null, next: null };
+  const here = stripSlash(pathname);
+  const siblings = (await getAllDocs())
+    .filter((d) => firstSegment(d.url) === section.slug)
+    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+  const idx = siblings.findIndex((d) => stripSlash(d.url) === here);
+  return {
+    prev: idx > 0 ? siblings[idx - 1] : null,
+    next: idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null,
+  };
+}
+
+/** Other docs sharing at least one tag with the current doc. */
+export async function getRelatedByTags(
+  pathname: string,
+  tags: string[],
+  limit = 4
+): Promise<RawDoc[]> {
+  const slugs = new Set(tags.map(slugifyTag).filter(Boolean));
+  if (slugs.size === 0) return [];
+  const here = stripSlash(pathname);
+  return (await getAllDocs())
+    .filter((d) => stripSlash(d.url) !== here && d.tags.some((t) => slugs.has(slugifyTag(t))))
+    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+    .slice(0, limit);
 }

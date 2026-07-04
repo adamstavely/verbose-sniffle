@@ -4,10 +4,13 @@ import DocList from '../../components/DocList.astro';
 import { getAllTags, getDocsByTag, tagsIndexHref } from '../../lib/docs';
 
 export async function getStaticPaths() {
-  return getAllTags().map((t) => ({
-    params: { tag: t.slug },
-    props: { display: t.display, docs: getDocsByTag(t.slug) },
-  }));
+  const tags = await getAllTags();
+  return Promise.all(
+    tags.map(async (t) => ({
+      params: { tag: t.slug },
+      props: { display: t.display, docs: await getDocsByTag(t.slug) },
+    }))
+  );
 }
 
 const { display, docs } = Astro.props;

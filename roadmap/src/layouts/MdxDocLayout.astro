@@ -2,6 +2,15 @@
 import BaseLayout from './BaseLayout.astro';
 import PageFeedback from '../components/PageFeedback.astro';
 import TagList from '../components/TagList.astro';
+import DocList from '../components/DocList.astro';
+import { withBase } from '../lib/site-url';
+import { getSection, getSectionSiblings, getRelatedByTags } from '../lib/docs';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
 
 interface Props {
   frontmatter: {
@@ -16,9 +25,11 @@ interface Props {
     /** Topic tags shown as chips linking to /tags/<slug>. */
     tags?: string[];
   };
+  /** Heading tree Astro extracts from the MDX (used for the "On this page" rail). */
+  headings?: Heading[];
 }
 
-const { frontmatter } = Astro.props;
+const { frontmatter, headings = [] } = Astro.props;
 const {
   title,
   description = 'Help Center - documentation and guides',
@@ -27,6 +38,13 @@ const {
   lastUpdated,
   tags = [],
 } = frontmatter;
+
+const pathname = Astro.url.pathname;
+const toc = headings.filter((h) => h.depth === 2);
+const hasToc = toc.length > 0;
+const section = getSection(pathname);
+const { prev, next } = await getSectionSiblings(pathname);
+const related = await getRelatedByTags(pathname, tags);
 
 const formattedUpdated = lastUpdated
   ? new Date(lastUpdated).toLocaleDateString('en-US', {
@@ -38,43 +56,146 @@ const formattedUpdated = lastUpdated
 ---
 
 <BaseLayout title={title} description={description}>
-  <h1 class="mb-2 text-3xl font-bold text-foreground">{title}</h1>
-  {(minutesRead || tags.length > 0) && (
-    <div class="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2">
-      {minutesRead && (
-        <p class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          {minutesRead}
-        </p>
-      )}
-      {tags.length > 0 && <TagList tags={tags} />}
-    </div>
-  )}
-  {prose ? (
-    <article class="doc-prose">
-      <slot />
-    </article>
-  ) : (
-    <slot />
-  )}
+  <nav aria-label="Breadcrumb" class="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+    <a href={withBase('')} class="hover:text-foreground">Home</a>
+    {section && (
+      <>
+        <span aria-hidden="true">/</span>
+        <a href={section.url} class="hover:text-foreground">{section.name}</a>
+      </>
+    )}
+    <span aria-hidden="true">/</span>
+    <span class="text-secondary-foreground">{title}</span>
+  </nav>
 
-  <footer class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
-    <p class="text-sm text-muted-foreground">
-      {formattedUpdated ? `Last Updated: ${formattedUpdated}` : ''}
-    </p>
-    <PageFeedback bare />
-  </footer>
+  <div class={hasToc ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_12rem] lg:gap-10' : ''}>
+    <div class="min-w-0">
+      <h1 class="mb-2 text-3xl font-bold text-foreground">{title}</h1>
+      {(minutesRead || tags.length > 0) && (
+        <div class="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+          {minutesRead && (
+            <p class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              {minutesRead}
+            </p>
+          )}
+          {tags.length > 0 && <TagList tags={tags} />}
+        </div>
+      )}
+      {prose ? (
+        <article class="doc-prose">
+          <slot />
+        </article>
+      ) : (
+        <slot />
+      )}
+
+      {(prev || next) && (
+        <nav class="mt-12 grid gap-4 border-t border-border pt-6 sm:grid-cols-2" aria-label="More in this section">
+          {prev ? (
+            <a href={prev.url} class="group rounded-lg border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
+              <span class="text-xs text-muted-foreground">← Previous</span>
+              <span class="mt-1 block font-medium text-foreground group-hover:text-accent">{prev.title}</span>
+            </a>
+          ) : (
+            <span></span>
+          )}
+          {next ? (
+            <a href={next.url} class="group rounded-lg border border-border bg-card p-4 text-right shadow-sm transition-shadow hover:shadow-md">
+              <span class="text-xs text-muted-foreground">Next →</span>
+              <span class="mt-1 block font-medium text-foreground group-hover:text-accent">{next.title}</span>
+            </a>
+          ) : (
+            <span></span>
+          )}
+        </nav>
+      )}
+
+      {related.length > 0 && (
+        <section class="mt-10" aria-labelledby="related-heading">
+          <h2 id="related-heading" class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Related
+          </h2>
+          <DocList pages={related.map((d) => ({ title: d.title, description: d.description, url: d.url }))} />
+        </section>
+      )}
+
+      <footer class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+        <p class="text-sm text-muted-foreground">
+          {formattedUpdated ? `Last Updated: ${formattedUpdated}` : ''}
+        </p>
+        <PageFeedback bare />
+      </footer>
+    </div>
+
+    {hasToc && (
+      <aside class="hidden lg:block">
+        <nav aria-label="On this page" class="sticky top-8" data-toc>
+          <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">On this page</p>
+          <ul class="space-y-1 border-l border-border">
+            {toc.map((h) => (
+              <li>
+                <a
+                  href={`#${h.slug}`}
+                  data-toc-link={h.slug}
+                  class="-ml-px block border-l-2 border-transparent py-1 pl-3 text-sm text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground aria-[current=true]:border-accent aria-[current=true]:text-accent"
+                >
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
+    )}
+  </div>
 </BaseLayout>
+
+{hasToc && (
+  <script>
+    // Highlight the "On this page" link for the heading currently in view.
+    const links = new Map<string, HTMLAnchorElement>();
+    document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]').forEach((a) => {
+      const slug = a.getAttribute('data-toc-link');
+      if (slug) links.set(slug, a);
+    });
+    const heads = Array.from(links.keys())
+      .map((slug) => document.getElementById(slug))
+      .filter((el): el is HTMLElement => el !== null);
+
+    let current = '';
+    const setCurrent = (slug: string) => {
+      if (slug === current) return;
+      current = slug;
+      links.forEach((a, s) =>
+        a.setAttribute('aria-current', s === slug ? 'true' : 'false')
+      );
+    };
+
+    if (heads.length && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+          if (visible[0]?.target.id) setCurrent(visible[0].target.id);
+        },
+        { rootMargin: '0px 0px -70% 0px', threshold: 0 }
+      );
+      heads.forEach((el) => observer.observe(el));
+    }
+  </script>
+)}
 
 <style is:global>
   /* Colors use the semantic token vars so doc prose themes in dark mode. */
   .doc-prose { color: var(--color-secondary-foreground); }
   .doc-prose h1 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; color: var(--color-foreground); margin-bottom: 1rem; }
-  .doc-prose h2 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: var(--color-foreground); margin-top: 2rem; margin-bottom: 0.75rem; }
-  .doc-prose h3 { font-size: 1.0625rem; font-weight: 600; color: var(--color-foreground); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+  .doc-prose h2 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: var(--color-foreground); margin-top: 2rem; margin-bottom: 0.75rem; scroll-margin-top: 2rem; }
+  .doc-prose h3 { font-size: 1.0625rem; font-weight: 600; color: var(--color-foreground); margin-top: 1.5rem; margin-bottom: 0.5rem; scroll-margin-top: 2rem; }
   .doc-prose p { margin-bottom: 1rem; line-height: 1.7; }
   .doc-prose ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
   .doc-prose ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }

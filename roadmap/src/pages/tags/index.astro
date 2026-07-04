@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import TagList from '../../components/TagList.astro';
 import { getAllTags } from '../../lib/docs';
 
-const tags = getAllTags();
+const tags = await getAllTags();
 ---
 
 <BaseLayout title="Tags - Help Center" description="Browse documentation by tag">
