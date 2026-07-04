@@ -3,6 +3,7 @@ export const prerender = false;
 
 import { actions } from 'astro:actions';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
 import StatusBadge from '../../../components/status/StatusBadge.astro';
 import Capabilities from '../../../components/status/Capabilities.astro';
 import UptimeBar from '../../../components/status/UptimeBar.astro';
@@ -45,16 +46,13 @@ const recent = recentIncidents.slice(0, 10);
   description="Platform status: live service health, active issues, scheduled maintenance, and recent incidents."
 >
   <div class="max-w-4xl mx-auto space-y-12">
-    <section class="rounded-xl border border-border bg-card p-6" aria-labelledby="status-heading">
-      <div class="flex items-center justify-between gap-4">
-        <h1 id="status-heading" class="text-2xl font-semibold text-foreground">Platform status</h1>
-        <StatusBadge level={summary.level} variant="pillCompact" />
-      </div>
-      <p class="mt-2 text-sm text-secondary-foreground">{summary.overallMessage}</p>
-      <p class="mt-1 text-xs text-muted-foreground">
+    <PageHeader title="Platform status">
+      <StatusBadge slot="actions" level={summary.level} variant="pillCompact" />
+      {summary.overallMessage}
+      <p slot="meta" class="mt-1 text-xs text-muted-foreground">
         {summary.environment} · updated {new Date(summary.lastUpdated).toLocaleString()}
       </p>
-    </section>
+    </PageHeader>
 
     <section aria-labelledby="capabilities-heading">
       <h2 id="capabilities-heading" class="text-lg font-semibold text-foreground mb-3">Service health</h2>

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DocList from '../../components/DocList.astro';
+import PageHeader from '../../components/PageHeader.astro';
 
 const modules = import.meta.glob<{
   frontmatter: { title: string; description?: string; order?: number };
@@ -19,9 +20,8 @@ const pages = Object.values(modules)
 ---
 
 <BaseLayout title="Developer Guide - Help Center" description="API and integration documentation">
-  <h1 class="mb-6 text-2xl font-bold text-foreground">Developer Guide</h1>
-  <p class="mb-8 text-secondary-foreground">
+  <PageHeader title="Developer Guide">
     API documentation, integration guides, and technical reference.
-  </p>
+  </PageHeader>
   <DocList pages={pages} />
 </BaseLayout>

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocList from '../components/DocList.astro';
+import PageHeader from '../components/PageHeader.astro';
 
 const modules = import.meta.glob<{
   frontmatter: { title: string; description?: string; order?: number };
@@ -19,9 +20,8 @@ const pages = Object.values(modules)
 ---
 
 <BaseLayout title="About - Help Center" description="Learn about our product and team">
-  <h1 class="mb-6 text-2xl font-bold text-foreground">About</h1>
-  <p class="mb-8 text-secondary-foreground">
+  <PageHeader title="About">
     Learn about our product, mission, and the team behind it.
-  </p>
+  </PageHeader>
   <DocList pages={pages} />
 </BaseLayout>

@@ -19,13 +19,10 @@ function groupWorstStatus(group: CapabilityGroup): StatusLevel {
 }
 
 // Group accent bars are decorative brand markers, not status — they use the
-// primary brand color so they never read as a semantic (success/warning) signal.
+// accent color so they never read as a semantic (success/warning) signal and
+// match the accent workspace subheading beside them.
 function barColorClass(_color: string): string {
-  return 'bg-primary';
-}
-
-function barTextClass(_color: string): string {
-  return 'text-primary';
+  return 'bg-accent';
 }
 ---
 
@@ -36,11 +33,11 @@ function barTextClass(_color: string): string {
       <div class="capability-group">
         <div class="flex items-center gap-2.5 mb-2">
           <span class={`w-1 h-4 rounded shrink-0 ${barColorClass(group.barColor)}`} />
-          <span class={`text-[10px] font-mono font-semibold uppercase tracking-widest ${barTextClass(group.barColor)}`}>
+          <span class="text-[10px] font-semibold uppercase tracking-widest text-accent">
             {group.group}
           </span>
           <span class="flex-1" />
-          <span class="text-[10px] font-mono flex items-center gap-1">
+          <span class="text-[10px] flex items-center gap-1">
             <StatusBadge level={worst} variant="dot" />
             {getStatusLabel(worst)}
           </span>

@@ -1,6 +1,8 @@
 @import "tailwindcss";
-/* Self-hosted Inter (variable) — same-origin, CSP-safe. */
+/* Self-hosted Inter + JetBrains Mono (variable) — same-origin, CSP-safe.
+   These are the only two typefaces in Design System v2.1. */
 @import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
 
 /* Class-based dark mode: `dark:` utilities respond to a `.dark` on <html>. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -9,7 +11,7 @@
    Neutrals use Tailwind's `slate` scale, which equals the DS neutral scale. */
 @theme {
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'Fira Code', monospace;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Fira Code', monospace;
 
   /* Brand */
   --color-primary: #1D3557;

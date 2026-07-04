@@ -55,5 +55,11 @@ export default defineConfig({
         shared: path.resolve(__dirname, 'src/lib/status'),
       },
     },
+    build: {
+      // Never inline font files as data: URIs — keep them as same-origin
+      // /_astro assets so they load under the CSP's `default-src 'self'`
+      // (a data: font would be blocked on the on-demand status page).
+      assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf|eot)$/i.test(file) ? false : undefined),
+    },
   },
 });
