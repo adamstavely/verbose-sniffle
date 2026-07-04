@@ -9,14 +9,30 @@ import { getNavTree } from '../lib/nav';
 // async + lazy → safe to build even on prerender=false pages (no init cycle).
 const tree = await getNavTree();
 
-const footerLinks = [
-  { label: 'Roadmap', href: withBase('roadmap') },
-  { label: 'Status', href: withBase('roadmap/status') },
-  { label: 'About', href: withBase('about') },
-  { label: 'User Guide', href: withBase('user-guide') },
-  { label: 'Developer Guide', href: withBase('developer-guide') },
-  { label: 'Releases', href: withBase('releases') },
-  { label: 'Tags', href: withBase('tags') },
+const footerColumns = [
+  {
+    heading: 'Product',
+    links: [
+      { label: 'Roadmap', href: withBase('roadmap') },
+      { label: 'Releases', href: withBase('releases') },
+      { label: 'Status', href: withBase('roadmap/status') },
+    ],
+  },
+  {
+    heading: 'Guides',
+    links: [
+      { label: 'User Guide', href: withBase('user-guide') },
+      { label: 'Developer Guide', href: withBase('developer-guide') },
+      { label: 'About', href: withBase('about') },
+    ],
+  },
+  {
+    heading: 'Explore',
+    links: [
+      { label: 'Tags', href: withBase('tags') },
+      { label: 'RSS feed', href: withBase('rss.xml') },
+    ],
+  },
 ];
 const year = new Date().getFullYear();
 
@@ -145,31 +161,41 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
     )}
 
     {!home && (
-    <footer class="mt-16 border-t border-border bg-card">
-      <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:flex-row sm:items-start sm:justify-between sm:px-6">
-        <div>
-          <p class="text-sm font-semibold text-foreground">Help Center</p>
-          <p class="mt-1 text-sm text-muted-foreground">Guides, releases, and platform status.</p>
-          <button
-            type="button"
-            data-open-support
-            class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-          >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
-            </svg>
-            Still need help?
-          </button>
-        </div>
-        <nav aria-label="Footer" class="flex flex-wrap gap-x-6 gap-y-2">
-          {footerLinks.map((l) => (
-            <a href={l.href} class="text-sm text-secondary-foreground hover:text-foreground">{l.label}</a>
+    <footer class="mt-20 border-t border-border bg-card">
+      <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+          <div class="sm:col-span-2 lg:col-span-1">
+            <p class="text-base font-semibold text-foreground">Help Center</p>
+            <p class="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
+              Guides, releases, and platform status — everything you need to get the most out of the product.
+            </p>
+            <button
+              type="button"
+              data-open-support
+              class="mt-5 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:border-border-strong hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            >
+              <svg class="h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
+              </svg>
+              Still need help?
+            </button>
+          </div>
+          {footerColumns.map((col) => (
+            <nav aria-label={col.heading}>
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{col.heading}</h3>
+              <ul class="mt-4 space-y-3">
+                {col.links.map((l) => (
+                  <li>
+                    <a href={l.href} class="text-sm text-secondary-foreground transition-colors hover:text-foreground">{l.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           ))}
-          <a href={withBase('rss.xml')} class="text-sm text-secondary-foreground hover:text-foreground">RSS</a>
-        </nav>
-      </div>
-      <div class="mx-auto max-w-7xl px-4 pb-8 sm:px-6">
-        <p class="text-xs text-muted-foreground">© {year} Help Center. Incident history retained 90 days.</p>
+        </div>
+        <div class="mt-12 border-t border-border pt-6">
+          <p class="text-xs text-muted-foreground">© {year} Help Center. Incident history retained 90 days.</p>
+        </div>
       </div>
     </footer>
     )}
