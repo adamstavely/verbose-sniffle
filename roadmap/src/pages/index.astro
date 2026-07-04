@@ -1,97 +1,81 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { withBase } from '../lib/site-url';
-import RoadmapIllustration from '../components/illustrations/RoadmapIllustration.astro';
-import StatusIllustration from '../components/illustrations/StatusIllustration.astro';
-import AboutIllustration from '../components/illustrations/AboutIllustration.astro';
 import UserGuideIllustration from '../components/illustrations/UserGuideIllustration.astro';
-import DeveloperGuideIllustration from '../components/illustrations/DeveloperGuideIllustration.astro';
 import ReleasesIllustration from '../components/illustrations/ReleasesIllustration.astro';
+import RoadmapIllustration from '../components/illustrations/RoadmapIllustration.astro';
+import AboutIllustration from '../components/illustrations/AboutIllustration.astro';
+import StatusIllustration from '../components/illustrations/StatusIllustration.astro';
+import DeveloperGuideIllustration from '../components/illustrations/DeveloperGuideIllustration.astro';
+
+const cards = [
+  {
+    Illustration: UserGuideIllustration,
+    title: 'User Guide',
+    description: 'Step-by-step guides for using the product and its features.',
+    cta: 'Read guide',
+    href: withBase('user-guide'),
+  },
+  {
+    Illustration: ReleasesIllustration,
+    title: 'Releases',
+    description: "Version history, release notes, and what's new.",
+    cta: 'View releases',
+    href: withBase('releases'),
+  },
+  {
+    Illustration: RoadmapIllustration,
+    title: 'Roadmap',
+    description: 'Browse planned features and community requests.',
+    cta: 'View roadmap',
+    href: withBase('roadmap'),
+  },
+  {
+    Illustration: AboutIllustration,
+    title: 'About',
+    description: 'Learn about our product, mission, and the team behind it.',
+    cta: 'Learn more',
+    href: withBase('about'),
+  },
+  {
+    Illustration: StatusIllustration,
+    title: 'Status',
+    description: 'Platform status, incidents, and maintenance (sample data).',
+    cta: 'View status',
+    href: withBase('roadmap/status'),
+  },
+  {
+    Illustration: DeveloperGuideIllustration,
+    title: 'Developer Guide',
+    description: 'API documentation, integration guides, and technical reference.',
+    cta: 'View docs',
+    href: withBase('developer-guide'),
+  },
+];
 ---
 
-<BaseLayout title="Help Center" description="See what's coming soon and browse planned work">
+<BaseLayout title="Help Center" description="Browse guides, releases, and everything about the product.">
   <section class="text-center">
-    <h1 class="text-3xl font-bold text-slate-900 sm:text-4xl">
-      Help Center
-    </h1>
-    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-      See what we're building and what's on the roadmap.
+    <p class="text-xs font-semibold uppercase tracking-[0.09em] text-accent">Help Center</p>
+    <h1 class="mt-2.5 text-3xl font-bold tracking-tight text-foreground">How can we help?</h1>
+    <p class="mt-2 text-[15px] text-secondary-foreground">
+      Browse guides, releases, and everything about the product.
     </p>
-    <div class="mt-10 flex flex-wrap justify-center gap-4">
-      <a
-        href={withBase('roadmap')}
-        class="rounded-md bg-primary px-6 py-3 text-base font-medium text-white hover:bg-primary-hover"
-      >
-        View Roadmap
-      </a>
-      <a
-        href={withBase('roadmap/status')}
-        class="rounded-md border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 hover:bg-slate-50"
-      >
-        Status
-      </a>
-    </div>
   </section>
-  <section class="mt-16 grid gap-8 sm:grid-cols-3">
-    <a href={withBase('about')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
-      <AboutIllustration class="mx-auto block h-32 w-auto text-slate-400" />
-      <h2 class="mt-4 font-semibold text-slate-900">About</h2>
-      <p class="mt-2 text-sm text-slate-600">
-        Learn about our product, mission, and the team behind it.
-      </p>
-      <span class="mt-4 inline-block text-sm font-medium text-accent">
-        Learn more →
-      </span>
-    </a>
-    <a href={withBase('user-guide')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
-      <UserGuideIllustration class="mx-auto block h-32 w-auto text-slate-400" />
-      <h2 class="mt-4 font-semibold text-slate-900">User Guide</h2>
-      <p class="mt-2 text-sm text-slate-600">
-        Step-by-step guides for using the product and its features.
-      </p>
-      <span class="mt-4 inline-block text-sm font-medium text-accent">
-        Read guide →
-      </span>
-    </a>
-    <a href={withBase('developer-guide')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
-      <DeveloperGuideIllustration class="mx-auto block h-32 w-auto text-slate-400" />
-      <h2 class="mt-4 font-semibold text-slate-900">Developer Guide</h2>
-      <p class="mt-2 text-sm text-slate-600">
-        API documentation, integration guides, and technical reference.
-      </p>
-      <span class="mt-4 inline-block text-sm font-medium text-accent">
-        View docs →
-      </span>
-    </a>
-    <a href={withBase('releases')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
-      <ReleasesIllustration class="mx-auto block h-32 w-auto text-slate-400" />
-      <h2 class="mt-4 font-semibold text-slate-900">Releases</h2>
-      <p class="mt-2 text-sm text-slate-600">
-        Version history, release notes, and what's new.
-      </p>
-      <span class="mt-4 inline-block text-sm font-medium text-accent">
-        View releases →
-      </span>
-    </a>
-    <a href={withBase('roadmap/status')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
-      <StatusIllustration class="mx-auto block h-32 w-auto text-slate-400" />
-      <h2 class="mt-4 font-semibold text-slate-900">Status</h2>
-      <p class="mt-2 text-sm text-slate-600">
-        Platform status, incidents, and maintenance (sample data).
-      </p>
-      <span class="mt-4 inline-block text-sm font-medium text-accent">
-        View status →
-      </span>
-    </a>
-    <a href={withBase('roadmap')} class="block rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
-      <RoadmapIllustration class="mx-auto block h-32 w-auto text-slate-400" />
-      <h2 class="mt-4 font-semibold text-slate-900">Roadmap</h2>
-      <p class="mt-2 text-sm text-slate-600">
-        Browse planned features and community requests.
-      </p>
-      <span class="mt-4 inline-block text-sm font-medium text-accent">
-        View roadmap →
-      </span>
-    </a>
+
+  <section class="mt-11 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="Help Center sections">
+    {cards.map(({ Illustration, title, description, cta, href }) => (
+      <a
+        href={href}
+        class="group flex flex-col items-center rounded-xl border border-border bg-card px-7 pt-9 pb-8 text-center shadow-sm transition duration-200 hover:-translate-y-1 hover:border-border-strong hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      >
+        <Illustration class="h-28 w-28" />
+        <h2 class="mt-6 mb-2.5 text-xl font-bold text-foreground">{title}</h2>
+        <p class="mb-4 text-sm leading-relaxed text-secondary-foreground">{description}</p>
+        <span class="text-sm font-semibold text-accent group-hover:text-accent-hover">
+          {cta}&nbsp;&rarr;
+        </span>
+      </a>
+    ))}
   </section>
 </BaseLayout>

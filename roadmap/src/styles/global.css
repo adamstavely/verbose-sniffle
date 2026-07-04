@@ -2,6 +2,9 @@
 /* Self-hosted Inter (variable) — same-origin, CSP-safe. */
 @import "@fontsource-variable/inter";
 
+/* Class-based dark mode: `dark:` utilities respond to a `.dark` on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Design System v2.1 tokens — brand, semantic, radius, typography.
    Neutrals use Tailwind's `slate` scale, which equals the DS neutral scale. */
 @theme {
@@ -26,11 +29,109 @@
   --color-danger: #DC2626;
   --color-danger-subtle: #FEF2F2;
 
+  /* Surface & text roles (shadcn convention) — flipped under `.dark` below.
+     The app references these instead of raw slate so a single variable swap
+     re-themes every page. Light values equal the slate scale they replaced. */
+  --color-background: #F8FAFC;          /* page background (was slate-50) */
+  --color-foreground: #0F172A;          /* primary text/headings (was slate-900/800) */
+  --color-card: #FFFFFF;                /* card & panel surface (was white) */
+  --color-muted: #F1F5F9;               /* subtle fills, code chips, hover (was slate-100) */
+  --color-muted-foreground: #64748B;    /* tertiary/meta text (was slate-500/400) */
+  --color-secondary-foreground: #475569;/* secondary/body text (was slate-600/700) */
+  --color-border: #E2E8F0;              /* borders & dividers (was slate-200/100) */
+  --color-border-strong: #CBD5E1;       /* stronger border / hover (was slate-300) */
+
   /* Radius (DS: sm 4 · md 6 · lg 9 · xl 12) */
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 9px;
   --radius-xl: 12px;
+}
+
+/* Dark theme — DS v2.1 §2.1 `.dark` token set. Only the CSS variables flip;
+   the utility classes throughout the app stay the same. */
+:root { color-scheme: light; }
+.dark {
+  color-scheme: dark;
+
+  --color-background: #0B1120;
+  --color-foreground: #F1F5F9;
+  --color-card: #1E293B;
+  --color-muted: #243044;
+  --color-muted-foreground: #94A3B8;
+  --color-secondary-foreground: #CBD5E1;
+  --color-border: #334155;
+  --color-border-strong: #475569;
+
+  /* Brand — lifted for contrast on dark surfaces (DS dark values). */
+  --color-primary: #93C5FD;
+  --color-primary-hover: #BFDBFE;
+  --color-accent: #60A5FA;
+  --color-accent-hover: #93C5FD;
+  --color-accent-subtle: rgba(96, 165, 250, 0.16);
+
+  /* Semantic — keep vivid solids (dots, bars, badges read on both themes);
+     soften the subtle fills to translucent tints and lift warning text. */
+  --color-success: #4ADE80;
+  --color-success-subtle: rgba(16, 185, 129, 0.16);
+  --color-warning: #EABA1C;
+  --color-warning-strong: #FCD34D;
+  --color-warning-subtle: rgba(234, 186, 28, 0.16);
+  --color-info: #38BDF8;
+  --color-info-subtle: rgba(14, 165, 233, 0.16);
+  --color-danger: #F87171;
+  --color-danger-subtle: rgba(220, 38, 38, 0.20);
+}
+
+/* Focus-ring offset defaults to white; match the dark surface so the 2px gap
+   reads as part of the page rather than a white halo. */
+.dark,
+.dark * {
+  --tw-ring-offset-color: #0b1120;
+}
+
+/* Homepage card illustration palette — decorative tints derived from the brand
+   (accent-subtle fields, navy ink, accent details). Kept as CSS vars so the SVG
+   components reference tokens, not raw hex. Light-only, matching the app shell. */
+:root {
+  --ill-bg: var(--color-accent-subtle);
+  --ill-primary: var(--color-accent);
+  --ill-primary-soft: #bbd4f5;
+  --ill-ink: var(--color-primary);
+  --ill-paper: #ffffff;
+  --ill-paper-border: #d7e3f5;
+  --ill-paper-line: #cbd5e1;
+  --ill-hairline: #e2e8f0;
+  --ill-on-primary: #ffffff;
+  --ill-road-dash: #ffffff;
+  --ill-rocket-flame: #bbd4f5;
+  --ill-rocket-flame2: #9ec2f2;
+  --ill-panel: var(--color-primary);
+  --ill-panel-bar: #22406a;
+  --ill-panel-border: transparent;
+  --ill-code: #7fb2ff;
+  --ill-code-slash: #ffffff;
+}
+
+/* Illustration palette — dark theme (mockup values). */
+.dark {
+  --ill-bg: rgba(96, 165, 250, 0.14);
+  --ill-primary: #60a5fa;
+  --ill-primary-soft: #2e4b72;
+  --ill-ink: #93c5fd;
+  --ill-paper: #26374f;
+  --ill-paper-border: #3a4e6e;
+  --ill-paper-line: #61759a;
+  --ill-hairline: #3e5273;
+  --ill-on-primary: #0b1120;
+  --ill-road-dash: #aecbf2;
+  --ill-rocket-flame: #3a5578;
+  --ill-rocket-flame2: #4a6896;
+  --ill-panel: #0e1a2e;
+  --ill-panel-bar: #1b2c48;
+  --ill-panel-border: #3a4e6e;
+  --ill-code: #8fbeff;
+  --ill-code-slash: #e2ecff;
 }
 
 /* DS §2.6 — required in all stylesheets. */

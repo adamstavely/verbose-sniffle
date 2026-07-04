@@ -24,44 +24,69 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <!-- Apply the saved (or system) theme before first paint to avoid a flash.
+         Kept byte-stable: its sha256 is allowlisted in the middleware CSP. -->
+    <script is:inline>(function(){try{var s=localStorage.getItem('theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();</script>
   </head>
-  <body class="min-h-screen bg-slate-50 text-slate-900">
+  <body class="min-h-screen bg-background text-foreground">
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-accent focus:shadow focus:ring-2 focus:ring-accent"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-accent focus:shadow focus:ring-2 focus:ring-accent"
     >
       Skip to main content
     </a>
-    <header class="border-b border-slate-200 bg-white">
+    <header class="border-b border-border bg-card">
       <nav class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6" aria-label="Main navigation">
-        <a href={withBase('')} class="text-lg font-semibold text-slate-800 hover:text-slate-600">
+        <a href={withBase('')} class="text-lg font-semibold text-foreground hover:text-secondary-foreground">
           Help Center
         </a>
-        <ul class="flex flex-wrap gap-4 sm:gap-6">
-          <li>
-            <a href={withBase('roadmap')} class="text-slate-600 hover:text-slate-900">Roadmap</a>
-          </li>
-          <li>
-            <a href={withBase('roadmap/status')} class="text-slate-600 hover:text-slate-900">Status</a>
-          </li>
-          <li>
-            <a href={withBase('about')} class="text-slate-600 hover:text-slate-900">About</a>
-          </li>
-          <li>
-            <a href={withBase('user-guide')} class="text-slate-600 hover:text-slate-900">User Guide</a>
-          </li>
-          <li>
-            <a href={withBase('developer-guide')} class="text-slate-600 hover:text-slate-900">Developer Guide</a>
-          </li>
-          <li>
-            <a href={withBase('releases')} class="text-slate-600 hover:text-slate-900">Releases</a>
-          </li>
-        </ul>
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+          <ul class="flex flex-wrap gap-4 sm:gap-6">
+            <li>
+              <a href={withBase('roadmap')} class="text-secondary-foreground hover:text-foreground">Roadmap</a>
+            </li>
+            <li>
+              <a href={withBase('roadmap/status')} class="text-secondary-foreground hover:text-foreground">Status</a>
+            </li>
+            <li>
+              <a href={withBase('about')} class="text-secondary-foreground hover:text-foreground">About</a>
+            </li>
+            <li>
+              <a href={withBase('user-guide')} class="text-secondary-foreground hover:text-foreground">User Guide</a>
+            </li>
+            <li>
+              <a href={withBase('developer-guide')} class="text-secondary-foreground hover:text-foreground">Developer Guide</a>
+            </li>
+            <li>
+              <a href={withBase('releases')} class="text-secondary-foreground hover:text-foreground">Releases</a>
+            </li>
+          </ul>
+          <button
+            id="theme-toggle"
+            type="button"
+            aria-label="Toggle dark mode"
+            aria-pressed="false"
+            class="inline-flex items-center justify-center rounded-full border border-border bg-card p-2 text-secondary-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            <!-- Moon: shown in light mode (click to enable dark) -->
+            <svg class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+            </svg>
+            <!-- Sun: shown in dark mode (click to enable light) -->
+            <svg class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+            </svg>
+          </button>
+        </div>
       </nav>
     </header>
     <main id="main-content" class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <slot />
       {showPageFeedback && <PageFeedback pagePath={Astro.url.pathname} />}
     </main>
+
+    <!-- Toggle wiring. Kept is:inline + byte-stable so its sha256 is CSP-allowlisted. -->
+    <script is:inline>(function(){var b=document.getElementById('theme-toggle'),r=document.documentElement;function s(){if(b)b.setAttribute('aria-pressed',r.classList.contains('dark')?'true':'false');}s();if(b)b.addEventListener('click',function(){var d=!r.classList.contains('dark');r.classList.toggle('dark',d);try{localStorage.setItem('theme',d?'dark':'light');}catch(e){}s();});})();</script>
   </body>
 </html>

@@ -15,7 +15,9 @@ const SECURITY_HEADERS: Record<string, string> = {
     "base-uri 'self'",
     "img-src 'self' data:",
     "style-src 'self' 'unsafe-inline'",
-    "script-src 'self'",
+    // The only inline scripts are BaseLayout's byte-stable theme initializer and
+    // toggle wiring; allowlist them by hash so `script-src` stays free of 'unsafe-inline'.
+    "script-src 'self' 'sha256-uHjSJ6je3geuIxFbjyT/xbLAuzglm3PUZYoWAUrZyto=' 'sha256-/Jz2sqssm9frp4tFtb76t1+WhNWgOwi6Ej5GmSEOzf4='",
     "connect-src 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
