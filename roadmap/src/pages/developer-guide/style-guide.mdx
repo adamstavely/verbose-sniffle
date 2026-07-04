@@ -7,6 +7,7 @@ prose: false
 ---
 
 import { withBase } from '../../lib/site-url';
+import DeveloperGuideIllustration from '../../components/illustrations/DeveloperGuideIllustration.astro';
 
   <p class="mb-8 text-slate-600">
     Reference for the design tokens and patterns used in this project. Colors, typography, and radius follow <strong>Design System v2.1</strong>: a navy <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">primary</code>, a blue <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">accent</code> for links and focus, semantic success/warning/info/danger roles, and the Inter typeface.
@@ -18,6 +19,7 @@ import { withBase } from '../../lib/site-url';
       <li><a href="#brand-colors" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Brand colors</a></li>
       <li><a href="#typography" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Typography</a></li>
       <li><a href="#buttons" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Buttons</a></li>
+      <li><a href="#cards" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Cards</a></li>
       <li><a href="#spacing" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Spacing</a></li>
       <li><a href="#elevation" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Elevation</a></li>
       <li><a href="#icons" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Icons</a></li>
@@ -180,6 +182,44 @@ import { withBase } from '../../lib/site-url';
         Disabled
       </button>
     </div>
+  </section>
+
+  <section id="cards" class="mb-12 scroll-mt-8">
+    <h2 class="mb-4 text-xl font-semibold text-slate-900">Cards</h2>
+    <p class="mb-6 text-slate-600">
+      The Help Center homepage uses centered navigation cards: an illustration, a title, a short description, and an accent call-to-action. Each card is a single <code class="rounded bg-slate-100 px-1 font-mono text-sm">&lt;a&gt;</code> that lifts on hover (<code class="rounded bg-slate-100 px-1 font-mono text-sm">-translate-y-1</code> + <code class="rounded bg-slate-100 px-1 font-mono text-sm">shadow-lg</code>).
+    </p>
+    <div class="grid gap-6 sm:grid-cols-2">
+      <div>
+        <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Default</h3>
+        <a href="#cards" class="group flex flex-col items-center rounded-xl border border-slate-200 bg-white px-7 pt-9 pb-8 text-center shadow-sm transition duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+          <DeveloperGuideIllustration class="h-28 w-28" />
+          <h4 class="mt-6 mb-2.5 text-xl font-bold text-slate-900">Developer Guide</h4>
+          <p class="mb-4 text-sm leading-relaxed text-slate-600">API documentation, integration guides, and technical reference.</p>
+          <span class="text-sm font-semibold text-accent group-hover:text-accent-hover">View docs&nbsp;&rarr;</span>
+        </a>
+      </div>
+      <div>
+        <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Access controlled</h3>
+        <div aria-disabled="true" class="flex flex-col items-center rounded-xl border border-slate-200 bg-white px-7 pt-9 pb-8 text-center shadow-sm">
+          <DeveloperGuideIllustration class="h-28 w-28 opacity-40" />
+          <div class="mt-6 mb-2.5 flex items-center justify-center gap-2">
+            <h4 class="text-xl font-bold text-slate-900">Developer Guide</h4>
+            <span role="img" aria-label="Access controlled — you do not have access" class="inline-flex text-slate-500">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9.5" rx="2.2" fill="currentColor" /><path d="M8 11 V8 a4 4 0 0 1 8 0 V11" stroke="currentColor" stroke-width="2.2" fill="none" /></svg>
+            </span>
+          </div>
+          <p class="mb-4 text-sm leading-relaxed text-slate-600">API documentation, integration guides, and technical reference.</p>
+          <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9.5" rx="2.2" fill="currentColor" /><path d="M8 11 V8 a4 4 0 0 1 8 0 V11" stroke="currentColor" stroke-width="2.2" fill="none" /></svg>
+            Request access
+          </span>
+        </div>
+      </div>
+    </div>
+    <p class="mt-4 text-sm text-slate-600">
+      When a section is gated, fade the illustration to <code class="rounded bg-slate-100 px-1 font-mono text-sm">opacity-40</code>, pair the title with a lock icon, replace the accent CTA with a muted <code class="rounded bg-slate-100 px-1 font-mono text-sm">text-slate-500</code> “Request access”, and drop the hover-lift. Mark the container <code class="rounded bg-slate-100 px-1 font-mono text-sm">aria-disabled="true"</code> and give the lock an accessible label.
+    </p>
   </section>
 
   <section id="spacing" class="mb-12 scroll-mt-8">

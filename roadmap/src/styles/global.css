@@ -33,6 +33,28 @@
   --radius-xl: 12px;
 }
 
+/* Homepage card illustration palette — decorative tints derived from the brand
+   (accent-subtle fields, navy ink, accent details). Kept as CSS vars so the SVG
+   components reference tokens, not raw hex. Light-only, matching the app shell. */
+:root {
+  --ill-bg: var(--color-accent-subtle);
+  --ill-primary: var(--color-accent);
+  --ill-primary-soft: #bbd4f5;
+  --ill-ink: var(--color-primary);
+  --ill-paper: #ffffff;
+  --ill-paper-border: #d7e3f5;
+  --ill-paper-line: #cbd5e1;
+  --ill-hairline: #e2e8f0;
+  --ill-on-primary: #ffffff;
+  --ill-road-dash: #ffffff;
+  --ill-rocket-flame: #bbd4f5;
+  --ill-rocket-flame2: #9ec2f2;
+  --ill-panel: var(--color-primary);
+  --ill-panel-bar: #22406a;
+  --ill-code: #7fb2ff;
+  --ill-code-slash: #ffffff;
+}
+
 /* DS §2.6 — required in all stylesheets. */
 @media (prefers-reduced-motion: reduce) {
   *,
