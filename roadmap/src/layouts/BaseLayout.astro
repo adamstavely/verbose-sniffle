@@ -34,7 +34,6 @@ const footerColumns = [
     ],
   },
 ];
-const year = new Date().getFullYear();
 
 interface Props {
   title: string;
@@ -192,9 +191,6 @@ const showPageFeedback = new Set(['/about', '/user-guide', '/developer-guide']).
               </ul>
             </nav>
           ))}
-        </div>
-        <div class="mt-12 border-t border-border pt-6">
-          <p class="text-xs text-muted-foreground">© {year} Help Center. Incident history retained 90 days.</p>
         </div>
       </div>
     </footer>
