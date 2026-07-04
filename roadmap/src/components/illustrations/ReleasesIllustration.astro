@@ -5,26 +5,19 @@ interface Props {
 
 const { class: className = '' } = Astro.props;
 ---
-<!-- Releases: megaphone - announcements and what's new -->
+<!-- Releases: launching rocket -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 140 90"
+  viewBox="0 0 96 96"
   fill="none"
   class={className}
   aria-hidden="true"
 >
-  <defs>
-    <linearGradient id="releases-megaphone" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="rgb(0 115 230)" />
-      <stop offset="100%" stop-color="rgb(77 163 255)" />
-    </linearGradient>
-  </defs>
-  <!-- Megaphone bell -->
-  <path d="M35 25 L35 65 L95 45 L35 25 Z" fill="url(#releases-megaphone)" stroke="rgb(0 115 230)" stroke-width="1" />
-  <!-- Handle -->
-  <rect x="25" y="38" width="14" height="14" rx="3" fill="url(#releases-megaphone)" stroke="rgb(0 115 230)" stroke-width="1" />
-  <!-- Sound waves -->
-  <path d="M95 38 Q105 45 95 52" stroke="rgb(153 204 255)" stroke-width="2" fill="none" stroke-linecap="round" />
-  <path d="M100 35 Q115 45 100 55" stroke="rgb(153 204 255)" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.8" />
-  <path d="M105 32 Q125 45 105 58" stroke="rgb(153 204 255)" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.6" />
+  <rect x="10" y="12" width="76" height="72" rx="22" fill="var(--ill-bg)" />
+  <path d="M45 60 L38 70 L46 66 Z" fill="var(--ill-rocket-flame2)" />
+  <path d="M48 20 C55 27 57 43 53 57 L43 57 C39 43 41 27 48 20 Z" fill="var(--ill-primary)" />
+  <path d="M43 52 L34 63 L44 58 Z" fill="var(--ill-ink)" />
+  <path d="M53 52 L62 63 L52 58 Z" fill="var(--ill-ink)" />
+  <circle cx="48" cy="37" r="5.2" fill="var(--ill-paper)" stroke="var(--ill-ink)" stroke-width="2" />
+  <path d="M43 58 L48 72 L53 58 Z" fill="var(--ill-rocket-flame)" />
 </svg>

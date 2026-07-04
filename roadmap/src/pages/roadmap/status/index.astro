@@ -45,54 +45,54 @@ const recent = recentIncidents.slice(0, 10);
   description="Platform status: live service health, active issues, scheduled maintenance, and recent incidents."
 >
   <div class="max-w-4xl mx-auto space-y-12">
-    <section class="rounded-xl border border-slate-200 bg-white p-6" aria-labelledby="status-heading">
+    <section class="rounded-xl border border-border bg-card p-6" aria-labelledby="status-heading">
       <div class="flex items-center justify-between gap-4">
-        <h1 id="status-heading" class="text-2xl font-semibold text-slate-900">Platform status</h1>
+        <h1 id="status-heading" class="text-2xl font-semibold text-foreground">Platform status</h1>
         <StatusBadge level={summary.level} variant="pillCompact" />
       </div>
-      <p class="mt-2 text-sm text-slate-600">{summary.overallMessage}</p>
-      <p class="mt-1 text-xs text-slate-400">
+      <p class="mt-2 text-sm text-secondary-foreground">{summary.overallMessage}</p>
+      <p class="mt-1 text-xs text-muted-foreground">
         {summary.environment} · updated {new Date(summary.lastUpdated).toLocaleString()}
       </p>
     </section>
 
     <section aria-labelledby="capabilities-heading">
-      <h2 id="capabilities-heading" class="text-lg font-semibold text-slate-900 mb-3">Service health</h2>
+      <h2 id="capabilities-heading" class="text-lg font-semibold text-foreground mb-3">Service health</h2>
       <Capabilities groups={capabilityGroups} />
     </section>
 
     <section aria-labelledby="uptime-heading">
-      <h2 id="uptime-heading" class="text-lg font-semibold text-slate-900 mb-3">90-day uptime</h2>
+      <h2 id="uptime-heading" class="text-lg font-semibold text-foreground mb-3">90-day uptime</h2>
       {uptime.days.length > 0 ? (
         <UptimeBar data={uptime} />
       ) : (
-        <p class="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-500">
+        <p class="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">
           Uptime data is currently unavailable.
         </p>
       )}
     </section>
 
     <section aria-labelledby="incidents-heading">
-      <h2 id="incidents-heading" class="text-lg font-semibold text-slate-900 mb-3">Known Issues</h2>
+      <h2 id="incidents-heading" class="text-lg font-semibold text-foreground mb-3">Known Issues</h2>
       {incidents.length > 0 ? (
         <>
-          <p class="text-sm text-slate-600 mb-4">
+          <p class="text-sm text-secondary-foreground mb-4">
             Active incidents we're investigating. Workarounds and updates appear below.
           </p>
           <ul class="space-y-4">
             {incidents.map((inc) => (
-              <li class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <li class="rounded-lg border border-border bg-card p-4 shadow-sm">
                 <div class="flex items-center justify-between gap-4">
                   <a
                     href={withBase(`roadmap/status/incidents/${inc.id}`)}
-                    class="link font-medium"
+                    class="font-medium text-foreground hover:text-accent"
                   >
                     {inc.title}
                   </a>
                   <StatusBadge level={inc.level} variant="pillCompact" />
                 </div>
                 {inc.description && (
-                  <p class="mt-2 text-sm text-slate-600">{inc.description}</p>
+                  <p class="mt-2 text-sm text-secondary-foreground">{inc.description}</p>
                 )}
                 {inc.workaround && (
                   <p class="mt-2 text-sm text-warning-strong bg-warning-subtle rounded p-2">
@@ -104,23 +104,23 @@ const recent = recentIncidents.slice(0, 10);
           </ul>
         </>
       ) : (
-        <p class="text-sm text-slate-600">No active incidents.</p>
+        <p class="text-sm text-secondary-foreground">No active incidents.</p>
       )}
     </section>
 
     {activeMaintenance.length > 0 && (
       <section aria-labelledby="maintenance-heading">
-        <h2 id="maintenance-heading" class="text-lg font-semibold text-slate-900 mb-3">
+        <h2 id="maintenance-heading" class="text-lg font-semibold text-foreground mb-3">
           Scheduled maintenance
         </h2>
         <ul class="space-y-3">
           {activeMaintenance.map((m) => (
-            <li class="rounded-lg border border-slate-200 bg-info-subtle p-4">
-              <div class="font-medium text-slate-900">{m.title}</div>
+            <li class="rounded-lg border border-border bg-info-subtle p-4">
+              <div class="font-medium text-foreground">{m.title}</div>
               {m.description && (
-                <p class="mt-1 text-sm text-slate-600">{m.description}</p>
+                <p class="mt-1 text-sm text-secondary-foreground">{m.description}</p>
               )}
-              <p class="mt-2 text-xs text-slate-500">
+              <p class="mt-2 text-xs text-muted-foreground">
                 {new Date(m.scheduledStart).toLocaleString()} – {new Date(m.scheduledEnd).toLocaleString()}
               </p>
             </li>
@@ -131,17 +131,17 @@ const recent = recentIncidents.slice(0, 10);
 
     <section aria-labelledby="external-heading">
       <div class="flex items-center justify-between mb-3">
-        <h2 id="external-heading" class="text-lg font-semibold text-slate-900">Connected services</h2>
-        <a href={withBase('roadmap/status/external-systems')} class="link text-sm">
+        <h2 id="external-heading" class="text-lg font-semibold text-foreground">Connected services</h2>
+        <a href={withBase('roadmap/status/external-systems')} class="text-sm text-accent hover:text-accent-hover">
           View all →
         </a>
       </div>
       <ul class="space-y-2">
         {externalSystems.map((sys) => (
-          <li class="flex items-center justify-between rounded border border-slate-200 bg-white px-4 py-2 text-sm">
+          <li class="flex items-center justify-between rounded border border-border bg-card px-4 py-2 text-sm">
             <div>
-              <span class="font-medium text-slate-900">{sys.name}</span>
-              <span class="ml-2 text-slate-500">{getExternalSystemTypeLabel(sys.type)}</span>
+              <span class="font-medium text-foreground">{sys.name}</span>
+              <span class="ml-2 text-muted-foreground">{getExternalSystemTypeLabel(sys.type)}</span>
             </div>
             <StatusBadge level={sys.level} variant="pillCompact" />
           </li>
@@ -150,14 +150,14 @@ const recent = recentIncidents.slice(0, 10);
     </section>
 
     <section aria-labelledby="recent-heading">
-      <h2 id="recent-heading" class="text-lg font-semibold text-slate-900 mb-3">Recent incidents</h2>
-      <p class="text-sm text-slate-600 mb-4">Resolved incidents from the last 90 days.</p>
+      <h2 id="recent-heading" class="text-lg font-semibold text-foreground mb-3">Recent incidents</h2>
+      <p class="text-sm text-secondary-foreground mb-4">Resolved incidents from the last 90 days.</p>
       <ul class="space-y-2">
         {recent.map((inc) => (
-          <li class="flex items-center justify-between rounded border border-slate-200 bg-white px-4 py-2 text-sm">
+          <li class="flex items-center justify-between rounded border border-border bg-card px-4 py-2 text-sm">
             <div>
-              <span class="text-slate-500">{inc.date}</span>
-              <span class="ml-2 font-medium text-slate-900">{inc.title}</span>
+              <span class="text-muted-foreground">{inc.date}</span>
+              <span class="ml-2 font-medium text-foreground">{inc.title}</span>
             </div>
             <StatusBadge level={inc.severity} variant="pillCompact" />
           </li>
@@ -166,13 +166,13 @@ const recent = recentIncidents.slice(0, 10);
     </section>
 
     <section id="status-subscribe" aria-labelledby="subscribe-heading">
-      <h2 id="subscribe-heading" class="text-lg font-semibold text-slate-900 mb-3">Get incident notifications</h2>
-      <p class="text-sm text-slate-600 mb-4">Enter your email to receive incident and maintenance notifications.</p>
+      <h2 id="subscribe-heading" class="text-lg font-semibold text-foreground mb-3">Get incident notifications</h2>
+      <p class="text-sm text-secondary-foreground mb-4">Enter your email to receive incident and maintenance notifications.</p>
       <SubscribeNotifications result={subscribeResult?.data} />
     </section>
   </div>
 
-  <footer class="max-w-4xl mx-auto pt-8 mt-12 border-t border-slate-200 text-sm text-slate-500">
+  <footer class="max-w-4xl mx-auto pt-8 mt-12 border-t border-border text-sm text-muted-foreground">
     <p>Questions? Contact the Platform team via the #platform-support channel.</p>
     <p class="mt-1">Incident history retained 90 days.</p>
   </footer>

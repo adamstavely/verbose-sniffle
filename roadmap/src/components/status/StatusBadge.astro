@@ -26,7 +26,7 @@ const label = level ? (SHORT_LABELS[level] ?? level) : 'Unknown';
   <span class={getStatusTextClass(level)}>{label}</span>
 ) : (
   <span
-    class="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"
+    class="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted px-2 py-0.5 text-xs font-medium text-secondary-foreground"
     aria-label={label}
   >
     <span class={`w-1.5 h-1.5 rounded-full shrink-0 ${getStatusDotClass(level)}`} />
