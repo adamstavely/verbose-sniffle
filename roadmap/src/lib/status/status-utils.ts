@@ -34,6 +34,6 @@ export function getStatusTextClass(
     case 'MAINTENANCE':
       return 'text-info';
     default:
-      return 'text-slate-600';
+      return 'text-secondary-foreground';
   }
 }

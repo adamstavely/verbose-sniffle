@@ -24,7 +24,7 @@ function getBarClasses(day: UptimeData['days'][number]): string {
 ---
 
 <div
-  class="rounded-lg border border-slate-200 bg-white p-5 md:p-6"
+  class="rounded-lg border border-border bg-card p-5 md:p-6"
   aria-labelledby="uptime-heading"
 >
   <div class="flex items-center mb-3">
@@ -46,7 +46,7 @@ function getBarClasses(day: UptimeData['days'][number]): string {
     ))}
   </div>
   <div class="flex justify-between mt-1.5">
-    <span class="font-mono text-[10px] text-slate-400">90 days ago</span>
-    <span class="font-mono text-[10px] text-slate-400">Today</span>
+    <span class="font-mono text-[10px] text-muted-foreground">90 days ago</span>
+    <span class="font-mono text-[10px] text-muted-foreground">Today</span>
   </div>
 </div>

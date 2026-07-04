@@ -13,7 +13,7 @@ const { question = 'Was this page helpful?', pagePath = Astro.url.pathname, bare
 
 <div
   id="page-feedback"
-  class={bare ? '' : 'mt-12 border-t border-slate-200 pt-8'}
+  class={bare ? '' : 'mt-12 border-t border-border pt-8'}
   role="group"
   aria-labelledby="page-feedback-question"
 >
@@ -23,14 +23,14 @@ const { question = 'Was this page helpful?', pagePath = Astro.url.pathname, bare
     <input type="hidden" name="message" id="page-feedback-msg-hidden" value="" />
   </form>
   <div id="page-feedback-buttons" class={`flex flex-wrap items-center justify-end gap-3 ${bare ? '' : 'w-full'}`}>
-    <p id="page-feedback-question" class="text-sm font-medium text-slate-700">
+    <p id="page-feedback-question" class="text-sm font-medium text-secondary-foreground">
       {question}
     </p>
     <div class="flex gap-1">
       <button
         type="button"
         data-helpful="yes"
-        class="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+        class="rounded-lg border border-border bg-card p-2 text-secondary-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
         aria-label="Yes, this page was helpful"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -41,7 +41,7 @@ const { question = 'Was this page helpful?', pagePath = Astro.url.pathname, bare
       <button
         type="button"
         data-helpful="no"
-        class="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+        class="rounded-lg border border-border bg-card p-2 text-secondary-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
         aria-label="No, this page was not helpful"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -52,7 +52,7 @@ const { question = 'Was this page helpful?', pagePath = Astro.url.pathname, bare
     </div>
   </div>
   <div id="page-feedback-message-wrap" class="mt-4 hidden ml-auto w-full max-w-md">
-    <label for="page-feedback-message" class="mb-2 block text-sm text-slate-600">
+    <label for="page-feedback-message" class="mb-2 block text-sm text-secondary-foreground">
       What could we improve?
     </label>
     <textarea
@@ -61,7 +61,7 @@ const { question = 'Was this page helpful?', pagePath = Astro.url.pathname, bare
       rows="3"
       maxlength="500"
       placeholder="Optional feedback..."
-      class="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+      class="w-full rounded-lg border border-border px-4 py-2 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
     ></textarea>
     <button
       type="button"

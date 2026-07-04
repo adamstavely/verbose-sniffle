@@ -41,23 +41,23 @@ const sortedRequests = [...requests].sort(
       variant={voteSuccess || voteError === 'already_voted' ? 'success' : 'error'}
     />
   )}
-  <h1 class="mb-6 text-2xl font-bold text-slate-900">Roadmap</h1>
-  <p class="mb-8 text-slate-600">
+  <h1 class="mb-6 text-2xl font-bold text-foreground">Roadmap</h1>
+  <p class="mb-8 text-secondary-foreground">
     See what we're planning, vote on features you want, and request new ones.
   </p>
 
   <section class="mb-12">
-    <h2 class="mb-4 text-lg font-semibold text-slate-700">Planned & In Progress</h2>
+    <h2 class="mb-4 text-lg font-semibold text-secondary-foreground">Planned & In Progress</h2>
     <RoadmapList items={roadmapItems} />
   </section>
 
   <section>
-    <h2 class="mb-4 text-lg font-semibold text-slate-700">Feature Requests</h2>
-    <p class="mb-4 text-sm text-slate-600">
+    <h2 class="mb-4 text-lg font-semibold text-secondary-foreground">Feature Requests</h2>
+    <p class="mb-4 text-sm text-secondary-foreground">
       Vote for features you'd like to see. The most requested items rise to the top.
     </p>
     {sortedRequests.length === 0 ? (
-      <p class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-600">
+      <p class="rounded-lg border border-dashed border-border-strong bg-muted p-8 text-center text-secondary-foreground">
         No feature requests yet.
       </p>
     ) : (

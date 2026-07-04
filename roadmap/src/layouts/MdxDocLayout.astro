@@ -34,9 +34,9 @@ const formattedUpdated = lastUpdated
 ---
 
 <BaseLayout title={title} description={description}>
-  <h1 class="mb-2 text-3xl font-bold text-slate-900">{title}</h1>
+  <h1 class="mb-2 text-3xl font-bold text-foreground">{title}</h1>
   {minutesRead && (
-    <p class="mb-6 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
+    <p class="mb-6 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
@@ -52,8 +52,8 @@ const formattedUpdated = lastUpdated
     <slot />
   )}
 
-  <footer class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 pt-6">
-    <p class="text-sm text-slate-500">
+  <footer class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+    <p class="text-sm text-muted-foreground">
       {formattedUpdated ? `Last Updated: ${formattedUpdated}` : ''}
     </p>
     <PageFeedback bare />

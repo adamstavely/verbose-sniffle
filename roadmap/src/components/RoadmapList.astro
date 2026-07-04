@@ -33,18 +33,18 @@ const grouped = sorted.reduce(
 <section class="space-y-8">
   {Object.entries(grouped).map(([status, statusItems]) => (
     <div>
-      <h2 class="mb-4 text-lg font-semibold capitalize text-slate-700">
+      <h2 class="mb-4 text-lg font-semibold capitalize text-secondary-foreground">
         {status.replace('-', ' ')}
       </h2>
       <ul class="space-y-4" role="list">
         {statusItems.map((item) => (
           <li>
-            <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <h3 class="font-medium text-slate-900">{item.data.title}</h3>
-              <p class="mt-1 text-sm text-slate-600">{item.data.description}</p>
+            <article class="rounded-lg border border-border bg-card p-4 shadow-sm">
+              <h3 class="font-medium text-foreground">{item.data.title}</h3>
+              <p class="mt-1 text-sm text-secondary-foreground">{item.data.description}</p>
               <div class="mt-2 flex flex-wrap gap-2">
                 {item.data.targetQuarter && (
-                  <span class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                  <span class="rounded bg-muted px-2 py-0.5 text-xs text-secondary-foreground">
                     {item.data.targetQuarter}
                   </span>
                 )}

@@ -57,8 +57,8 @@ const cards = [
 <BaseLayout title="Help Center" description="Browse guides, releases, and everything about the product.">
   <section class="text-center">
     <p class="text-xs font-semibold uppercase tracking-[0.09em] text-accent">Help Center</p>
-    <h1 class="mt-2.5 text-3xl font-bold tracking-tight text-slate-900">How can we help?</h1>
-    <p class="mt-2 text-[15px] text-slate-600">
+    <h1 class="mt-2.5 text-3xl font-bold tracking-tight text-foreground">How can we help?</h1>
+    <p class="mt-2 text-[15px] text-secondary-foreground">
       Browse guides, releases, and everything about the product.
     </p>
   </section>
@@ -67,11 +67,11 @@ const cards = [
     {cards.map(({ Illustration, title, description, cta, href }) => (
       <a
         href={href}
-        class="group flex flex-col items-center rounded-xl border border-slate-200 bg-white px-7 pt-9 pb-8 text-center shadow-sm transition duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        class="group flex flex-col items-center rounded-xl border border-border bg-card px-7 pt-9 pb-8 text-center shadow-sm transition duration-200 hover:-translate-y-1 hover:border-border-strong hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
       >
         <Illustration class="h-28 w-28" />
-        <h2 class="mt-6 mb-2.5 text-xl font-bold text-slate-900">{title}</h2>
-        <p class="mb-4 text-sm leading-relaxed text-slate-600">{description}</p>
+        <h2 class="mt-6 mb-2.5 text-xl font-bold text-foreground">{title}</h2>
+        <p class="mb-4 text-sm leading-relaxed text-secondary-foreground">{description}</p>
         <span class="text-sm font-semibold text-accent group-hover:text-accent-hover">
           {cta}&nbsp;&rarr;
         </span>

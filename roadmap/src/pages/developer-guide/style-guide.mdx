@@ -9,106 +9,106 @@ prose: false
 import { withBase } from '../../lib/site-url';
 import DeveloperGuideIllustration from '../../components/illustrations/DeveloperGuideIllustration.astro';
 
-  <p class="mb-8 text-slate-600">
-    Reference for the design tokens and patterns used in this project. Colors, typography, and radius follow <strong>Design System v2.1</strong>: a navy <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">primary</code>, a blue <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">accent</code> for links and focus, semantic success/warning/info/danger roles, and the Inter typeface.
+  <p class="mb-8 text-secondary-foreground">
+    Reference for the design tokens and patterns used in this project. Colors, typography, and radius follow <strong>Design System v2.1</strong>: a navy <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">primary</code>, a blue <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">accent</code> for links and focus, semantic success/warning/info/danger roles, and the Inter typeface.
   </p>
 
-  <nav class="mb-10 rounded-lg border border-slate-200 bg-white p-4 text-sm shadow-sm" aria-label="On this page">
-    <p class="mb-2 font-semibold text-slate-800">On this page</p>
-    <ul class="flex flex-wrap gap-x-4 gap-y-1 text-slate-600">
-      <li><a href="#brand-colors" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Brand colors</a></li>
-      <li><a href="#typography" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Typography</a></li>
-      <li><a href="#buttons" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Buttons</a></li>
-      <li><a href="#cards" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Cards</a></li>
-      <li><a href="#spacing" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Spacing</a></li>
-      <li><a href="#elevation" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Elevation</a></li>
-      <li><a href="#icons" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Icons</a></li>
-      <li><a href="#radius-focus-layout" class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Radius, focus, layout</a></li>
+  <nav class="mb-10 rounded-lg border border-border bg-card p-4 text-sm shadow-sm" aria-label="On this page">
+    <p class="mb-2 font-semibold text-foreground">On this page</p>
+    <ul class="flex flex-wrap gap-x-4 gap-y-1 text-secondary-foreground">
+      <li><a href="#brand-colors" class="text-secondary-foreground underline decoration-slate-300 underline-offset-2 hover:text-foreground">Brand colors</a></li>
+      <li><a href="#typography" class="text-secondary-foreground underline decoration-slate-300 underline-offset-2 hover:text-foreground">Typography</a></li>
+      <li><a href="#buttons" class="text-secondary-foreground underline decoration-slate-300 underline-offset-2 hover:text-foreground">Buttons</a></li>
+      <li><a href="#cards" class="text-secondary-foreground underline decoration-slate-300 underline-offset-2 hover:text-foreground">Cards</a></li>
+      <li><a href="#spacing" class="text-secondary-foreground underline decoration-slate-300 underline-offset-2 hover:text-foreground">Spacing</a></li>
+      <li><a href="#elevation" class="text-secondary-foreground underline decoration-slate-300 underline-offset-2 hover:text-foreground">Elevation</a></li>
+      <li><a href="#icons" class="text-secondary-foreground underline decoration-slate-300 underline-offset-2 hover:text-foreground">Icons</a></li>
+      <li><a href="#radius-focus-layout" class="text-secondary-foreground underline decoration-slate-300 underline-offset-2 hover:text-foreground">Radius, focus, layout</a></li>
     </ul>
   </nav>
 
   <section id="brand-colors" class="mb-12 scroll-mt-8">
-    <h2 class="mb-4 text-xl font-semibold text-slate-900">Brand colors</h2>
-    <p class="mb-6 text-slate-600">
-      Brand and semantic colors are Design System v2.1 tokens exposed as Tailwind utilities (<code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">bg-primary</code>, <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">text-accent</code>, etc.). Neutrals use the Tailwind <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800">slate</code> scale.
+    <h2 class="mb-4 text-xl font-semibold text-foreground">Brand colors</h2>
+    <p class="mb-6 text-secondary-foreground">
+      Brand and semantic colors are Design System v2.1 tokens exposed as Tailwind utilities (<code class="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">bg-primary</code>, <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">text-accent</code>, etc.). Neutrals use the Tailwind <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">slate</code> scale.
     </p>
-    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Brand</h3>
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Brand</h3>
     <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
       <div class="text-center">
         <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-primary shadow-sm" />
-        <p class="text-xs font-medium text-slate-800">Primary — CTAs</p>
-        <p class="font-mono text-xs text-slate-500">bg-primary · #1D3557</p>
+        <p class="text-xs font-medium text-foreground">Primary — CTAs</p>
+        <p class="font-mono text-xs text-muted-foreground">bg-primary · #1D3557</p>
       </div>
       <div class="text-center">
         <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-accent shadow-sm" />
-        <p class="text-xs font-medium text-slate-800">Accent — links, focus</p>
-        <p class="font-mono text-xs text-slate-500">bg-accent · #0073E6</p>
+        <p class="text-xs font-medium text-foreground">Accent — links, focus</p>
+        <p class="font-mono text-xs text-muted-foreground">bg-accent · #0073E6</p>
       </div>
       <div class="text-center">
         <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg border border-accent bg-accent-subtle" />
-        <p class="text-xs font-medium text-slate-800">Accent subtle</p>
-        <p class="font-mono text-xs text-slate-500">bg-accent-subtle · #EBF4FF</p>
+        <p class="text-xs font-medium text-foreground">Accent subtle</p>
+        <p class="font-mono text-xs text-muted-foreground">bg-accent-subtle · #EBF4FF</p>
       </div>
     </div>
-    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Semantic</h3>
-    <p class="mb-4 text-sm text-slate-600">
-      Status roles. Each pairs a solid tone with a subtle fill for badges and callouts (see <code class="rounded bg-slate-100 px-1 font-mono text-sm">status-utils.ts</code>).
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Semantic</h3>
+    <p class="mb-4 text-sm text-secondary-foreground">
+      Status roles. Each pairs a solid tone with a subtle fill for badges and callouts (see <code class="rounded bg-muted px-1 font-mono text-sm">status-utils.ts</code>).
     </p>
     <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
       <div class="text-center">
         <div class="mx-auto mb-2 flex h-16 w-full max-w-[7rem] items-center justify-center rounded-lg bg-success-subtle">
           <span class="rounded-md bg-success px-2 py-0.5 text-xs font-medium text-white">Healthy</span>
         </div>
-        <p class="font-mono text-xs text-slate-500">success · #16A34A</p>
+        <p class="font-mono text-xs text-muted-foreground">success · #16A34A</p>
       </div>
       <div class="text-center">
         <div class="mx-auto mb-2 flex h-16 w-full max-w-[7rem] items-center justify-center rounded-lg bg-warning-subtle">
-          <span class="rounded-md bg-warning px-2 py-0.5 text-xs font-medium text-warning-strong">Degraded</span>
+          <span class="rounded-md bg-warning px-2 py-0.5 text-xs font-medium text-slate-900">Degraded</span>
         </div>
-        <p class="font-mono text-xs text-slate-500">warning · #EABA1C</p>
+        <p class="font-mono text-xs text-muted-foreground">warning · #EABA1C</p>
       </div>
       <div class="text-center">
         <div class="mx-auto mb-2 flex h-16 w-full max-w-[7rem] items-center justify-center rounded-lg bg-info-subtle">
           <span class="rounded-md bg-info px-2 py-0.5 text-xs font-medium text-white">Maintenance</span>
         </div>
-        <p class="font-mono text-xs text-slate-500">info · #0EA5E9</p>
+        <p class="font-mono text-xs text-muted-foreground">info · #0EA5E9</p>
       </div>
       <div class="text-center">
         <div class="mx-auto mb-2 flex h-16 w-full max-w-[7rem] items-center justify-center rounded-lg bg-danger-subtle">
           <span class="rounded-md bg-danger px-2 py-0.5 text-xs font-medium text-white">Outage</span>
         </div>
-        <p class="font-mono text-xs text-slate-500">danger · #DC2626</p>
+        <p class="font-mono text-xs text-muted-foreground">danger · #DC2626</p>
       </div>
     </div>
-    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Neutrals</h3>
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Neutrals</h3>
     <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
       <div class="text-center">
-        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg border border-slate-200 bg-white shadow-sm" />
-        <p class="text-xs font-medium text-slate-800">Surface / card</p>
-        <p class="font-mono text-xs text-slate-500">bg-white</p>
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg border border-border bg-card shadow-sm" />
+        <p class="text-xs font-medium text-foreground">Surface / card</p>
+        <p class="font-mono text-xs text-muted-foreground">bg-card</p>
       </div>
       <div class="text-center">
-        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg border border-slate-200 bg-slate-50" />
-        <p class="text-xs font-medium text-slate-800">Page background</p>
-        <p class="font-mono text-xs text-slate-500">bg-slate-50</p>
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg border border-border bg-muted" />
+        <p class="text-xs font-medium text-foreground">Page background</p>
+        <p class="font-mono text-xs text-muted-foreground">bg-muted</p>
       </div>
       <div class="text-center">
-        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-slate-200" />
-        <p class="text-xs font-medium text-slate-800">Border / divider</p>
-        <p class="font-mono text-xs text-slate-500">border-slate-200</p>
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-border" />
+        <p class="text-xs font-medium text-foreground">Border / divider</p>
+        <p class="font-mono text-xs text-muted-foreground">border-border</p>
       </div>
       <div class="text-center">
-        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-slate-600" />
-        <p class="text-xs font-medium text-slate-800">Muted text / nav</p>
-        <p class="font-mono text-xs text-slate-500">text-slate-600</p>
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-secondary-foreground" />
+        <p class="text-xs font-medium text-foreground">Muted text / nav</p>
+        <p class="font-mono text-xs text-muted-foreground">text-secondary-foreground</p>
       </div>
       <div class="text-center">
-        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-slate-900" />
-        <p class="text-xs font-medium text-slate-800">Primary text / emphasis</p>
-        <p class="font-mono text-xs text-slate-500">text-slate-900</p>
+        <div class="mx-auto mb-2 h-16 w-full max-w-[7rem] rounded-lg bg-foreground" />
+        <p class="text-xs font-medium text-foreground">Primary text / emphasis</p>
+        <p class="font-mono text-xs text-muted-foreground">text-foreground</p>
       </div>
     </div>
-    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Slate scale</h3>
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Slate scale</h3>
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-5 md:grid-cols-10">
       {[
         { token: 'slate-50', swatch: 'bg-slate-50' },
@@ -123,111 +123,111 @@ import DeveloperGuideIllustration from '../../components/illustrations/Developer
         { token: 'slate-900', swatch: 'bg-slate-900' },
       ].map(({ token, swatch }) => (
         <div key={token} class="text-center">
-          <div class={`mx-auto mb-1.5 h-14 w-full max-w-[5rem] rounded-md border border-slate-200/80 ${swatch}`} />
-          <p class="font-mono text-[10px] text-slate-500">{token}</p>
+          <div class={`mx-auto mb-1.5 h-14 w-full max-w-[5rem] rounded-md border border-border/80 ${swatch}`} />
+          <p class="font-mono text-[10px] text-muted-foreground">{token}</p>
         </div>
       ))}
     </div>
   </section>
 
   <section id="typography" class="mb-12 scroll-mt-8">
-    <h2 class="mb-4 text-xl font-semibold text-slate-900">Typography</h2>
-    <p class="mb-6 text-slate-600">
+    <h2 class="mb-4 text-xl font-semibold text-foreground">Typography</h2>
+    <p class="mb-6 text-secondary-foreground">
       The type family is <strong>Inter</strong> (self-hosted variable font, same-origin for CSP), with JetBrains Mono for code. Use weight and size utilities for hierarchy.
     </p>
-    <div class="mb-6 space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-      <p class="text-2xl font-bold text-slate-900">Heading level — text-2xl font-bold</p>
-      <p class="text-xl font-semibold text-slate-900">Section title — text-xl font-semibold</p>
-      <p class="text-lg font-semibold text-slate-800">Subsection — text-lg font-semibold</p>
-      <p class="text-base text-slate-900">Body — text-base (default)</p>
-      <p class="text-sm text-slate-600">Secondary / caption — text-sm text-slate-600</p>
-      <p class="text-xs text-slate-500">Meta — text-xs text-slate-500</p>
-      <p class="font-mono text-sm text-slate-800">
-        <span class="text-slate-500">Code / tokens —</span> font-mono text-sm
+    <div class="mb-6 space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+      <p class="text-2xl font-bold text-foreground">Heading level — text-2xl font-bold</p>
+      <p class="text-xl font-semibold text-foreground">Section title — text-xl font-semibold</p>
+      <p class="text-lg font-semibold text-foreground">Subsection — text-lg font-semibold</p>
+      <p class="text-base text-foreground">Body — text-base (default)</p>
+      <p class="text-sm text-secondary-foreground">Secondary / caption — text-sm text-secondary-foreground</p>
+      <p class="text-xs text-muted-foreground">Meta — text-xs text-muted-foreground</p>
+      <p class="font-mono text-sm text-foreground">
+        <span class="text-muted-foreground">Code / tokens —</span> font-mono text-sm
       </p>
     </div>
-    <div class="overflow-x-auto rounded-lg border border-slate-200">
+    <div class="overflow-x-auto rounded-lg border border-border">
       <table class="w-full min-w-[28rem] text-left text-sm">
-        <thead class="border-b border-slate-200 bg-slate-50">
+        <thead class="border-b border-border bg-muted">
           <tr>
-            <th class="px-4 py-2 font-semibold text-slate-800">Role</th>
-            <th class="px-4 py-2 font-semibold text-slate-800">Classes</th>
+            <th class="px-4 py-2 font-semibold text-foreground">Role</th>
+            <th class="px-4 py-2 font-semibold text-foreground">Classes</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 bg-white text-slate-700">
-          <tr><td class="px-4 py-2">Page title</td><td class="px-4 py-2 font-mono text-xs">text-2xl font-bold text-slate-900</td></tr>
-          <tr><td class="px-4 py-2">Section heading</td><td class="px-4 py-2 font-mono text-xs">text-xl font-semibold text-slate-900</td></tr>
-          <tr><td class="px-4 py-2">Body</td><td class="px-4 py-2 font-mono text-xs">text-base text-slate-900</td></tr>
-          <tr><td class="px-4 py-2">Muted</td><td class="px-4 py-2 font-mono text-xs">text-slate-600</td></tr>
-          <tr><td class="px-4 py-2">Inline code</td><td class="px-4 py-2 font-mono text-xs">font-mono text-sm + bg-slate-100</td></tr>
+        <tbody class="divide-y divide-border bg-card text-secondary-foreground">
+          <tr><td class="px-4 py-2">Page title</td><td class="px-4 py-2 font-mono text-xs">text-2xl font-bold text-foreground</td></tr>
+          <tr><td class="px-4 py-2">Section heading</td><td class="px-4 py-2 font-mono text-xs">text-xl font-semibold text-foreground</td></tr>
+          <tr><td class="px-4 py-2">Body</td><td class="px-4 py-2 font-mono text-xs">text-base text-foreground</td></tr>
+          <tr><td class="px-4 py-2">Muted</td><td class="px-4 py-2 font-mono text-xs">text-secondary-foreground</td></tr>
+          <tr><td class="px-4 py-2">Inline code</td><td class="px-4 py-2 font-mono text-xs">font-mono text-sm + bg-muted</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
   <section id="buttons" class="mb-12 scroll-mt-8">
-    <h2 class="mb-4 text-xl font-semibold text-slate-900">Buttons</h2>
-    <p class="mb-4 text-slate-600">Common patterns using native <code class="rounded bg-slate-100 px-1 font-mono text-sm">&lt;button&gt;</code> elements.</p>
-    <div class="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-      <button type="button" class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
+    <h2 class="mb-4 text-xl font-semibold text-foreground">Buttons</h2>
+    <p class="mb-4 text-secondary-foreground">Common patterns using native <code class="rounded bg-muted px-1 font-mono text-sm">&lt;button&gt;</code> elements.</p>
+    <div class="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-6 shadow-sm">
+      <button type="button" class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 dark:text-slate-900">
         Primary
       </button>
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
+      <button type="button" class="rounded-md border border-border-strong bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
         Secondary
       </button>
-      <button type="button" class="rounded-md px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
+      <button type="button" class="rounded-md px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
         Ghost
       </button>
-      <button type="button" disabled class="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-500">
+      <button type="button" disabled class="cursor-not-allowed rounded-lg bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
         Disabled
       </button>
     </div>
   </section>
 
   <section id="cards" class="mb-12 scroll-mt-8">
-    <h2 class="mb-4 text-xl font-semibold text-slate-900">Cards</h2>
-    <p class="mb-6 text-slate-600">
-      The Help Center homepage uses centered navigation cards: an illustration, a title, a short description, and an accent call-to-action. Each card is a single <code class="rounded bg-slate-100 px-1 font-mono text-sm">&lt;a&gt;</code> that lifts on hover (<code class="rounded bg-slate-100 px-1 font-mono text-sm">-translate-y-1</code> + <code class="rounded bg-slate-100 px-1 font-mono text-sm">shadow-lg</code>).
+    <h2 class="mb-4 text-xl font-semibold text-foreground">Cards</h2>
+    <p class="mb-6 text-secondary-foreground">
+      The Help Center homepage uses centered navigation cards: an illustration, a title, a short description, and an accent call-to-action. Each card is a single <code class="rounded bg-muted px-1 font-mono text-sm">&lt;a&gt;</code> that lifts on hover (<code class="rounded bg-muted px-1 font-mono text-sm">-translate-y-1</code> + <code class="rounded bg-muted px-1 font-mono text-sm">shadow-lg</code>).
     </p>
     <div class="grid gap-6 sm:grid-cols-2">
       <div>
-        <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Default</h3>
-        <a href="#cards" class="group flex flex-col items-center rounded-xl border border-slate-200 bg-white px-7 pt-9 pb-8 text-center shadow-sm transition duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+        <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Default</h3>
+        <a href="#cards" class="group flex flex-col items-center rounded-xl border border-border bg-card px-7 pt-9 pb-8 text-center shadow-sm transition duration-200 hover:-translate-y-1 hover:border-border-strong hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
           <DeveloperGuideIllustration class="h-28 w-28" />
-          <h4 class="mt-6 mb-2.5 text-xl font-bold text-slate-900">Developer Guide</h4>
-          <p class="mb-4 text-sm leading-relaxed text-slate-600">API documentation, integration guides, and technical reference.</p>
+          <h4 class="mt-6 mb-2.5 text-xl font-bold text-foreground">Developer Guide</h4>
+          <p class="mb-4 text-sm leading-relaxed text-secondary-foreground">API documentation, integration guides, and technical reference.</p>
           <span class="text-sm font-semibold text-accent group-hover:text-accent-hover">View docs&nbsp;&rarr;</span>
         </a>
       </div>
       <div>
-        <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Access controlled</h3>
-        <div aria-disabled="true" class="flex flex-col items-center rounded-xl border border-slate-200 bg-white px-7 pt-9 pb-8 text-center shadow-sm">
+        <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Access controlled</h3>
+        <div aria-disabled="true" class="flex flex-col items-center rounded-xl border border-border bg-card px-7 pt-9 pb-8 text-center shadow-sm">
           <DeveloperGuideIllustration class="h-28 w-28 opacity-40" />
           <div class="mt-6 mb-2.5 flex items-center justify-center gap-2">
-            <h4 class="text-xl font-bold text-slate-900">Developer Guide</h4>
-            <span role="img" aria-label="Access controlled — you do not have access" class="inline-flex text-slate-500">
+            <h4 class="text-xl font-bold text-foreground">Developer Guide</h4>
+            <span role="img" aria-label="Access controlled — you do not have access" class="inline-flex text-muted-foreground">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9.5" rx="2.2" fill="currentColor" /><path d="M8 11 V8 a4 4 0 0 1 8 0 V11" stroke="currentColor" stroke-width="2.2" fill="none" /></svg>
             </span>
           </div>
-          <p class="mb-4 text-sm leading-relaxed text-slate-600">API documentation, integration guides, and technical reference.</p>
-          <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500">
+          <p class="mb-4 text-sm leading-relaxed text-secondary-foreground">API documentation, integration guides, and technical reference.</p>
+          <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9.5" rx="2.2" fill="currentColor" /><path d="M8 11 V8 a4 4 0 0 1 8 0 V11" stroke="currentColor" stroke-width="2.2" fill="none" /></svg>
             Request access
           </span>
         </div>
       </div>
     </div>
-    <p class="mt-4 text-sm text-slate-600">
-      When a section is gated, fade the illustration to <code class="rounded bg-slate-100 px-1 font-mono text-sm">opacity-40</code>, pair the title with a lock icon, replace the accent CTA with a muted <code class="rounded bg-slate-100 px-1 font-mono text-sm">text-slate-500</code> “Request access”, and drop the hover-lift. Mark the container <code class="rounded bg-slate-100 px-1 font-mono text-sm">aria-disabled="true"</code> and give the lock an accessible label.
+    <p class="mt-4 text-sm text-secondary-foreground">
+      When a section is gated, fade the illustration to <code class="rounded bg-muted px-1 font-mono text-sm">opacity-40</code>, pair the title with a lock icon, replace the accent CTA with a muted <code class="rounded bg-muted px-1 font-mono text-sm">text-muted-foreground</code> “Request access”, and drop the hover-lift. Mark the container <code class="rounded bg-muted px-1 font-mono text-sm">aria-disabled="true"</code> and give the lock an accessible label.
     </p>
   </section>
 
   <section id="spacing" class="mb-12 scroll-mt-8">
-    <h2 class="mb-4 text-xl font-semibold text-slate-900">Spacing</h2>
-    <p class="mb-6 text-slate-600">
-      Tailwind spacing scale (multiples of <code class="rounded bg-slate-100 px-1 font-mono text-sm">0.25rem</code>). Main content uses horizontal padding <code class="rounded bg-slate-100 px-1 font-mono text-sm">px-4 sm:px-6</code> and vertical <code class="rounded bg-slate-100 px-1 font-mono text-sm">py-8</code>.
+    <h2 class="mb-4 text-xl font-semibold text-foreground">Spacing</h2>
+    <p class="mb-6 text-secondary-foreground">
+      Tailwind spacing scale (multiples of <code class="rounded bg-muted px-1 font-mono text-sm">0.25rem</code>). Main content uses horizontal padding <code class="rounded bg-muted px-1 font-mono text-sm">px-4 sm:px-6</code> and vertical <code class="rounded bg-muted px-1 font-mono text-sm">py-8</code>.
     </p>
-    <div class="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
       {[
         { label: 'p-2', cls: 'p-2' },
         { label: 'p-4', cls: 'p-4' },
@@ -235,15 +235,15 @@ import DeveloperGuideIllustration from '../../components/illustrations/Developer
         { label: 'p-8', cls: 'p-8' },
       ].map((row) => (
         <div key={row.label} class="flex items-center gap-4">
-          <span class="w-14 shrink-0 font-mono text-xs text-slate-500">{row.label}</span>
-          <div class={`inline-flex rounded-md border border-slate-200 bg-slate-100 ${row.cls}`}>
+          <span class="w-14 shrink-0 font-mono text-xs text-muted-foreground">{row.label}</span>
+          <div class={`inline-flex rounded-md border border-border bg-muted ${row.cls}`}>
             <span class="block h-6 w-6 rounded bg-slate-400" />
           </div>
         </div>
       ))}
       <div class="flex items-center gap-4 pt-2">
-        <span class="w-14 shrink-0 font-mono text-xs text-slate-500">gap-4</span>
-        <div class="inline-flex gap-4 rounded-md border border-dashed border-slate-300 p-2">
+        <span class="w-14 shrink-0 font-mono text-xs text-muted-foreground">gap-4</span>
+        <div class="inline-flex gap-4 rounded-md border border-dashed border-border-strong p-2">
           <span class="h-8 w-8 rounded bg-slate-300" />
           <span class="h-8 w-8 rounded bg-slate-300" />
           <span class="h-8 w-8 rounded bg-slate-300" />
@@ -253,34 +253,34 @@ import DeveloperGuideIllustration from '../../components/illustrations/Developer
   </section>
 
   <section id="elevation" class="mb-12 scroll-mt-8">
-    <h2 class="mb-4 text-xl font-semibold text-slate-900">Elevation</h2>
-    <p class="mb-6 text-slate-600">Combine light borders with shadows for cards and interactive surfaces.</p>
+    <h2 class="mb-4 text-xl font-semibold text-foreground">Elevation</h2>
+    <p class="mb-6 text-secondary-foreground">Combine light borders with shadows for cards and interactive surfaces.</p>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="rounded-lg border border-slate-200 bg-white p-4">
-        <p class="mb-1 text-sm font-medium text-slate-800">Border only</p>
-        <p class="font-mono text-xs text-slate-500">border border-slate-200</p>
+      <div class="rounded-lg border border-border bg-card p-4">
+        <p class="mb-1 text-sm font-medium text-foreground">Border only</p>
+        <p class="font-mono text-xs text-muted-foreground">border border-border</p>
       </div>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <p class="mb-1 text-sm font-medium text-slate-800">Subtle</p>
-        <p class="font-mono text-xs text-slate-500">shadow-sm</p>
+      <div class="rounded-lg border border-border bg-card p-4 shadow-sm">
+        <p class="mb-1 text-sm font-medium text-foreground">Subtle</p>
+        <p class="font-mono text-xs text-muted-foreground">shadow-sm</p>
       </div>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-md">
-        <p class="mb-1 text-sm font-medium text-slate-800">Raised</p>
-        <p class="font-mono text-xs text-slate-500">shadow-md</p>
+      <div class="rounded-lg border border-border bg-card p-4 shadow-md">
+        <p class="mb-1 text-sm font-medium text-foreground">Raised</p>
+        <p class="font-mono text-xs text-muted-foreground">shadow-md</p>
       </div>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-lg">
-        <p class="mb-1 text-sm font-medium text-slate-800">Modal / emphasis</p>
-        <p class="font-mono text-xs text-slate-500">shadow-lg</p>
+      <div class="rounded-lg border border-border bg-card p-4 shadow-lg">
+        <p class="mb-1 text-sm font-medium text-foreground">Modal / emphasis</p>
+        <p class="font-mono text-xs text-muted-foreground">shadow-lg</p>
       </div>
     </div>
   </section>
 
   <section id="icons" class="mb-12 scroll-mt-8">
-    <h2 class="mb-4 text-xl font-semibold text-slate-900">Icons</h2>
-    <p class="mb-4 text-slate-600">
-      Icons are inline <code class="rounded bg-slate-100 px-1 font-mono text-sm">&lt;svg&gt;</code> elements rendered directly in Astro components (see <code class="rounded bg-slate-100 px-1 font-mono text-sm">src/components/illustrations/</code>). Size them with Tailwind (<code class="rounded bg-slate-100 px-1 font-mono text-sm">h-4 w-4</code>, <code class="rounded bg-slate-100 px-1 font-mono text-sm">h-5 w-5</code>, etc.) and set color via <code class="rounded bg-slate-100 px-1 font-mono text-sm">currentColor</code>. Prefer <code class="rounded bg-slate-100 px-1 font-mono text-sm">stroke-[1.5]</code> or default stroke for consistency.
+    <h2 class="mb-4 text-xl font-semibold text-foreground">Icons</h2>
+    <p class="mb-4 text-secondary-foreground">
+      Icons are inline <code class="rounded bg-muted px-1 font-mono text-sm">&lt;svg&gt;</code> elements rendered directly in Astro components (see <code class="rounded bg-muted px-1 font-mono text-sm">src/components/illustrations/</code>). Size them with Tailwind (<code class="rounded bg-muted px-1 font-mono text-sm">h-4 w-4</code>, <code class="rounded bg-muted px-1 font-mono text-sm">h-5 w-5</code>, etc.) and set color via <code class="rounded bg-muted px-1 font-mono text-sm">currentColor</code>. Prefer <code class="rounded bg-muted px-1 font-mono text-sm">stroke-[1.5]</code> or default stroke for consistency.
     </p>
-    <div class="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-6 text-slate-700 shadow-sm" aria-hidden="true">
+    <div class="flex items-center gap-3 rounded-lg border border-border bg-card p-6 text-secondary-foreground shadow-sm" aria-hidden="true">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
       </svg>
@@ -292,46 +292,46 @@ import DeveloperGuideIllustration from '../../components/illustrations/Developer
         <path d="M12 16v-4" />
         <path d="M12 8h.01" />
       </svg>
-      <span class="text-sm text-slate-500">Static stroke icons (Lucide-style)</span>
+      <span class="text-sm text-muted-foreground">Static stroke icons (Lucide-style)</span>
     </div>
   </section>
 
   <section id="radius-focus-layout" class="mb-8 scroll-mt-8">
-    <h2 class="mb-4 text-xl font-semibold text-slate-900">Border radius, focus, and layout</h2>
+    <h2 class="mb-4 text-xl font-semibold text-foreground">Border radius, focus, and layout</h2>
     <div class="space-y-8">
       <div>
-        <h3 class="mb-3 text-sm font-semibold text-slate-800">Border radius</h3>
+        <h3 class="mb-3 text-sm font-semibold text-foreground">Border radius</h3>
         <div class="flex flex-wrap gap-4">
           <div class="flex flex-col items-center gap-2">
-            <div class="h-14 w-14 border border-slate-300 bg-slate-100 rounded-sm" />
-            <span class="font-mono text-xs text-slate-500">rounded-sm</span>
+            <div class="h-14 w-14 border border-border-strong bg-muted rounded-sm" />
+            <span class="font-mono text-xs text-muted-foreground">rounded-sm</span>
           </div>
           <div class="flex flex-col items-center gap-2">
-            <div class="h-14 w-14 border border-slate-300 bg-slate-100 rounded-lg" />
-            <span class="font-mono text-xs text-slate-500">rounded-lg</span>
+            <div class="h-14 w-14 border border-border-strong bg-muted rounded-lg" />
+            <span class="font-mono text-xs text-muted-foreground">rounded-lg</span>
           </div>
           <div class="flex flex-col items-center gap-2">
-            <div class="h-14 w-14 border border-slate-300 bg-slate-100 rounded-full" />
-            <span class="font-mono text-xs text-slate-500">rounded-full</span>
+            <div class="h-14 w-14 border border-border-strong bg-muted rounded-full" />
+            <span class="font-mono text-xs text-muted-foreground">rounded-full</span>
           </div>
         </div>
       </div>
       <div>
-        <h3 class="mb-3 text-sm font-semibold text-slate-800">Focus rings</h3>
-        <p class="mb-3 text-sm text-slate-600">Use visible focus styles for keyboard users. Focus rings use the <code class="rounded bg-slate-100 px-1 font-mono text-sm">accent</code> color system-wide.</p>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
+        <h3 class="mb-3 text-sm font-semibold text-foreground">Focus rings</h3>
+        <p class="mb-3 text-sm text-secondary-foreground">Use visible focus styles for keyboard users. Focus rings use the <code class="rounded bg-muted px-1 font-mono text-sm">accent</code> color system-wide.</p>
+        <button type="button" class="rounded-md border border-border-strong bg-card px-4 py-2 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
           Focus me (Tab)
         </button>
       </div>
       <div>
-        <h3 class="mb-3 text-sm font-semibold text-slate-800">Layout width</h3>
-        <p class="text-sm text-slate-600">
-          Main column aligns to <code class="rounded bg-slate-100 px-1 font-mono text-sm">max-w-4xl</code> with horizontal padding, matching the site shell.
+        <h3 class="mb-3 text-sm font-semibold text-foreground">Layout width</h3>
+        <p class="text-sm text-secondary-foreground">
+          Main column aligns to <code class="rounded bg-muted px-1 font-mono text-sm">max-w-4xl</code> with horizontal padding, matching the site shell.
         </p>
       </div>
     </div>
   </section>
 
-<p class="text-sm text-slate-500">
-  <a href={withBase('developer-guide')} class="text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900">Back to Developer Guide</a>
+<p class="text-sm text-muted-foreground">
+  <a href={withBase('developer-guide')} class="text-secondary-foreground underline decoration-slate-300 underline-offset-2 hover:text-foreground">Back to Developer Guide</a>
 </p>
