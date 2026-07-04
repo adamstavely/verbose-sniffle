@@ -3,8 +3,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import DocList from '../components/DocList.astro';
 import { getNavTree } from '../lib/nav';
 
-const ug = (await getNavTree()).groups.find((g) => g.slug === 'user-guide');
-const categories = ug?.categories ?? [];
+const ug = (await getNavTree()).items.find(
+  (i) => i.kind === 'group' && i.slug === 'user-guide'
+);
+const categories = ug && ug.kind === 'group' ? ug.categories ?? [] : [];
 ---
 
 <BaseLayout title="User Guide - Help Center" description="How to use the product, organized the Diátaxis way.">

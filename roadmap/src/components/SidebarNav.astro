@@ -16,6 +16,12 @@ const isActive = (url: string) => stripSlash(url) === here;
 const flatActive = (match: string) =>
   match === '/roadmap' ? here === '/roadmap' : here === match;
 
+// Shared style for the six top-level items (all uppercase).
+const topBase =
+  'rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors';
+const topOn = 'bg-accent-subtle text-accent';
+const topOff = 'text-secondary-foreground hover:bg-muted hover:text-foreground';
+
 const linkBase = 'block rounded-md px-3 py-1.5 text-sm transition-colors';
 const on = 'bg-accent-subtle text-accent font-medium';
 const off = 'text-secondary-foreground hover:bg-muted hover:text-foreground';
@@ -23,77 +29,75 @@ const chevron =
   'M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.21 6.29a.75.75 0 111.02-1.1l4.5 4.25a.75.75 0 010 1.06l-4.5 4.25a.75.75 0 01-1.02-.02z';
 ---
 
-<nav aria-label="Sections" class="space-y-2">
-  <ul class="space-y-0.5">
-    {tree.flat.map((l) => (
-      <li>
-        <a
-          href={l.href}
-          class={`${linkBase} ${flatActive(l.match) ? on : off}`}
-          aria-current={flatActive(l.match) ? 'page' : undefined}
-        >
-          {l.label}
-        </a>
-      </li>
-    ))}
-  </ul>
+<nav aria-label="Sections" class="space-y-1">
+  {tree.items.map((item) =>
+    item.kind === 'link' ? (
+      <a
+        href={item.href}
+        class={`block ${topBase} ${flatActive(item.match) ? topOn : topOff}`}
+        aria-current={flatActive(item.match) ? 'page' : undefined}
+      >
+        {item.label}
+      </a>
+    ) : (
+      (() => {
+        const groupOpen = activeSection === item.slug;
+        return (
+          <details class="group" open={groupOpen}>
+            <summary class={`flex cursor-pointer list-none items-center justify-between ${topBase} ${groupOpen ? 'text-accent' : topOff} [&::-webkit-details-marker]:hidden`}>
+              <span>{item.name}</span>
+              <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 shrink-0 transition-transform group-open:rotate-90" aria-hidden="true">
+                <path fill-rule="evenodd" d={chevron} clip-rule="evenodd" />
+              </svg>
+            </summary>
 
-  {tree.groups.map((g) => {
-    const groupOpen = activeSection === g.slug;
-    return (
-      <details class="group" open={groupOpen}>
-        <summary class="flex cursor-pointer list-none items-center justify-between rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:bg-muted [&::-webkit-details-marker]:hidden">
-          <span>{g.name}</span>
-          <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 shrink-0 transition-transform group-open:rotate-90" aria-hidden="true">
-            <path fill-rule="evenodd" d={chevron} clip-rule="evenodd" />
-          </svg>
-        </summary>
+            {item.pages && (
+              <ul class="mt-0.5 mb-1 space-y-0.5 border-l border-border pl-2">
+                <li>
+                  <a href={item.href} class={`${linkBase} ${isActive(item.href) ? on : off}`} aria-current={isActive(item.href) ? 'page' : undefined}>
+                    Overview
+                  </a>
+                </li>
+                {item.pages.map((p) => (
+                  <li>
+                    <a href={p.url} class={`${linkBase} ${isActive(p.url) ? on : off}`} aria-current={isActive(p.url) ? 'page' : undefined}>
+                      {p.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
 
-        {g.pages && (
-          <ul class="mt-0.5 mb-1 space-y-0.5 border-l border-border pl-2">
-            <li>
-              <a href={g.href} class={`${linkBase} ${isActive(g.href) ? on : off}`} aria-current={isActive(g.href) ? 'page' : undefined}>
-                Overview
-              </a>
-            </li>
-            {g.pages.map((p) => (
-              <li>
-                <a href={p.url} class={`${linkBase} ${isActive(p.url) ? on : off}`} aria-current={isActive(p.url) ? 'page' : undefined}>
-                  {p.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {g.categories && (
-          <div class="mt-0.5 mb-1 space-y-0.5 border-l border-border pl-2">
-            {g.categories.map((c) => (
-              <details class="group/cat" open={groupOpen && activeCategory === c.slug}>
-                <summary class="flex cursor-pointer list-none items-center justify-between rounded-md px-3 py-1.5 text-sm text-secondary-foreground hover:bg-muted [&::-webkit-details-marker]:hidden">
-                  <span>{c.name}</span>
-                  <svg viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5 shrink-0 transition-transform group-open/cat:rotate-90" aria-hidden="true">
-                    <path fill-rule="evenodd" d={chevron} clip-rule="evenodd" />
-                  </svg>
-                </summary>
-                {c.pages.length > 0 ? (
-                  <ul class="space-y-0.5 border-l border-border pl-2">
-                    {c.pages.map((p) => (
-                      <li>
-                        <a href={p.url} class={`${linkBase} ${isActive(p.url) ? on : off}`} aria-current={isActive(p.url) ? 'page' : undefined}>
-                          {p.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p class="px-3 py-1 text-xs text-muted-foreground">Coming soon</p>
-                )}
-              </details>
-            ))}
-          </div>
-        )}
-      </details>
-    );
-  })}
+            {item.categories && (
+              <div class="mt-0.5 mb-1 space-y-0.5 border-l border-border pl-2">
+                {item.categories.map((c) => (
+                  <details class="group/cat" open={groupOpen && activeCategory === c.slug}>
+                    <summary class="flex cursor-pointer list-none items-center justify-between rounded-md px-3 py-1.5 text-sm text-secondary-foreground hover:bg-muted [&::-webkit-details-marker]:hidden">
+                      <span>{c.name}</span>
+                      <svg viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5 shrink-0 transition-transform group-open/cat:rotate-90" aria-hidden="true">
+                        <path fill-rule="evenodd" d={chevron} clip-rule="evenodd" />
+                      </svg>
+                    </summary>
+                    {c.pages.length > 0 ? (
+                      <ul class="space-y-0.5 border-l border-border pl-2">
+                        {c.pages.map((p) => (
+                          <li>
+                            <a href={p.url} class={`${linkBase} ${isActive(p.url) ? on : off}`} aria-current={isActive(p.url) ? 'page' : undefined}>
+                              {p.title}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p class="px-3 py-1 text-xs text-muted-foreground">Coming soon</p>
+                    )}
+                  </details>
+                ))}
+              </div>
+            )}
+          </details>
+        );
+      })()
+    )
+  )}
 </nav>
