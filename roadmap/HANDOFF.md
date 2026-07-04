@@ -7,10 +7,9 @@ create, the complete environment-variable reference, and everything that is
 currently stubbed, placeholder, or outstanding.
 
 For **content editing** (guides, releases, roadmap, status, etc.) see
-[`CONTENT_GUIDE.md`](./CONTENT_GUIDE.md). For deep operational references see the
-four topic guides in this folder — but read the [Documentation map](#documentation-map--accuracy)
-section below first, because some of them contain stale details that this
-document corrects.
+[`CONTENT_GUIDE.md`](./CONTENT_GUIDE.md). For a deep operational reference on the
+Elasticsearch integration see [`ELASTICSEARCH_GUIDE.md`](./ELASTICSEARCH_GUIDE.md)
+in this folder.
 
 ---
 
@@ -18,9 +17,8 @@ document corrects.
 
 A **Help Center** web app for the platform: a documentation site (User Guide,
 Developer Guide, About), a **Release Notes** changelog, a **Product Roadmap**
-with community voting, and a live **System Status** page with incident/email
-subscriptions. It is a polished, accessible front end backed by Elasticsearch
-for the dynamic data.
+with community voting, and a live **System Status** page. It is a polished,
+accessible front end backed by Elasticsearch for the dynamic data.
 
 The entire application lives in the **`roadmap/`** subdirectory of the repo
 (historical name). The git repository root is one level up.
@@ -37,12 +35,11 @@ The entire application lives in the **`roadmap/`** subdirectory of the repo
 | `/about`, `/about/*` | About pages | static (MDX) |
 | `/releases` | Release Notes changelog (+ `/rss.xml`) | static |
 | `/roadmap` | Product Roadmap + feature-request **voting** | **on-demand** |
-| `/roadmap/status` | System Status hub + email **subscribe** | **on-demand** |
+| `/roadmap/status` | System Status hub | **on-demand** |
 | `/roadmap/status/incidents/<id>` | Incident detail | static (SSG) |
 | `/roadmap/status/external-systems`, `/roadmap/status/workspaces/<id>` | Status detail | **on-demand** |
 | `/tags`, `/tags/<slug>` | Doc tag browser | static |
 | `/search` | Pagefind full-text search | static (index is a build artifact) |
-| `/api/notify/run` | Authenticated webhook that sends incident emails | **on-demand** (POST only) |
 
 ---
 
@@ -55,8 +52,8 @@ The entire application lives in the **`roadmap/`** subdirectory of the repo
 | Styling | **Tailwind CSS v4** (`@tailwindcss/vite`, no `tailwind.config.js`) — all config is CSS-native in `src/styles/global.css` via `@theme`. Design System v2.1 tokens, class-based dark mode. |
 | Fonts | Self-hosted **Inter** + **JetBrains Mono** via `@fontsource-variable/*` (CSP-safe, same-origin) |
 | Content | Astro **content collections** (Markdown) + **MDX** doc pages |
-| Data / backend | **Elasticsearch** (`@elastic/elasticsearch ^8.17.0`) — votes, subscribers, feedback, live status telemetry |
-| Interactivity | **Astro Actions** (`vote`, `subscribe`, `feedback`) — server-side, form-based |
+| Data / backend | **Elasticsearch** (`@elastic/elasticsearch ^8.17.0`) — votes, feedback, live status telemetry |
+| Interactivity | **Astro Actions** (`vote`, `feedback`) — server-side, form-based |
 | Search | **Pagefind** (static index built after `astro build`) |
 | Feeds/SEO | `@astrojs/rss`, `@astrojs/sitemap` |
 
@@ -74,8 +71,7 @@ verbose-sniffle/            # git root
 └── roadmap/                # THE APP
     ├── HANDOFF.md          # ← this file
     ├── CONTENT_GUIDE.md    # how to edit all content
-    ├── ELASTICSEARCH_GUIDE.md,
-    │   EMAIL_NOTIFICATIONS_GUIDE.md   # topic references
+    ├── ELASTICSEARCH_GUIDE.md   # Elasticsearch topic reference
     ├── .env.example        # every runtime env var
     ├── astro.config.mjs    # build/runtime config
     ├── package.json        # scripts + deps
@@ -85,7 +81,7 @@ verbose-sniffle/            # git root
         ├── middleware.ts           # CSP + security headers + voter cookie + Actions PRG
         ├── env.d.ts                # types incl. __BUILD_ISO__
         ├── content.config.ts       # 6 content collections + Zod schemas
-        ├── actions/index.ts        # Astro Actions: vote, subscribe, feedback
+        ├── actions/index.ts        # Astro Actions: vote, feedback
         ├── layouts/                # BaseLayout (shell), MdxDocLayout (docs)
         ├── components/             # UI components (+ illustrations/, status/)
         ├── pages/                  # routes (.astro, .mdx, rss.xml.ts, api/)
@@ -100,9 +96,9 @@ verbose-sniffle/            # git root
             ├── es-utils.ts         # deterministic doc IDs + 409 detection
             ├── remark-*.mjs, rehype-*.mjs  # MDX plugins
             ├── status/             # ES client + status pipeline (aliased `shared`)
+            │   └── connected-services.ts  # hand-curated "Connected services" list (no ES)
             ├── votes/elastic-votes.ts
-            ├── feedback/elastic-feedback.ts
-            └── notifications/      # subscribers, email client/templates, delivery
+            └── feedback/elastic-feedback.ts
 ```
 
 ---
@@ -143,14 +139,13 @@ are plain HTML in `dist/client`.
 
 ### Deploy checklist
 1. Run the **server bundle** (`dist/server/entry.mjs`) — a static-only deploy
-   breaks voting, status, subscribe, feedback, and the notify webhook.
+   breaks voting, status, and feedback.
 2. Provide all required env vars (see §7). At minimum for a real deploy:
-   Elasticsearch connection + indices, `SITE_URL`, and the support/email/webhook
-   integrations you intend to use.
+   Elasticsearch connection + indices, `SITE_URL`, and the support integrations
+   you intend to use.
 3. Set security headers for **static** responses at your edge/reverse proxy —
    the middleware only runs for on-demand responses (see §5).
-4. Schedule the **notification cron** (§6) if you want incident emails.
-5. `PORT` is read by the Node adapter from the host environment.
+4. `PORT` is read by the Node adapter from the host environment.
 
 ---
 
@@ -165,7 +160,7 @@ are plain HTML in `dist/client`.
 2. **Voter cookie**: sets `roadmap_voter_id` (`randomUUID`, 1-year, `httpOnly`,
    `secure` in prod, `sameSite=lax`) — the identity used for vote/feedback dedup
    and rate limiting.
-3. **Astro Actions PRG**: intercepts `vote`/`subscribe` form POSTs, runs the
+3. **Astro Actions PRG**: intercepts `vote` form POSTs, runs the
    handler, stores the serialized result, and redirects back (Post/Redirect/Get).
    Errors are logged server-side and surfaced as a generic message.
 
@@ -199,43 +194,24 @@ new developer's responsibility.
 
 ### 6.1 Elasticsearch cluster + indices — REQUIRED for dynamic data
 - The app **never creates indices**. You must provision a cluster and create all
-  10 indices (see [§8](#8-elasticsearch-indices-to-create) for names + mappings).
+  6 indices (see [§8](#8-elasticsearch-indices-to-create) for names + mappings).
 - Set `ELASTICSEARCH_URL` and `ELASTICSEARCH_API_KEY`.
-- **Live status telemetry** (indices 1–5 in §8) is *read-only* to this app — an
-  external observability pipeline must **write** service/workspace/external-system
-  health documents into those indices. Without that pipeline (and with mock mode
-  off) the status page honestly shows **"Unknown" / empty**, never fake-healthy.
+- **Live status telemetry** — the **Service health** list and the **90-day
+  uptime** bar — is *read-only* to this app. An external observability pipeline
+  must **write** service-health documents into `status-core-services` (and, for
+  the workspace detail page, `status-workspaces`); the uptime bar also reads
+  `status-incidents`. Without that pipeline (and with mock mode off) the status
+  page honestly shows **"Unknown" / empty**, never fake-healthy.
+- **Service health is fully data-driven** — it renders whatever services exist in
+  `status-core-services`; there is no hardcoded service catalog. To add a service
+  to the page, index a doc with a new `service_id` (see §8 and
+  `ELASTICSEARCH_GUIDE.md`). **Connected services is NOT Elasticsearch** — it is a
+  hand-curated data file (`src/lib/status/connected-services.ts`, see §9 /
+  `CONTENT_GUIDE.md`).
 - To develop without a cluster: `PUBLIC_USE_MOCK_STATUS=true` (status page uses
-  bundled `src/lib/status/mock-data.ts`; votes/subscribe/feedback still need ES).
+  bundled `src/lib/status/mock-data.ts`; votes/feedback still need ES).
 
-### 6.2 Email delivery — stubbed behind an HTTP contract
-- There is **no SMTP/SendGrid/SES integration.** `src/lib/notifications/email-client.ts`
-  POSTs JSON `{ to, subject, body }` to `${EMAIL_SERVICE_URL}/${EMAIL_SERVICE_PATH}`
-  (default path `send`), optionally with `Authorization: Bearer ${EMAIL_SERVICE_API_KEY}`.
-- Stand up a relay that honors that contract and set `EMAIL_SERVICE_URL`
-  (+ `EMAIL_SERVICE_API_KEY`, `EMAIL_SERVICE_PATH`). If `EMAIL_SERVICE_URL` is
-  blank, all email sends are skipped (subscribe confirmations and incident
-  emails silently do nothing).
-- **Known limitation (in code):** a partially-failed incident batch is retried
-  wholesale on the next run, so some subscribers may receive duplicates.
-  Per-subscriber delivery tracking is the fuller fix and is not implemented.
-
-### 6.3 Notification cron — schedule the webhook
-- `POST /api/notify/run` with header `Authorization: Bearer <NOTIFY_WEBHOOK_SECRET>`
-  triggers incident/maintenance email delivery. It is **POST-only**, uses a
-  constant-time secret compare, **fails closed with 503 if `NOTIFY_WEBHOOK_SECRET`
-  is unset**, and returns `401` on a bad token. Response body is only
-  `{ ok, sent, failed }`.
-- Set `NOTIFY_WEBHOOK_SECRET` and schedule an external cron/CI job to POST it
-  (every ~2–5 min). **No scheduler ships with the app.**
-- **Gotcha (source-of-truth split):** the status *page* renders incidents and
-  maintenance from **Markdown** (`src/content/status/**`), but the email notifier
-  reads incidents/maintenance from the **Elasticsearch** `status-incidents` /
-  `status-scheduled-maintenance` indices. So editing Markdown updates the page
-  but sends no emails, and writing ES docs sends emails but doesn't change the
-  page. Decide on one source of truth or write to both. (See §9.)
-
-### 6.4 Support modal targets
+### 6.2 Support modal targets
 - **Email:** `PUBLIC_SUPPORT_EMAIL` (placeholder `support@example.com`) → `mailto:`.
 - **ServiceNow ticket:** `PUBLIC_SERVICENOW_URL` (placeholder
   `https://example.service-now.com/help`) → external link.
@@ -245,7 +221,7 @@ new developer's responsibility.
   exists in `.env.example` but is **not read anywhere** — the button always
   renders. Either wire that flag into `SupportModal.astro` or remove it.
 
-### 6.5 Authentication — does not exist
+### 6.3 Authentication — does not exist
 There is **no auth, session, or user model** anywhere. The circular "JD" avatar
 in the top-right nav (`BaseLayout.astro`) is a **hardcoded, non-functional
 placeholder**. If the product needs accounts/login, it is greenfield work.
@@ -263,30 +239,20 @@ Defaults are what the code falls back to when the variable is unset.
 | `ELASTICSEARCH_API_KEY` | | *(unset → no auth)* | ES API key auth |
 | `STATUS_FETCH_TIMEOUT_MS` | | `15000` | Per-request ES timeout (`maxRetries:1`); `0` disables |
 | `STATUS_TIME_WINDOW_MINUTES` | | `5` | Telemetry freshness window |
-| `NOTIFICATION_INCIDENT_WINDOW_MINUTES` | | `1440` | Incident/maintenance lookback for emails |
 | `STATUS_ENVIRONMENT` | | `production` | Environment label shown on status |
-| `ELASTICSEARCH_INDEX_CORE_SERVICES` | | `status-core-services` | index name |
-| `ELASTICSEARCH_INDEX_WORKSPACES` | | `status-workspaces` | index name |
-| `ELASTICSEARCH_INDEX_EXTERNAL_SYSTEMS` | | `status-external-systems` | index name |
-| `ELASTICSEARCH_INDEX_INCIDENTS` | | `status-incidents` | index name (email notifier) |
-| `ELASTICSEARCH_INDEX_SCHEDULED_MAINTENANCE` | | `status-scheduled-maintenance` | index name (email notifier) |
+| `ELASTICSEARCH_INDEX_CORE_SERVICES` | | `status-core-services` | index name (Service health) |
+| `ELASTICSEARCH_INDEX_WORKSPACES` | | `status-workspaces` | index name (workspace detail page) |
+| `ELASTICSEARCH_INDEX_INCIDENTS` | | `status-incidents` | index name (90-day uptime bar) |
+| `ELASTICSEARCH_INDEX_SCHEDULED_MAINTENANCE` | | `status-scheduled-maintenance` | index name (read fn only; not used by the UI) |
 | `ELASTICSEARCH_INDEX_ROADMAP_VOTES` | | `roadmap-votes` | index name |
-| `ELASTICSEARCH_INDEX_STATUS_SUBSCRIBERS` | | `status-subscribers` | index name |
-| `ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT` | | `status-notification-sent` | index name |
-| `ELASTICSEARCH_INDEX_STATUS_MAINTENANCE_NOTIFICATION_SENT` | | `status-maintenance-notification-sent` | index name |
 | `ELASTICSEARCH_INDEX_PAGE_FEEDBACK` | | `page-feedback` | index name |
-| `EMAIL_SERVICE_URL` | | `''` *(blank disables email)* | Mail relay base URL |
-| `EMAIL_SERVICE_PATH` | | `send` | Mail relay path segment |
-| `EMAIL_SERVICE_API_KEY` | | *(unset)* | Mail relay bearer token |
-| `NOTIFY_WEBHOOK_SECRET` | | *(unset → endpoint 503)* | Bearer secret for `/api/notify/run` |
-| `SITE_URL` | | `https://example.com` (build) | Canonical site URL (sitemap, RSS, email links) |
-| `STATUS_PAGE_BASE_URL` | | `''` | Fallback base for absolute email links |
+| `SITE_URL` | | `https://example.com` (build) | Canonical site URL (sitemap, RSS) |
 | `PUBLIC_USE_MOCK_STATUS` | ✔ | *(unset)* | `true` → status page uses mock data, no ES |
 | `PUBLIC_SUPPORT_EMAIL` | ✔ | `support@example.com` | Support modal `mailto:` |
 | `PUBLIC_SERVICENOW_URL` | ✔ | `https://example.service-now.com/help` | Support modal ticket link |
 
 **Declared in `.env.example` but NOT read by any code (remove or wire up):**
-`PUBLIC_SUPPORT_CHAT_ENABLED` (SupportModal probes `window.HelpCenterChat` instead).
+`PUBLIC_SUPPORT_CHAT_ENABLED` (SupportModal probes `window.HelpCenterChat` instead; see §6.2).
 Also note some older guides mention `STATUS_ERROR_RATE_*` / `STATUS_LATENCY_P95_*`
 threshold vars — **no code reads these**; `status_level` comes straight from the
 ES documents.
@@ -299,7 +265,7 @@ Vite-injected `__BUILD_ISO__` build timestamp (used as the roadmap "Last Updated
 
 ## 8. Elasticsearch indices to create
 
-The app assumes all 10 indices already exist and does **not** create them,
+The app assumes all 6 indices already exist and does **not** create them,
 apply templates, or manage ILM. Index names are env-overridable (§7). Fields
 used with a `term` filter on `field.keyword` need a `keyword` sub-field
 (Elasticsearch's default dynamic mapping for `text` already provides
@@ -308,64 +274,55 @@ used with a `term` filter on `field.keyword` need a `keyword` sub-field
 ### 8.1 Live telemetry indices — WRITTEN by your observability pipeline, read by the app
 These have no writer in this repo; an external pipeline must populate them.
 
-**1. `status-core-services`** — one doc per service health sample.
-`@timestamp` (date), `service_id` (keyword), `service_name` (text/keyword),
-`status_level` (keyword enum: `HEALTHY|DEGRADED|OUTAGE|UNKNOWN|MAINTENANCE`),
-`error_rate` (float, optional), `latency_p95_ms` (float, optional).
-The app keeps the **latest doc per `service_id`** within `STATUS_TIME_WINDOW_MINUTES`.
-Known service ids grouped by `capability-groups.ts`: `auth-service`,
-`billing-service`, `messaging-service`, `search-service`, `storage-service`.
+**1. `status-core-services`** — one doc per service health sample; the sole
+source for the **Service health** list (no hardcoded catalog). Fields:
+`@timestamp` (date), `service_id` (keyword), `service_name` (text/keyword, the
+display label), `status_level` (keyword enum: `HEALTHY|DEGRADED|OUTAGE|UNKNOWN|MAINTENANCE`,
+used **directly** — no thresholds computed), `impact_description` (text, optional —
+when present the row expands to show it), `error_rate` (float, optional, stored
+but not used to derive status), `latency_p95_ms` (float, optional, same).
+The app keeps the **latest doc per `service_id`** within `STATUS_TIME_WINDOW_MINUTES`,
+and the overall page badge is the worst status across services. **To add a service
+to the status page, index a doc with a new `service_id`** — it appears
+automatically, no code change (see `ELASTICSEARCH_GUIDE.md`).
 
-**2. `status-workspaces`** — dual-purpose (workspace rows *and* feature rows).
+**2. `status-workspaces`** — read by the `/roadmap/status/workspaces/<id>` detail
+page only. Dual-purpose (workspace rows *and* feature rows).
 Workspace row: `@timestamp`, `workspace_id` (keyword), `workspace_name`,
 `owner_team?`, `environment?`, `status_level`.
 Feature row: `@timestamp`, `workspace_id` (keyword), `feature_id` (keyword),
-`feature_name`, `status_level`, `degradation_summary?`,
-`impacting_external_system_ids?` (keyword[]).
+`feature_name`, `status_level`, `degradation_summary?`.
 Feature query filters `term: { workspace_id }` (bare field — keep it exact-matchable).
 
-**3. `status-external-systems`** — `@timestamp`, `system_id` (keyword),
-`system_name`, `system_type` (keyword: `SAAS|INTERNAL|THIRD_PARTY_API`),
-`status_level`, `latency_p95_ms?`, `error_rate?`, `impacted_core_service_ids?` (keyword[]),
-`impacted_feature_ids?` (keyword[]). Latest per `system_id`.
+**3. `status-incidents`** — read by the **90-day uptime bar** (which merges core-service
+telemetry with incident spans). The incidents *shown on the page* come from Markdown,
+not this index. `@timestamp`, `incident_id` (keyword), `title`, `status_level`,
+`started_at` (date), `resolved_at?` (date), `description?`,
+`updates?` (array of `{ timestamp, message, status? }`), `affected_workspace_ids?`,
+`affected_core_service_ids?`.
 
-**4. `status-incidents`** — used by the **email notifier only** (not the page).
-`@timestamp`, `incident_id` (keyword), `title`, `status_level`, `started_at` (date),
-`resolved_at?` (date), `description?`, `updates?` (array of `{ timestamp, message, status? }`),
-`affected_workspace_ids?`, `affected_core_service_ids?`, `affected_external_system_ids?`.
-
-**5. `status-scheduled-maintenance`** — used by the **email notifier only**.
-`@timestamp`, `maintenance_id` (keyword), `title`, `description?`,
-`scheduled_start` (date), `scheduled_end` (date),
-`status` (keyword: `SCHEDULED|IN_PROGRESS|COMPLETED`),
-`affected_core_service_ids?`, `affected_external_system_ids?`.
+**4. `status-scheduled-maintenance`** — a read function exists (`getScheduledMaintenance`)
+but **no page uses it** (the maintenance section is Markdown-driven); safe to leave
+empty or drop the read path. `@timestamp`, `maintenance_id` (keyword), `title`,
+`description?`, `scheduled_start` (date), `scheduled_end` (date),
+`status` (keyword: `SCHEDULED|IN_PROGRESS|COMPLETED`), `affected_core_service_ids?`.
 
 ### 8.2 Application read+write indices — written by this app
 The app writes these with **deterministic document IDs** (`src/lib/es-utils.ts`,
 sha256 of the key parts) and `client.create()`, so a duplicate is a harmless
-`409` — this is how vote/subscribe/feedback dedup is race-free.
+`409` — this is how vote/feedback dedup is race-free.
 
-**6. `roadmap-votes`** — `{ feature_request_id, voter_id, '@timestamp' }`;
+**5. `roadmap-votes`** — `{ feature_request_id, voter_id, '@timestamp' }`;
 id = `hash(vote, featureRequestId, voterId)`. App aggregates counts via a
 `terms` agg on `feature_request_id.keyword` and filters `voter_id.keyword`.
 
-**7. `status-subscribers`** — `{ email, '@timestamp' }`;
-id = `hash(subscriber, normalizedEmail)`. Paginated read sorted by `email.keyword`.
-
-**8. `status-notification-sent`** — append-only send-state for incidents:
-`{ incident_id, type, last_updated_at, updates_signature?, '@timestamp' }`.
-Read: latest by `incident_id.keyword`, `@timestamp desc`, size 1.
-
-**9. `status-maintenance-notification-sent`** — `{ maintenance_id, '@timestamp' }`;
-existence of any doc for `maintenance_id.keyword` means "already emailed".
-
-**10. `page-feedback`** — `{ page_path, helpful ('yes'|'no'), message?, visitor_id, '@timestamp' }`;
+**6. `page-feedback`** — `{ page_path, helpful ('yes'|'no'), message?, visitor_id, '@timestamp' }`;
 id = `hash(feedback, pagePath, visitorId)` (one vote per page per visitor).
 
-> The two topic guides (`ELASTICSEARCH_GUIDE.md`,
-> `EMAIL_NOTIFICATIONS_GUIDE.md`) contain deeper detail on
-> queries and index shapes. Where they disagree with this section, **this section
-> and the code are authoritative** (see [Documentation map](#documentation-map--accuracy)).
+> `ELASTICSEARCH_GUIDE.md` contains deeper detail on queries and index shapes,
+> including how to add a service to the Service health list. Where it disagrees
+> with this section, **this section and the code are authoritative** (see
+> [Documentation map](#documentation-map--accuracy)).
 
 ---
 
@@ -375,21 +332,25 @@ id = `hash(feedback, pagePath, visitorId)` (one vote per page per visitor).
 - **Rate limiting** (`src/lib/rate-limit.ts`) is an in-memory fixed-window map,
   **per Node instance** — it does not coordinate across replicas. Behind a
   multi-instance deploy, add edge/WAF rate limiting too.
-- **Actions:** `vote` (20/60s per voter, 60/60s per IP), `subscribe` (5/60s,
-  15/60s per IP), `feedback` (10/60s, 30/60s per IP). All validate with Zod and
-  dedup atomically via deterministic ES doc IDs.
-- **Status page** (`/roadmap/status`): service health + 90-day uptime + external
-  systems come from **ES**; the *Known Issues / Scheduled maintenance / Recent
-  incidents* sections come from **Markdown** collections. On ES failure it shows
+- **Actions:** `vote` (20/60s per voter, 60/60s per IP) and `feedback` (10/60s,
+  30/60s per IP). Both validate with Zod and dedup atomically via deterministic
+  ES doc IDs.
+- **Status page** (`/roadmap/status`) data sources: **Service health** + **90-day
+  uptime** come from **Elasticsearch**; **Connected services** comes from the
+  hand-curated data file `src/lib/status/connected-services.ts`; the *Known Issues
+  / Scheduled maintenance / Recent incidents* sections come from **Markdown**
+  collections (`src/content/status/**`). On ES failure the live sections show
   honest `UNKNOWN`/empty.
 - **Dead-ish code:** the ES incident/maintenance *read* functions
   (`getIncidents`, `getRecentIncidents`, `getScheduledMaintenance`,
-  `getIncidentById`, and the `fetch*` wrappers) are **not used by any page** — the
-  page is Markdown-driven. They remain alive only through the notification job.
-  A future dev could either delete them or switch the page to ES.
-- `getStatusSummary` hardcodes `incidentCount: 0`. Capability descriptions are
-  never populated from real ES (only mock data has descriptions). Several
-  capability items are hardcoded `HEALTHY`.
+  `getIncidentById`, and their `fetch*` wrappers) are **not used by any page** —
+  the page is Markdown-driven — and no longer used by anything else now that the
+  email notifier is removed. (Note: the 90-day uptime bar reads `status-incidents`
+  directly via `getUptime90Days`, so that index is still live.) A future dev could
+  delete the unused read functions or switch the page to ES.
+- `getStatusSummary` hardcodes `incidentCount: 0` (unused). **Service health** now
+  renders whatever `status-core-services` docs exist — a flat list, no hardcoded
+  catalog and no pinned-`HEALTHY` items.
 
 ---
 
@@ -404,8 +365,8 @@ should be unified to one real product name before launch:
   footer.
 
 **Placeholder site config** to replace: `astro.config.mjs` `site`
-(`https://example.com`), `rss.xml.ts` fallback, `.env.example` `SITE_URL`
-(`…example.gov`), and the subscribe input placeholder `your@email.gov`.
+(`https://example.com`), `rss.xml.ts` fallback, and `.env.example` `SITE_URL`
+(`…example.gov`).
 
 **All bundled content is demo/sample data** and should be replaced:
 `src/content/roadmap/*`, `feature-requests/*`, `releases/*`,
@@ -414,8 +375,7 @@ should be unified to one real product name before launch:
 
 **Missing engineering infrastructure** (none of this exists yet):
 - **No tests** — no unit/integration/e2e, no test runner. Adding coverage for the
-  ES write/dedup paths, actions, rate limiter, and the notification decision
-  logic is high value.
+  ES write/dedup paths, actions, and rate limiter is high value.
 - **No linting/formatting** — only `astro check` (TypeScript). Consider ESLint +
   Prettier.
 - **No CI** — no `.github/workflows`. Add at least build + `astro check` on PRs.
@@ -430,10 +390,9 @@ latest review):
 - Empty sidebar nav groups render a literal "Coming soon".
 
 **Robustness follow-ups:**
-- Per-subscriber email delivery tracking (to stop duplicate incident emails on
-  partial-batch retry).
 - Distributed rate limiting / caching for multi-instance deploys.
-- Reconcile the incidents/maintenance source-of-truth split (§6.3).
+- The orphaned `/roadmap/status/workspaces/<id>` page (reads `status-workspaces`)
+  has no inbound link — wire it up or remove it.
 
 ---
 
@@ -443,7 +402,6 @@ latest review):
 |-----|-------|--------|
 | `HANDOFF.md` (this) | Architecture, integrations, ES indices, env, outstanding | **Canonical** |
 | `CONTENT_GUIDE.md` | How to edit every content type | **Canonical** |
-| `ELASTICSEARCH_GUIDE.md` | ES index shapes & queries | Accurate (reviewed against code): `STATUS_FETCH_TIMEOUT_MS` is read; no `STATUS_ERROR_RATE_*`/`STATUS_LATENCY_P95_*` threshold vars exist; the incidents/maintenance/recent UI is Markdown-driven while core-services/workspaces/external-systems/uptime are live ES. |
-| `EMAIL_NOTIFICATIONS_GUIDE.md` | Subscribe + email pipeline | Accurate; the email body contract is `{ to, subject, body }`. |
+| `ELASTICSEARCH_GUIDE.md` | ES index shapes & queries; how to add a service to Service health | **Canonical** for ES depth |
 
 When in doubt, **the code and this document win.**

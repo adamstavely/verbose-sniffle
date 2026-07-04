@@ -7,7 +7,7 @@
 This guide is the **operational reference** for connecting Elasticsearch to the
 app. **Normative field shapes** are defined in TypeScript in
 `src/lib/status/elastic-status.ts` (read paths) and in the
-vote/subscriber/feedback/notification modules (write paths). This document
+vote/feedback modules (write paths). This document
 describes behavior and tuning so platform engineers can provision indices,
 credentials, and pipelines correctly.
 
@@ -15,12 +15,14 @@ credentials, and pipelines correctly.
 > - The status **page** renders its Known Issues (active incidents), Scheduled
 >   Maintenance, and Recent Incidents from **Markdown** (`src/content/status/**`),
 >   **not** from the `status-incidents` / `status-scheduled-maintenance` ES
->   indices. Those two ES indices are read **only** by the email-notification job
->   (`/api/notify/run`). Editing Markdown updates the page; writing those ES docs
->   sends emails. See [CONTENT_GUIDE.md §6](./CONTENT_GUIDE.md#6-system-status-content).
-> - `status-core-services`, `status-workspaces`, and `status-external-systems`
->   **are** read live by the status page (service health, 90-day uptime,
->   connected systems).
+>   indices. Editing Markdown updates the page. See
+>   [CONTENT_GUIDE.md §6](./CONTENT_GUIDE.md#6-system-status-content).
+> - `status-core-services` and `status-workspaces` **are** read live by the
+>   status page (Service health, workspace detail). `status-incidents` is read
+>   live only by the 90-day uptime computation. **Connected services is no longer
+>   an ES index** — it is a static TypeScript data file
+>   (`src/lib/status/connected-services.ts`); see
+>   [HANDOFF.md](./HANDOFF.md) / [CONTENT_GUIDE.md](./CONTENT_GUIDE.md).
 
 ---
 
@@ -50,22 +52,23 @@ These indices hold **telemetry and operational documents** that **your stack mus
 |---------|-------------------|--------------|
 | Core services | `status-core-services` | `ELASTICSEARCH_INDEX_CORE_SERVICES` |
 | Workspaces and workspace features | `status-workspaces` | `ELASTICSEARCH_INDEX_WORKSPACES` |
-| External systems | `status-external-systems` | `ELASTICSEARCH_INDEX_EXTERNAL_SYSTEMS` |
 | Incidents | `status-incidents` | `ELASTICSEARCH_INDEX_INCIDENTS` |
 | Scheduled maintenance | `status-scheduled-maintenance` | `ELASTICSEARCH_INDEX_SCHEDULED_MAINTENANCE` |
 
 **Workspaces index:** Both **workspace-level** rows (aggregate workspace status) and **feature-level** rows (per feature inside a workspace) use the **same** index. Documents are distinguished by populated fields (`workspace_id` + optional `feature_id`).
 
+> **Connected services is not an Elasticsearch index.** It is a hand-curated
+> TypeScript data file (`CONNECTED_SYSTEMS` in
+> `src/lib/status/connected-services.ts`). There is no `status-external-systems`
+> index. See [HANDOFF.md](./HANDOFF.md) / [CONTENT_GUIDE.md](./CONTENT_GUIDE.md).
+
 ### 1.2 Application-owned indices
 
-The Astro server **writes** these via Actions and notification jobs.
+The Astro server **writes** these via Actions.
 
 | Concern | Default index name | Env override | Source module |
 |---------|-------------------|--------------|---------------|
 | Roadmap votes | `roadmap-votes` | `ELASTICSEARCH_INDEX_ROADMAP_VOTES` | `src/lib/votes/elastic-votes.ts` |
-| Status email subscribers | `status-subscribers` | `ELASTICSEARCH_INDEX_STATUS_SUBSCRIBERS` | `src/lib/notifications/elastic-subscribers.ts` |
-| Incident notification dedupe | `status-notification-sent` | `ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT` | `src/lib/notifications/notification-state.ts` |
-| Maintenance notification dedupe | `status-maintenance-notification-sent` | `ELASTICSEARCH_INDEX_STATUS_MAINTENANCE_NOTIFICATION_SENT` | `src/lib/notifications/maintenance-notification-state.ts` |
 | Page feedback | `page-feedback` | `ELASTICSEARCH_INDEX_PAGE_FEEDBACK` | `src/lib/feedback/elastic-feedback.ts` |
 
 ---
@@ -108,16 +111,12 @@ Adjust names if you override `ELASTICSEARCH_INDEX_*`. Principle: **read** teleme
 
 - `status-core-services`
 - `status-workspaces`
-- `status-external-systems`
 - `status-incidents`
 - `status-scheduled-maintenance`
 
 **Read + write** (index + `write` for bulk/index APIs):
 
 - `roadmap-votes`
-- `status-subscribers`
-- `status-notification-sent`
-- `status-maintenance-notification-sent`
 - `page-feedback`
 
 The app uses `search`, `index` (single-document writes), and aggregations (`terms` on `.keyword` fields). It does **not** use Elasticsearch index lifecycle APIs or `reindex` in this repository.
@@ -134,13 +133,9 @@ The app uses `search`, `index` (single-document writes), and aggregations (`term
 | `ELASTICSEARCH_API_KEY` | _(empty)_ | API key auth |
 | `ELASTICSEARCH_INDEX_CORE_SERVICES` | `status-core-services` | Core service telemetry |
 | `ELASTICSEARCH_INDEX_WORKSPACES` | `status-workspaces` | Workspaces + features |
-| `ELASTICSEARCH_INDEX_EXTERNAL_SYSTEMS` | `status-external-systems` | External systems |
 | `ELASTICSEARCH_INDEX_INCIDENTS` | `status-incidents` | Incidents |
 | `ELASTICSEARCH_INDEX_SCHEDULED_MAINTENANCE` | `status-scheduled-maintenance` | Maintenance windows |
 | `ELASTICSEARCH_INDEX_ROADMAP_VOTES` | `roadmap-votes` | Votes |
-| `ELASTICSEARCH_INDEX_STATUS_SUBSCRIBERS` | `status-subscribers` | Subscribers |
-| `ELASTICSEARCH_INDEX_STATUS_NOTIFICATION_SENT` | `status-notification-sent` | Incident email dedupe |
-| `ELASTICSEARCH_INDEX_STATUS_MAINTENANCE_NOTIFICATION_SENT` | `status-maintenance-notification-sent` | Maintenance email dedupe |
 | `ELASTICSEARCH_INDEX_PAGE_FEEDBACK` | `page-feedback` | Feedback |
 
 Authoritative copy-paste list: `roadmap/.env.example`.
@@ -150,10 +145,9 @@ Authoritative copy-paste list: `roadmap/.env.example`.
 | Variable | Default | Role |
 |----------|---------|------|
 | `STATUS_ENVIRONMENT` | _(fallback `production` in code)_ | Label shown in the status summary (e.g. `production`, `staging`) |
-| `STATUS_TIME_WINDOW_MINUTES` | `5` | Rolling window for the live **telemetry** queries (core services, workspaces, external systems). See [§5](#5-query-semantics-and-tuning). |
-| `NOTIFICATION_INCIDENT_WINDOW_MINUTES` | `1440` (24h) | Lookback for the **notification** incident and maintenance queries (`getIncidentsForNotifications`, `getMaintenanceForNotifications`) |
+| `STATUS_TIME_WINDOW_MINUTES` | `5` | Rolling window for the live **telemetry** queries (core services, workspaces). See [§5](#5-query-semantics-and-tuning). |
 | `STATUS_FETCH_TIMEOUT_MS` | `15000` | Per-request Elasticsearch timeout in ms; also sets `maxRetries: 1`. Set to `0` to disable the timeout. Read in `elastic-client.ts`. |
-| `PUBLIC_USE_MOCK_STATUS` | _(unset)_ | When `true`, status data is read from in-memory mock data; **no Elasticsearch calls for status** (votes/subscribe/feedback still use ES if invoked) |
+| `PUBLIC_USE_MOCK_STATUS` | _(unset)_ | When `true`, status data is read from in-memory mock data; **no Elasticsearch calls for status** (votes/feedback still use ES if invoked) |
 
 > **There are no error-rate / latency threshold variables.** `status_level`
 > comes **directly from the Elasticsearch documents** your pipeline writes — the
@@ -165,15 +159,15 @@ Authoritative copy-paste list: `roadmap/.env.example`.
 
 ## 5. Query semantics and tuning
 
-Understanding these behaviors avoids “empty UI” surprises and misconfigured notification windows.
+Understanding these behaviors avoids “empty UI” surprises.
 
-### 5.1 Telemetry: core services, workspaces, external systems
+### 5.1 Telemetry: core services, workspaces
 
 - **Time field:** `@timestamp`
 - **Window:** last `STATUS_TIME_WINDOW_MINUTES` minutes
-- **Logic:** Results sorted by `@timestamp` descending; the app keeps the **latest document per entity** (`service_id`, `workspace_id` / `feature_id`, `system_id`)
+- **Logic:** Results sorted by `@timestamp` descending; the app keeps the **latest document per entity** (`service_id`, `workspace_id` / `feature_id`)
 
-If nothing falls in the window, sections appear empty or “unknown” without necessarily throwing an error.
+If nothing falls in the window, sections appear empty or “unknown” without necessarily throwing an error. For Service health specifically the app never fabricates a `HEALTHY` state when no docs exist — see [§6.2](#62-status-core-services-read).
 
 ### 5.2 Incidents, recent incidents & maintenance — the ES read path is unused by the page
 
@@ -185,21 +179,10 @@ the incident detail page render these three sections from **Markdown content
 collections** (`src/content/status/**`) instead — see
 [CONTENT_GUIDE.md §6](./CONTENT_GUIDE.md#6-system-status-content). Treat these ES
 functions as dead code for the UI (a future dev may delete them or re-wire the
-page to ES). The **only** live ES incident/maintenance reads are the notification
-functions in §5.3.
+page to ES). The **only** live ES read of `status-incidents` is the 90-day uptime
+computation in §5.3.
 
-### 5.3 Notifications (`getIncidentsForNotifications`, `getMaintenanceForNotifications`)
-
-- **Incident window:** `NOTIFICATION_INCIDENT_WINDOW_MINUTES` (default 24h);
-  query = docs where **`started_at` OR `resolved_at`** falls in `[now - window, now]`.
-- **Maintenance:** `scheduled_start` within the window, `scheduled_end >= now`,
-  excludes `COMPLETED`; sorted by `scheduled_start` ascending. One email round per
-  maintenance id (dedupe index).
-- These are the ES reads that actually matter for `status-incidents` /
-  `status-scheduled-maintenance`. Used by `/api/notify/run` for email delivery
-  (see [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md)).
-
-### 5.4 Uptime (90 days)
+### 5.3 Uptime (90 days)
 
 - The status page's 90-day uptime bar **is** live ES: `getUptime90Days` loads
   `status-core-services` docs and `status-incidents` docs over 90 days and derives
@@ -220,16 +203,83 @@ Defined in `src/lib/status/status-models.ts`.
 
 ### 6.2 `status-core-services` (read)
 
+This index backs the status page's **Service health** section. The section is
+**not** hardcoded: the app renders a **flat list of whatever documents exist** in
+`status-core-services`, read via `getStatusSummary()` in
+`src/lib/status/elastic-status.ts`. There is no fixed catalog of service or
+capability IDs (the old `capability-groups.ts` catalog was deleted).
+
 | Field | Notes |
 |-------|--------|
-| `@timestamp` | Used for time range and “last updated” |
-| `service_id` | Stable id; fallback to `_id` |
-| `service_name` | Display name |
-| `status_level` | |
-| `error_rate` | Optional; stored/available but not used to compute `status_level` |
-| `latency_p95_ms` | Optional; stored/available but not used to compute `status_level` |
+| `@timestamp` | ISO 8601 date. The page reads the **latest doc per `service_id`** within the last `STATUS_TIME_WINDOW_MINUTES` (default 5). |
+| `service_id` | keyword. Unique/stable id for the service; the **dedup key** (latest doc in the window wins). Fallback to `_id` if absent. |
+| `service_name` | text/keyword. Display label shown on the page. |
+| `status_level` | keyword, one of `HEALTHY` \| `DEGRADED` \| `OUTAGE` \| `MAINTENANCE` \| `UNKNOWN`. Taken **directly** from the doc — the app computes no thresholds. |
+| `impact_description` | Optional text. If present, the service row is **expandable** and shows this as a user-facing impact note (use it when the service is not healthy). |
+| `error_rate` | Optional float. Stored/available but **not** used to compute `status_level` and not shown as a headline number. |
+| `latency_p95_ms` | Optional float. Same: available but not used to compute `status_level`. |
 
-### 6.3 `status-workspaces` (read)
+**Rendering behavior:**
+
+- The page shows **one row per `service_id`** (latest doc in the time window),
+  each with a status dot + name + status pill. Rows that carry an
+  `impact_description` are **expandable** to reveal it.
+- The overall page status badge is the **worst** `status_level` across all
+  services, using the order `OUTAGE > DEGRADED > MAINTENANCE > UNKNOWN > HEALTHY`.
+  (`incidentCount` is hardcoded to `0` and unused.)
+- If **no** core-service docs exist in the window, Service health shows an
+  empty/unknown state — the app **never fabricates** a `HEALTHY` service.
+
+### 6.3 Adding a service to the status page
+
+Because Service health is a flat projection of `status-core-services`, adding or
+removing a service is a **data operation, not a code change** — **no code edit and
+no redeploy** are required.
+
+**To add a service:** index a document into `status-core-services` with a **new
+`service_id`**, plus `service_name`, `status_level`, and a current `@timestamp`
+(and optionally `impact_description` when the service is not healthy). It appears
+automatically on the next render, as long as a doc for that `service_id` falls
+within the last `STATUS_TIME_WINDOW_MINUTES`.
+
+**To remove a service:** stop writing documents for that `service_id`. Once its
+latest doc ages out of the time window, the row drops off the page.
+
+Example document:
+
+```json
+POST status-core-services/_doc
+{
+  "@timestamp": "2026-07-04T12:00:00Z",
+  "service_id": "search-api",
+  "service_name": "Search API",
+  "status_level": "DEGRADED",
+  "impact_description": "Elevated latency on search; results may load slowly.",
+  "error_rate": 0.021,
+  "latency_p95_ms": 840
+}
+```
+
+Example mapping for these fields:
+
+```json
+PUT status-core-services
+{
+  "mappings": {
+    "properties": {
+      "@timestamp": { "type": "date" },
+      "service_id": { "type": "keyword" },
+      "service_name": { "type": "text", "fields": { "keyword": { "type": "keyword" } } },
+      "status_level": { "type": "keyword" },
+      "impact_description": { "type": "text" },
+      "error_rate": { "type": "float" },
+      "latency_p95_ms": { "type": "float" }
+    }
+  }
+}
+```
+
+### 6.4 `status-workspaces` (read)
 
 **Workspace row (example):**
 
@@ -256,19 +306,11 @@ Defined in `src/lib/status/status-models.ts`.
 
 Queries for features use `term` on `workspace_id` (not `.keyword` in code). Ensure your mapping supports exact matching (keyword or unanalyzed).
 
-### 6.4 `status-external-systems` (read)
-
-| Field | Notes |
-|-------|--------|
-| `@timestamp` | |
-| `system_id` | |
-| `system_name` | |
-| `system_type` | `SAAS` \| `INTERNAL` \| `THIRD_PARTY_API` |
-| `status_level` | |
-| `latency_p95_ms`, `error_rate` | Optional |
-| `impacted_core_service_ids`, `impacted_feature_ids` | Optional string arrays |
-
 ### 6.5 `status-incidents` (read)
+
+Read live only by the 90-day uptime computation ([§5.3](#53-uptime-90-days)); the
+uptime bar merges core-service telemetry with incident spans. The other read
+functions over this index are pre-existing and **not used by the UI**.
 
 | Field | Notes |
 |-------|--------|
@@ -277,12 +319,16 @@ Queries for features use `term` on `workspace_id` (not `.keyword` in code). Ensu
 | `title` | |
 | `status_level` | |
 | `started_at` | Used for sorting and time windows |
-| `resolved_at` | Optional; drives “resolved” emails and recent incidents |
+| `resolved_at` | Optional; marks the end of the incident span for uptime |
 | `description` | |
 | `updates` | Array of `{ timestamp, message, status? }` |
-| `affected_workspace_ids`, `affected_core_service_ids`, `affected_external_system_ids` | Optional |
+| `affected_workspace_ids`, `affected_core_service_ids`, `affected_external_system_ids` | Optional ID arrays (the last is a plain ID reference; there is no external-systems index) |
 
 ### 6.6 `status-scheduled-maintenance` (read)
+
+A pre-existing read function exists over this index, but it is **not used by the
+UI** — the page's Scheduled Maintenance section is Markdown-driven
+([CONTENT_GUIDE.md §6](./CONTENT_GUIDE.md#6-system-status-content)).
 
 | Field | Notes |
 |-------|--------|
@@ -291,7 +337,7 @@ Queries for features use `term` on `workspace_id` (not `.keyword` in code). Ensu
 | `title`, `description` | |
 | `scheduled_start`, `scheduled_end` | ISO strings |
 | `status` | e.g. `SCHEDULED` \| `IN_PROGRESS` \| `COMPLETED` |
-| `affected_core_service_ids`, `affected_external_system_ids` | Optional |
+| `affected_core_service_ids`, `affected_external_system_ids` | Optional ID arrays (the last is a plain ID reference; there is no external-systems index) |
 
 ### 6.7 `roadmap-votes` (write + read)
 
@@ -303,35 +349,7 @@ Queries for features use `term` on `workspace_id` (not `.keyword` in code). Ensu
 
 **Aggregations:** `terms` on `feature_request_id.keyword` (size 500) for vote counts.
 
-### 6.8 `status-subscribers` (write + read)
-
-| Field | Notes |
-|-------|--------|
-| `email` | Lowercase; dedupe with `term` on `email.keyword` |
-| `@timestamp` | |
-
-**Reads:** Up to 1000 subscriber emails per `getSubscribers()` call.
-
-### 6.9 `status-notification-sent` (write + read)
-
-| Field | Notes |
-|-------|--------|
-| `incident_id` | `term` on `incident_id.keyword` for latest state |
-| `type` | `new` \| `update` \| `resolved` |
-| `last_updated_at` | |
-| `updates_signature` | Optional; for update detection |
-| `@timestamp` | Sort desc for “latest” state |
-
-The app **appends** documents; latest notification state is the newest `@timestamp` for that `incident_id`.
-
-### 6.10 `status-maintenance-notification-sent` (write + read)
-
-| Field | Notes |
-|-------|--------|
-| `maintenance_id` | `term` on `maintenance_id.keyword` — any hit means “already notified” |
-| `@timestamp` | |
-
-### 6.11 `page-feedback` (write)
+### 6.8 `page-feedback` (write)
 
 | Field | Notes |
 |-------|--------|
@@ -355,11 +373,14 @@ This repository **does not** ship Elasticsearch index templates or ILM policies.
 Example Dev Tools pattern (illustrative only—adjust versions and settings):
 
 ```json
-PUT status-subscribers
+PUT page-feedback
 {
   "mappings": {
     "properties": {
-      "email": { "type": "text", "fields": { "keyword": { "type": "keyword" } } },
+      "page_path": { "type": "text", "fields": { "keyword": { "type": "keyword" } } },
+      "visitor_id": { "type": "text", "fields": { "keyword": { "type": "keyword" } } },
+      "helpful": { "type": "keyword" },
+      "message": { "type": "text" },
       "@timestamp": { "type": "date" }
     }
   }
@@ -380,7 +401,7 @@ After deployment:
 | API key | Same key in env as used for manual `_search` |
 | Telemetry | `_search` on each telemetry index with a `range` on `@timestamp` matching `STATUS_TIME_WINDOW_MINUTES` |
 | Votes | Visit `/roadmap`, vote; confirm document in `roadmap-votes` |
-| Subscribers | Submit subscribe form; confirm document in `status-subscribers` with `email.keyword` query |
+| Service health | `_search` `status-core-services` with a `range` on `@timestamp` for `STATUS_TIME_WINDOW_MINUTES`; each `service_id` renders as a row on `/roadmap/status` |
 | Status page | `GET /roadmap/status` returns `200`; server-rendered telemetry (Unknown state if ES is unreachable) |
 | Mock mode | `PUBLIC_USE_MOCK_STATUS=true` shows mock status without ES reads for status fetch |
 
@@ -389,7 +410,6 @@ After deployment:
 ## 9. Related documentation
 
 - [HANDOFF.md](./HANDOFF.md) — architecture, the full index list (§8), env reference, and integrations to wire up
-- [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) — editing the Markdown-driven status sections (incidents, maintenance, recent)
-- [EMAIL_NOTIFICATIONS_GUIDE.md](./EMAIL_NOTIFICATIONS_GUIDE.md) — subscribers, `/api/notify/run`, email HTTP API
+- [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) — editing the Markdown-driven status sections (incidents, maintenance, recent), and the static Connected services data file
 
 Code references: `src/lib/status/elastic-client.ts`, `src/lib/status/status-config.ts`, `src/lib/status/elastic-status.ts`, `src/lib/status/fetch-status.ts`.

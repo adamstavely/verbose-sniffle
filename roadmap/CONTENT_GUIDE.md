@@ -49,10 +49,10 @@ framework into four categories: `tutorials`, `how-to`, `reference`,
 ```mdx
 ---
 layout: ../../../layouts/MdxDocLayout.astro
-title: Configure notifications
-description: Turn incident and digest emails on or off for your account.
+title: Build your first project
+description: Create a project and run your first analysis end to end.
 order: 2
-tags: ["Notifications", "How-to"]
+tags: ["Getting Started", "How-to"]
 ---
 
 Your Markdown/MDX content here. Use `##` for section headings.
@@ -234,18 +234,16 @@ status: "pending"                # pending | approved | rejected
 
 ## 6. System Status content
 
-The `/roadmap/status` page has two kinds of data:
+The `/roadmap/status` page has three kinds of data:
 
-- **Live telemetry** (service health, 90-day uptime, connected systems) — comes
-  from **Elasticsearch**, *not editable here*. See `HANDOFF.md` §8 and
-  `ELASTICSEARCH_GUIDE.md`.
+- **Live telemetry** (service health and 90-day uptime) — comes from **live
+  Elasticsearch** telemetry via the observability pipeline, *not editable here*.
+  Service health is a flat list of whatever "core services" exist in the
+  `status-core-services` index; there is no hardcoded catalog. A developer adds a
+  service by indexing a doc — see `HANDOFF.md` §8 and `ELASTICSEARCH_GUIDE.md`.
 - **Three Markdown-driven sections you edit:** Known Issues, Scheduled
   Maintenance, and Recent Incidents.
-
-> **Important:** editing this Markdown updates the **status page**, but does **not**
-> send incident **emails**. Incident/maintenance emails are driven by separate
-> Elasticsearch documents (see `HANDOFF.md` §6.3). If you need both, you must
-> update both.
+- **One hand-curated data file you edit:** Connected services (see 6d).
 
 ### 6a. Known Issues (active incidents)
 - **Files:** `src/content/status/active-incidents/*.md` (filename is arbitrary;
@@ -306,6 +304,41 @@ sortOrder: 30          # higher shows first
 ---
 ```
 
+### 6d. Connected services
+Unlike the Markdown sections above, connected services live in a **TypeScript
+data file**, not a content collection:
+
+- **File:** `src/lib/status/connected-services.ts`, which exports the
+  `CONNECTED_SYSTEMS` array.
+- To **add, edit, or remove** a connected service, edit that array by hand. There
+  is **no Elasticsearch and no build step** — the change shows on the next render.
+
+Each entry looks like:
+
+```ts
+export const CONNECTED_SYSTEMS = [
+  {
+    id: 'billing-api',
+    name: 'Billing API',
+    type: 'THIRD_PARTY_API',      // SAAS | INTERNAL | THIRD_PARTY_API
+    level: 'HEALTHY',             // HEALTHY | DEGRADED | OUTAGE | MAINTENANCE | UNKNOWN
+    note: 'Read-only mirror.',    // optional
+  },
+  // ...more services
+];
+```
+
+| Field | Required | Values |
+|-------|:--------:|--------|
+| `id` | ✔ | Unique, stable identifier |
+| `name` | ✔ | Display name |
+| `type` | ✔ | `SAAS` · `INTERNAL` · `THIRD_PARTY_API` |
+| `level` | ✔ | `HEALTHY` · `DEGRADED` · `OUTAGE` · `MAINTENANCE` · `UNKNOWN` |
+| `note` | | Optional short note |
+
+> This is a **code file** (TypeScript), so mind the quotes, commas, and enum
+> spelling. Run `npm run check` to catch type errors.
+
 ---
 
 ## 7. Homepage cards
@@ -364,6 +397,7 @@ Tag slugs are generated automatically (lowercased, spaces → dashes), so
 | Known issues (incidents) | `src/content/status/active-incidents/*.md` | ✔ | `startedAt` desc |
 | Scheduled maintenance | `src/content/status/maintenance/*.md` | ✘ | `scheduledStart` |
 | Recent incidents | `src/content/status/recent-incidents/*.md` | ✘ | `sortOrder` desc |
+| Connected services | `src/lib/status/connected-services.ts` (`CONNECTED_SYSTEMS[]`) | — | array order |
 | Homepage cards | `src/pages/index.astro` (`cards[]`) | — | array order |
 | Tags | MDX `tags:` frontmatter | — | count desc |
 

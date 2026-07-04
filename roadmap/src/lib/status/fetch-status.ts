@@ -3,7 +3,6 @@ import {
   getStatusSummary,
   getWorkspaceStatuses,
   getWorkspaceFeatureStatuses,
-  getExternalSystemStatuses,
   getIncidents,
   getRecentIncidents,
   getIncidentById,
@@ -14,7 +13,6 @@ import {
   MOCK_SUMMARY,
   MOCK_WORKSPACES,
   getMockWorkspaceFeatures,
-  MOCK_EXTERNAL_SYSTEMS,
   MOCK_INCIDENTS,
   getMockIncidentById,
   MOCK_RECENT_INCIDENTS,
@@ -67,15 +65,6 @@ export async function fetchWorkspaceFeatures(workspaceId: string) {
       },
       () => getMockWorkspaceFeatures(workspaceId)
     )
-  );
-}
-
-export async function fetchExternalSystems() {
-  return cached('external-systems', () =>
-    orMock(async () => {
-      const systems = await getExternalSystemStatuses();
-      return { systems };
-    }, MOCK_EXTERNAL_SYSTEMS)
   );
 }
 

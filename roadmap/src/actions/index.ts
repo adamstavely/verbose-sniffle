@@ -2,13 +2,7 @@ import { defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
 import { getCollection } from 'astro:content';
 import { recordVote } from '../lib/votes/elastic-votes';
-import { addSubscriber } from '../lib/notifications/elastic-subscribers';
 import { recordFeedback } from '../lib/feedback/elastic-feedback';
-import { sendEmail, isEmailServiceConfigured } from '../lib/notifications/email-client';
-import {
-  buildSubscribeConfirmation,
-  buildSubscribeConfirmationSubject,
-} from '../lib/notifications/email-templates';
 import { rateLimit } from '../lib/rate-limit';
 
 const VOTER_COOKIE = 'roadmap_voter_id';
@@ -58,35 +52,6 @@ export const server = {
       }
 
       return recordVote(featureRequestId, voterId);
-    },
-  }),
-
-  subscribe: defineAction({
-    accept: 'form',
-    input: z.object({
-      email: z.email('Please enter a valid email address'),
-    }),
-    handler: async ({ email }, context) => {
-      const voterId = context.cookies.get(VOTER_COOKIE)?.value ?? 'anon';
-      if (
-        !rateLimit(`subscribe:${voterId}`, 5, 60_000) ||
-        !rateLimit(`subscribe-ip:${clientIp(context)}`, 15, 60_000)
-      ) {
-        return { success: false, error: TOO_MANY };
-      }
-
-      const normalized = email.trim().toLowerCase();
-      const result = await addSubscriber(normalized);
-      // Only send the confirmation email for a brand-new subscription, so a
-      // repeat submit for an existing address doesn't re-send it.
-      if (result.success && !result.alreadySubscribed && isEmailServiceConfigured()) {
-        await sendEmail(
-          normalized,
-          buildSubscribeConfirmationSubject(),
-          buildSubscribeConfirmation(normalized)
-        );
-      }
-      return result;
     },
   }),
 

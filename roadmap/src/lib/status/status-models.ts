@@ -18,28 +18,12 @@ export interface CoreServiceStatus {
   name: string;
   description?: string;
   level: StatusLevel;
+  /** User-facing note shown on the status page when the service is not healthy. */
+  impact?: string;
   errorRate?: number;
   latencyP95Ms?: number;
   lastUpdated: string;
   impactingExternalSystemIds?: string[];
-}
-
-/** Capability item within a group (Analyst Workspace, Operations, Shared Platform) */
-export interface CapabilityItem {
-  id: string;
-  label: string;
-  level: StatusLevel;
-  /** Impact/degradation description, shown when expanded */
-  impact?: string;
-}
-
-/** Capability group with colored bar and items */
-export interface CapabilityGroup {
-  id: string;
-  group: string;
-  /** Design-system token key for the decorative group bar (e.g. 'primary'). */
-  barColor: string;
-  items: CapabilityItem[];
 }
 
 export interface Workspace {
@@ -66,18 +50,6 @@ export interface WorkspaceFeatureStatus {
   lastSeen: string;
   degradationSummary?: string;
   impactingExternalSystemIds?: string[];
-}
-
-export interface ExternalSystemStatus {
-  id: string;
-  name: string;
-  type: "SAAS" | "INTERNAL" | "THIRD_PARTY_API";
-  level: StatusLevel;
-  latencyP95Ms?: number;
-  errorRate?: number;
-  lastUpdated: string;
-  impactedCoreServiceIds?: string[];
-  impactedFeatureIds?: string[];
 }
 
 export interface IncidentUpdate {
@@ -147,10 +119,6 @@ export interface WorkspacesDto {
 export interface WorkspaceFeaturesDto {
   workspaceId: string;
   features: WorkspaceFeatureStatus[];
-}
-
-export interface ExternalSystemsDto {
-  systems: ExternalSystemStatus[];
 }
 
 export interface IncidentsDto {

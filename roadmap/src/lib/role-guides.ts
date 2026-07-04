@@ -64,7 +64,6 @@ export const ROLE_GUIDES: RoleGuide[] = [
         summary: 'Bring teammates in and stay in the loop.',
         links: [
           { label: 'Invite teammates', to: 'user-guide/how-to/invite-teammates' },
-          { label: 'Configure notifications', to: 'user-guide/how-to/configure-notifications' },
         ],
       },
     ],
@@ -89,7 +88,6 @@ export const ROLE_GUIDES: RoleGuide[] = [
         title: 'Set up alerts & notifications',
         summary: 'Stay ahead of incidents and platform updates.',
         links: [
-          { label: 'Configure notifications', to: 'user-guide/how-to/configure-notifications' },
           { label: 'Platform status', to: 'roadmap/status' },
         ],
       },

@@ -7,7 +7,6 @@ import type {
   CoreServiceStatus,
   Workspace,
   WorkspaceFeatureStatus,
-  ExternalSystemStatus,
   IncidentSummary,
   IncidentUpdate,
   ResolvedIncidentEntry,
@@ -21,6 +20,8 @@ interface ElasticCoreServiceDoc {
   service_id?: string;
   service_name?: string;
   status_level?: StatusLevel;
+  /** Optional user-facing note shown on the status page when the service is not healthy. */
+  impact_description?: string;
   error_rate?: number;
   latency_p95_ms?: number;
 }
@@ -42,18 +43,6 @@ interface ElasticWorkspaceFeatureDoc {
   status_level?: StatusLevel;
   degradation_summary?: string;
   impacting_external_system_ids?: string[];
-}
-
-interface ElasticExternalSystemDoc {
-  '@timestamp'?: string;
-  system_id?: string;
-  system_name?: string;
-  system_type?: 'SAAS' | 'INTERNAL' | 'THIRD_PARTY_API';
-  status_level?: StatusLevel;
-  latency_p95_ms?: number;
-  error_rate?: number;
-  impacted_core_service_ids?: string[];
-  impacted_feature_ids?: string[];
 }
 
 interface ElasticIncidentUpdateDoc {
@@ -124,6 +113,7 @@ function toCoreServiceStatus(
     id: doc.service_id ?? fallbackId,
     name: doc.service_name ?? fallbackId,
     level: status,
+    impact: doc.impact_description,
     errorRate: doc.error_rate,
     latencyP95Ms: doc.latency_p95_ms,
     lastUpdated: timestamp,
@@ -334,65 +324,6 @@ export async function getWorkspaceFeatureStatuses(
   }
 }
 
-export async function getExternalSystemStatuses(): Promise<
-  ExternalSystemStatus[]
-> {
-  const client = getElasticClient();
-  const to = nowIso();
-  const from = new Date(
-    Date.now() - statusConfig.timeWindowMinutes * 60_000
-  ).toISOString();
-
-  try {
-    const result = await client.search<ElasticExternalSystemDoc>({
-      index: statusConfig.indices.externalSystems,
-      size: 500,
-      sort: ['@timestamp:desc'],
-      query: {
-        range: {
-          '@timestamp': {
-            gte: from,
-            lte: to,
-          },
-        },
-      },
-    });
-
-    const latestBySystem = new Map<string, ElasticExternalSystemDoc>();
-
-    for (const hit of result.hits.hits) {
-      const doc = hit._source ?? {};
-      const id = doc.system_id ?? hit._id ?? 'unknown-system';
-
-      if (!latestBySystem.has(id)) {
-        latestBySystem.set(id, doc);
-      }
-    }
-
-    const systems: ExternalSystemStatus[] = Array.from(
-      latestBySystem.entries()
-    ).map(([id, doc]) => ({
-      id,
-      name: doc.system_name ?? id,
-      type: doc.system_type ?? 'THIRD_PARTY_API',
-      level: doc.status_level ?? 'UNKNOWN',
-      latencyP95Ms: doc.latency_p95_ms,
-      errorRate: doc.error_rate,
-      lastUpdated: doc['@timestamp'] ?? nowIso(),
-      impactedCoreServiceIds: doc.impacted_core_service_ids,
-      impactedFeatureIds: doc.impacted_feature_ids,
-    }));
-
-    return systems;
-  } catch (error) {
-    console.error(
-      'Failed to query ElasticSearch for external system status',
-      error
-    );
-    return [];
-  }
-}
-
 function toIncidentSummary(
   doc: ElasticIncidentDoc,
   fallbackId: string
@@ -448,97 +379,6 @@ export async function getIncidents(): Promise<IncidentSummary[]> {
     return incidents;
   } catch (error) {
     console.error('Failed to query ElasticSearch for incidents', error);
-    return [];
-  }
-}
-
-/** Incidents for notification delivery (broader time window: started or resolved in last N minutes). */
-export async function getIncidentsForNotifications(): Promise<IncidentSummary[]> {
-  const client = getElasticClient();
-  const to = nowIso();
-  const windowMs =
-    statusConfig.notificationIncidentWindowMinutes * 60_000;
-  const from = new Date(Date.now() - windowMs).toISOString();
-
-  try {
-    const result = await client.search<ElasticIncidentDoc>({
-      index: statusConfig.indices.incidents,
-      size: 200,
-      sort: ['started_at:desc'],
-      query: {
-        bool: {
-          should: [
-            { range: { started_at: { gte: from, lte: to } } },
-            { range: { resolved_at: { gte: from, lte: to } } },
-          ],
-          minimum_should_match: 1,
-        },
-      },
-    });
-
-    return result.hits.hits.map(
-      (hit: { _source?: ElasticIncidentDoc; _id?: string }) =>
-        toIncidentSummary(hit._source ?? {}, hit._id ?? nowIso())
-    );
-  } catch (error) {
-    console.error('Failed to query ElasticSearch for notification incidents', error);
-    return [];
-  }
-}
-
-/** Maintenance with scheduled_start in the notification window (for email delivery). */
-export async function getMaintenanceForNotifications(): Promise<ScheduledMaintenance[]> {
-  const client = getElasticClient();
-  const to = nowIso();
-  const windowMs =
-    statusConfig.notificationIncidentWindowMinutes * 60_000;
-  const from = new Date(Date.now() - windowMs).toISOString();
-
-  try {
-    const result = await client.search<ElasticScheduledMaintenanceDoc>({
-      index: statusConfig.indices.scheduledMaintenance,
-      size: 50,
-      sort: ['scheduled_start:asc'],
-      query: {
-        bool: {
-          filter: [
-            {
-              range: {
-                scheduled_start: { gte: from, lte: to },
-              },
-            },
-            {
-              range: {
-                scheduled_end: { gte: to },
-              },
-            },
-          ],
-        },
-      },
-    });
-
-    return result.hits.hits
-      .map((hit) => {
-        const doc = hit._source ?? {};
-        const id = doc.maintenance_id ?? hit._id ?? 'unknown';
-        const status = (doc.status ?? 'SCHEDULED') as MaintenanceStatus;
-        return {
-          id,
-          title: doc.title ?? 'Scheduled maintenance',
-          description: doc.description,
-          scheduledStart: doc.scheduled_start ?? to,
-          scheduledEnd: doc.scheduled_end ?? to,
-          status,
-          affectedCoreServiceIds: doc.affected_core_service_ids,
-          affectedExternalSystemIds: doc.affected_external_system_ids,
-        };
-      })
-      .filter((m) => m.status !== 'COMPLETED');
-  } catch (error) {
-    console.error(
-      'Failed to query ElasticSearch for maintenance notifications',
-      error
-    );
     return [];
   }
 }

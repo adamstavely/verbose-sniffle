@@ -2,7 +2,6 @@ import type {
   CoreServiceStatus,
   Workspace,
   WorkspaceFeatureStatus,
-  ExternalSystemStatus,
   IncidentSummary,
   ScheduledMaintenance,
   ResolvedIncidentEntry,
@@ -12,7 +11,6 @@ import type {
   StatusSummaryDto,
   WorkspacesDto,
   WorkspaceFeaturesDto,
-  ExternalSystemsDto,
   IncidentsDto,
   ScheduledMaintenanceDto,
 } from './status-models';
@@ -156,41 +154,6 @@ export function getMockWorkspaceFeatures(
     ];
   return { workspaceId, features };
 }
-
-export const MOCK_EXTERNAL_SYSTEMS: ExternalSystemsDto = {
-  systems: [
-    {
-      id: 'stripe-api',
-      name: 'Stripe API',
-      type: 'THIRD_PARTY_API',
-      level: 'DEGRADED',
-      latencyP95Ms: 410,
-      errorRate: 0.031,
-      lastUpdated: earlier,
-      impactedCoreServiceIds: ['billing-service'],
-      impactedFeatureIds: ['billing'],
-    },
-    {
-      id: 's3-gateway',
-      name: 'S3 Gateway',
-      type: 'INTERNAL',
-      level: 'OUTAGE',
-      errorRate: 0.95,
-      lastUpdated: earlier,
-      impactedCoreServiceIds: ['storage-service'],
-      impactedFeatureIds: ['storage'],
-    },
-    {
-      id: 'sendgrid',
-      name: 'SendGrid',
-      type: 'SAAS',
-      level: 'HEALTHY',
-      latencyP95Ms: 85,
-      errorRate: 0.001,
-      lastUpdated: now,
-    },
-  ] as ExternalSystemStatus[],
-};
 
 const MOCK_INCIDENT_FULL: IncidentSummary = {
   id: 'inc-001',

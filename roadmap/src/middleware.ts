@@ -52,13 +52,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     });
   }
 
-  // When a vote or subscribe form is submitted, run the action and redirect.
+  // When a vote form is submitted, run the action and redirect.
   const { action, setActionResult, serializeActionResult } = getActionContext(context);
   const isVoteForm = action?.calledFrom === 'form' && action.name?.endsWith('vote');
-  const isSubscribeForm = action?.calledFrom === 'form' && action.name?.endsWith('subscribe');
 
   let response: Response;
-  if (isVoteForm || isSubscribeForm) {
+  if (isVoteForm) {
     try {
       const result = await action.handler();
       setActionResult(action.name, serializeActionResult(result));
