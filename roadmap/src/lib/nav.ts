@@ -66,7 +66,7 @@ export async function getNavTree(): Promise<NavTree> {
       { kind: 'group', slug: 'user-guide', name: 'User Guide', href: withBase('user-guide'), categories },
       { kind: 'link', label: 'Releases', href: withBase('releases'), match: '/releases' },
       { kind: 'link', label: 'Roadmap', href: withBase('roadmap'), match: '/roadmap' },
-      { kind: 'link', label: 'Status', href: withBase('roadmap/status'), match: '/roadmap/status' },
+      { kind: 'link', label: 'System Status', href: withBase('roadmap/status'), match: '/roadmap/status' },
       { kind: 'group', slug: 'developer-guide', name: 'Developer Guide', href: withBase('developer-guide'), pages: inSection('developer-guide').map(toPage) },
     ],
   };
