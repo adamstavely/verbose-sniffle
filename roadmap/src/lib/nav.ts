@@ -62,10 +62,10 @@ export async function getNavTree(): Promise<NavTree> {
 
   return {
     items: [
-      { kind: 'group', slug: 'about', name: 'About', href: withBase('about'), pages: inSection('about').map(toPage) },
+      { kind: 'group', slug: 'about', name: 'About IMAX', href: withBase('about'), pages: inSection('about').map(toPage) },
       { kind: 'group', slug: 'user-guide', name: 'User Guide', href: withBase('user-guide'), categories },
-      { kind: 'link', label: 'Releases', href: withBase('releases'), match: '/releases' },
-      { kind: 'link', label: 'Roadmap', href: withBase('roadmap'), match: '/roadmap' },
+      { kind: 'link', label: 'Release Notes', href: withBase('releases'), match: '/releases' },
+      { kind: 'link', label: 'Product Roadmap', href: withBase('roadmap'), match: '/roadmap' },
       { kind: 'link', label: 'System Status', href: withBase('roadmap/status'), match: '/roadmap/status' },
       { kind: 'group', slug: 'developer-guide', name: 'Developer Guide', href: withBase('developer-guide'), pages: inSection('developer-guide').map(toPage) },
     ],
