@@ -77,10 +77,22 @@ const featureRequests = defineCollection({
   }),
 });
 
+const releases = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/releases' }),
+  schema: z.object({
+    version: z.string(),
+    date: z.coerce.date(),
+    title: z.string(),
+    summary: z.string(),
+    tags: z.array(z.string()).optional(),
+  }),
+});
+
 export const collections = {
   roadmap,
   statusActiveIncidents,
   statusMaintenance,
   statusRecentIncidents,
   featureRequests,
+  releases,
 };
