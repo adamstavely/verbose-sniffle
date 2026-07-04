@@ -23,10 +23,6 @@ function groupWorstStatus(group: CapabilityGroup): StatusLevel {
 function barColorClass(_color: string): string {
   return 'bg-primary';
 }
-
-function barTextClass(_color: string): string {
-  return 'text-primary';
-}
 ---
 
 <div class="space-y-6" aria-label="Capabilities by workspace">
@@ -36,11 +32,11 @@ function barTextClass(_color: string): string {
       <div class="capability-group">
         <div class="flex items-center gap-2.5 mb-2">
           <span class={`w-1 h-4 rounded shrink-0 ${barColorClass(group.barColor)}`} />
-          <span class={`text-[10px] font-mono font-semibold uppercase tracking-widest ${barTextClass(group.barColor)}`}>
+          <span class="text-[10px] font-semibold uppercase tracking-widest text-accent">
             {group.group}
           </span>
           <span class="flex-1" />
-          <span class="text-[10px] font-mono flex items-center gap-1">
+          <span class="text-[10px] flex items-center gap-1">
             <StatusBadge level={worst} variant="dot" />
             {getStatusLabel(worst)}
           </span>
