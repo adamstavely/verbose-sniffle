@@ -339,10 +339,15 @@ id = `hash(feedback, pagePath, visitorId)` (one vote per page per visitor).
   ES doc IDs.
 - **Status page** (`/roadmap/status`) data sources: **Service health** + **90-day
   uptime** come from **Elasticsearch**; **Connected services** comes from the
-  hand-curated data file `src/lib/status/connected-services.ts`; the *Known Issues
-  / Scheduled maintenance / Recent incidents* sections come from **Markdown**
-  collections (`src/content/status/**`). On ES failure the live sections show
-  honest `UNKNOWN`/empty.
+  hand-curated data file `src/lib/status/connected-services.ts`; the top
+  **status hero**, **active incidents**, **scheduled maintenance**, and the
+  `/roadmap/status/history` **incident history** are **Markdown**
+  (`src/content/status/**`). The hero (`StatusBanner`) renders a single state
+  chosen by priority (outage > degraded > maintenance > operational, with an
+  UNKNOWN fallback) from the active incidents + maintenance + overall service
+  level. On ES failure the live sections show honest `UNKNOWN`/empty. See
+  `CONTENT_GUIDE.md` §6 for the authoring workflow (hero, updates, resolving to
+  history).
 - **Dead-ish code:** the ES incident/maintenance *read* functions
   (`getIncidents`, `getRecentIncidents`, `getScheduledMaintenance`,
   `getIncidentById`, and their `fetch*` wrappers) are **not used by any page** —
