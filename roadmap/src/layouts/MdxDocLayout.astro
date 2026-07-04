@@ -1,6 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import PageFeedback from '../components/PageFeedback.astro';
+import TagList from '../components/TagList.astro';
 
 interface Props {
   frontmatter: {
@@ -12,6 +13,8 @@ interface Props {
     minutesRead?: string;
     /** ISO date of the file's last change, injected by the last-updated remark plugin. */
     lastUpdated?: string | null;
+    /** Topic tags shown as chips linking to /tags/<slug>. */
+    tags?: string[];
   };
 }
 
@@ -22,6 +25,7 @@ const {
   prose = true,
   minutesRead,
   lastUpdated,
+  tags = [],
 } = frontmatter;
 
 const formattedUpdated = lastUpdated
@@ -35,14 +39,19 @@ const formattedUpdated = lastUpdated
 
 <BaseLayout title={title} description={description}>
   <h1 class="mb-2 text-3xl font-bold text-foreground">{title}</h1>
-  {minutesRead && (
-    <p class="mb-6 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
-      </svg>
-      {minutesRead}
-    </p>
+  {(minutesRead || tags.length > 0) && (
+    <div class="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+      {minutesRead && (
+        <p class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          {minutesRead}
+        </p>
+      )}
+      {tags.length > 0 && <TagList tags={tags} />}
+    </div>
   )}
   {prose ? (
     <article class="doc-prose">
@@ -61,10 +70,11 @@ const formattedUpdated = lastUpdated
 </BaseLayout>
 
 <style is:global>
-  .doc-prose { color: rgb(51 65 85); }
-  .doc-prose h1 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; color: rgb(15 23 42); margin-bottom: 1rem; }
-  .doc-prose h2 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: rgb(15 23 42); margin-top: 2rem; margin-bottom: 0.75rem; }
-  .doc-prose h3 { font-size: 1.0625rem; font-weight: 600; color: rgb(30 41 59); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+  /* Colors use the semantic token vars so doc prose themes in dark mode. */
+  .doc-prose { color: var(--color-secondary-foreground); }
+  .doc-prose h1 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; color: var(--color-foreground); margin-bottom: 1rem; }
+  .doc-prose h2 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: var(--color-foreground); margin-top: 2rem; margin-bottom: 0.75rem; }
+  .doc-prose h3 { font-size: 1.0625rem; font-weight: 600; color: var(--color-foreground); margin-top: 1.5rem; margin-bottom: 0.5rem; }
   .doc-prose p { margin-bottom: 1rem; line-height: 1.7; }
   .doc-prose ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
   .doc-prose ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
@@ -75,8 +85,8 @@ const formattedUpdated = lastUpdated
     text-underline-offset: 2px;
   }
   .doc-prose a:hover { color: var(--color-accent-hover); }
-  .doc-prose strong { font-weight: 600; color: rgb(15 23 42); }
-  .doc-prose code { background: rgb(241 245 249); border-radius: 0.25rem; padding: 0.1rem 0.35rem; font-size: 0.85em; }
+  .doc-prose strong { font-weight: 600; color: var(--color-foreground); }
+  .doc-prose code { background: var(--color-muted); color: var(--color-foreground); border-radius: 0.25rem; padding: 0.1rem 0.35rem; font-size: 0.85em; }
   .doc-prose pre { border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin-bottom: 1rem; }
   .doc-prose pre code { background: transparent; padding: 0; font-size: 0.85em; }
 </style>

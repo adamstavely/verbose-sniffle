@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DocList from '../../components/DocList.astro';
+import { getAllTags, getDocsByTag, tagsIndexHref } from '../../lib/docs';
+
+export async function getStaticPaths() {
+  return getAllTags().map((t) => ({
+    params: { tag: t.slug },
+    props: { display: t.display, docs: getDocsByTag(t.slug) },
+  }));
+}
+
+const { display, docs } = Astro.props;
+const pages = docs.map((d) => ({
+  title: d.title,
+  description: d.description,
+  url: d.url,
+}));
+---
+
+<BaseLayout
+  title={`Tag: ${display} - Help Center`}
+  description={`Documentation tagged “${display}”`}
+>
+  <a href={tagsIndexHref()} class="link mb-4 inline-block text-sm">← All tags</a>
+  <h1 class="mb-6 text-2xl font-bold text-foreground">
+    {display}
+    <span class="ml-2 text-base font-normal text-secondary-foreground">({pages.length})</span>
+  </h1>
+  <DocList pages={pages} emptyText="No docs carry this tag." />
+</BaseLayout>
